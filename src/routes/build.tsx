@@ -2,12 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { Loader2, Plus, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { getAnonToken } from "@/lib/anon";
-import { createKit } from "@/lib/kits.functions";
+import { createKit, getKit } from "@/lib/kits.functions";
+import { extractKit } from "@/lib/extraction.functions";
 import { uploadBrandSource } from "@/lib/uploads.functions";
 import { scrapeSourceText, saveManualKit } from "@/lib/manual.functions";
 
@@ -41,10 +42,8 @@ const MAX_FILES = 10;
 const MAX_BYTES = 20 * 1024 * 1024;
 const ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.svg,image/*,application/pdf";
 
-const labelClass =
-  "font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground";
-const sectionTitleClass =
-  "font-mono text-[12px] uppercase tracking-[0.18em] text-foreground";
+const labelClass = "font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground";
+const sectionTitleClass = "font-mono text-[12px] uppercase tracking-[0.18em] text-foreground";
 const ghostBtn =
   "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-muted disabled:opacity-40";
 const solidBtn =
@@ -71,6 +70,8 @@ function BuildPage() {
   const upload = useServerFn(uploadBrandSource);
   const scrape = useServerFn(scrapeSourceText);
   const save = useServerFn(saveManualKit);
+  const extract = useServerFn(extractKit);
+  const fetchKit = useServerFn(getKit);
 
   const kitIdRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +81,7 @@ function BuildPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [sourceText, setSourceText] = useState("");
   const [reading, setReading] = useState(false);
+  const [building, setBuilding] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [colors, setColors] = useState<ColorRow[]>([
@@ -140,9 +142,7 @@ function BuildPage() {
         const res = await upload({ data: fd });
         chunks.push(...res.pdfTexts);
         if (res.imageUrls.length) {
-          chunks.push(
-            `--- Uploaded images ---\n${res.imageUrls.join("\n")}`,
-          );
+          chunks.push(`--- Uploaded images ---\n${res.imageUrls.join("\n")}`);
         }
       }
 
@@ -156,7 +156,10 @@ function BuildPage() {
         toast.error("Nothing readable came back from those sources");
       } else {
         setSourceText((prev) =>
-          [prev, ...chunks].filter((s) => s && s.trim()).join("\n\n---\n\n").slice(0, 200000),
+          [prev, ...chunks]
+            .filter((s) => s && s.trim())
+            .join("\n\n---\n\n")
+            .slice(0, 200000),
         );
         toast.success("Source text added below");
       }
@@ -164,6 +167,131 @@ function BuildPage() {
       toast.error(e?.message ?? "Could not read those sources");
     } finally {
       setReading(false);
+    }
+  }
+
+  async function autoBuildKit() {
+    if (building) return;
+    const cleanUrls = urls.map(normalizeUrl).filter((u): u is string => !!u);
+    if (!cleanUrls.length && !files.length) {
+      toast.error("Add a link or a file first");
+      return;
+    }
+    setBuilding(true);
+    try {
+      const kitId = await ensureKit();
+      let imageUrls: string[] | undefined;
+      let pdfTexts: string[] | undefined;
+      const chunks: string[] = [];
+
+      // Upload PDFs / images (same pipeline as the homepage ingestion).
+      if (files.length) {
+        const fd = new FormData();
+        fd.append("kitId", kitId);
+        fd.append("ownerToken", ownerToken);
+        for (const f of files) fd.append("file", f);
+        const res = await upload({ data: fd });
+        imageUrls = res.imageUrls.length ? res.imageUrls : undefined;
+        pdfTexts = res.pdfTexts.length ? res.pdfTexts : undefined;
+        chunks.push(...res.pdfTexts);
+        if (res.imageUrls.length)
+          chunks.push(`--- Uploaded images ---\n${res.imageUrls.join("\n")}`);
+      }
+
+      // For extra links, scrape their text so the AI can use them as context.
+      const extraUrls = cleanUrls.slice(1);
+      if (extraUrls.length) {
+        try {
+          const res = await scrape({ data: { urls: extraUrls } });
+          for (const t of res.texts) chunks.push(`--- ${t.url} ---\n${t.text}`);
+          for (const e of res.errors) toast.warning(`${e.url}: ${e.message}`);
+        } catch {
+          // Extra context is optional — ignore failures.
+        }
+      }
+      if (chunks.length) {
+        setSourceText((prev) =>
+          [prev, ...chunks]
+            .filter((s) => s && s.trim())
+            .join("\n\n---\n\n")
+            .slice(0, 200000),
+        );
+      }
+
+      // Run the same extraction that builds a kit on the homepage, with the
+      // current manual rows passed as hints so the AI honours them.
+      const manual = {
+        brandName: name.trim() && name.trim() !== "Untitled brand kit" ? name.trim() : undefined,
+        hexColors: colors
+          .map((c) => c.hex.trim())
+          .filter((h) => /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(h)),
+        fontFamilies: fonts.map((f) => f.family.trim()).filter(Boolean),
+      };
+      const res = await extract({
+        data: {
+          kitId,
+          ownerToken,
+          url: cleanUrls[0],
+          imageUrls,
+          pdfTexts,
+          manual:
+            manual.brandName || manual.hexColors.length || manual.fontFamilies.length
+              ? manual
+              : undefined,
+        },
+      });
+      if (!res.ok) throw new Error(res.error ?? "Extraction failed");
+      if ("degraded" in res && res.degraded) {
+        toast.warning(
+          res.degradedReason ?? "Source could not be read — kit uses generic defaults.",
+          {
+            duration: 12000,
+          },
+        );
+      }
+
+      // The kit is now saved in the library — pull it back and fill the form.
+      const full = await fetchKit({ data: { kitId, ownerToken } });
+      if (full.kit?.name) setName(full.kit.name);
+      if (full.colors?.length) {
+        setColors(
+          full.colors.map((c) => ({
+            hex: c.hex ?? "",
+            name: c.name ?? "",
+            role: c.role ?? "",
+          })),
+        );
+      }
+      if (full.fonts?.length) {
+        setFonts(
+          full.fonts.map((f) => ({
+            family: f.family ?? "",
+            role: f.role ?? "",
+            weights: Array.isArray(f.weights) ? f.weights.join(",") : "",
+          })),
+        );
+      }
+      if (full.tokens?.length) {
+        setTokens(
+          full.tokens.map((t) => ({
+            category: t.category ?? "",
+            name: t.name ?? "",
+            value: t.value ?? "",
+          })),
+        );
+      }
+      if (full.kit?.source_text) setSourceText(full.kit.source_text);
+
+      toast.success("Kit built and saved to your library", {
+        action: {
+          label: "Open kit",
+          onClick: () => navigate({ to: "/kit/$kitId", params: { kitId } }),
+        },
+      });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Auto-build failed");
+    } finally {
+      setBuilding(false);
     }
   }
 
@@ -230,8 +358,8 @@ function BuildPage() {
             Build a kit by hand
           </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Bring your own PDFs and links, read their text, then set the palette,
-            typography and tokens yourself. Nothing is invented for you.
+            Bring your own PDFs and links, read their text, then set the palette, typography and
+            tokens yourself. Nothing is invented for you.
           </p>
         </header>
 
@@ -268,7 +396,9 @@ function BuildPage() {
                   aria-label="Remove link"
                   className="rounded-full p-2 text-muted-foreground hover:text-foreground"
                   onClick={() =>
-                    setUrls((prev) => (prev.length === 1 ? [""] : prev.filter((_, idx) => idx !== i)))
+                    setUrls((prev) =>
+                      prev.length === 1 ? [""] : prev.filter((_, idx) => idx !== i),
+                    )
                   }
                 >
                   <X className="h-4 w-4" strokeWidth={1.5} />
@@ -292,7 +422,11 @@ function BuildPage() {
                 e.target.value = "";
               }}
             />
-            <button type="button" className={ghostBtn} onClick={() => fileInputRef.current?.click()}>
+            <button
+              type="button"
+              className={ghostBtn}
+              onClick={() => fileInputRef.current?.click()}
+            >
               <Upload className="h-3.5 w-3.5" strokeWidth={1.5} /> Upload PDFs / images
             </button>
             {files.length > 0 && (
@@ -314,13 +448,33 @@ function BuildPage() {
             )}
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
-            <button type="button" className={solidBtn} onClick={readSources} disabled={reading}>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className={solidBtn}
+              onClick={readSources}
+              disabled={reading || building}
+            >
               {reading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {reading ? "Reading" : "Read sources"}
             </button>
+            <button
+              type="button"
+              className={ghostBtn}
+              onClick={autoBuildKit}
+              disabled={reading || building}
+            >
+              {building ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
+              )}
+              {building ? "Building kit" : "Auto-build with AI"}
+            </button>
             <span className="text-xs text-muted-foreground">
-              Pulls the text so you can work from it — it won't change your choices.
+              {building
+                ? "Scraping your sources, extracting the brand and saving it to your library — the fields below will fill in when it's done."
+                : "Read sources pulls the text without changing your choices. Auto-build runs the full extraction, saves it to your library, and fills the fields below for you to tweak."}
             </span>
           </div>
 
@@ -534,7 +688,12 @@ function BuildPage() {
         </section>
 
         <div className="sticky bottom-4 flex items-center gap-3 rounded-full border border-border bg-background/90 px-4 py-3 backdrop-blur">
-          <button type="button" className={solidBtn} onClick={handleSave} disabled={saving}>
+          <button
+            type="button"
+            className={solidBtn}
+            onClick={handleSave}
+            disabled={saving || building}
+          >
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {saving ? "Saving" : "Save kit"}
           </button>
