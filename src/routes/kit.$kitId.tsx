@@ -8,14 +8,31 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";
 import { getAnonToken } from "@/lib/anon";
 import { getKit } from "@/lib/kits.functions";
 import { setKitShare } from "@/lib/share.functions";
 import { extractKit, generateSampleCopy, harvestMoreAssets } from "@/lib/extraction.functions";
 import { generateLogoVariants, VARIANT_PRESETS } from "@/lib/logo-variants.functions";
-import { deleteKitAsset, deleteKitColor, updateKitColor } from "@/lib/edits.functions";
+import {
+  deleteKitAsset,
+  deleteKitColor,
+  updateKitColor,
+  addKitColor,
+  updateKitFont,
+  deleteKitFont,
+  addKitFont,
+  updateKitToken,
+  deleteKitToken,
+  addKitToken,
+} from "@/lib/edits.functions";
 import { fetchFontFiles, resolveGoogleFontFiles } from "@/lib/font-files.functions";
 import { fetchAssetFiles } from "@/lib/asset-files.functions";
 import { useAutoImportFonts, renderFamilyFor } from "@/lib/font-loader";
@@ -32,13 +49,21 @@ import {
   slug,
   buildDesignInstructionsMarkdown,
 } from "@/lib/exports";
-import { Loader2, Copy, Share2, Sparkles, Download, Package, ExternalLink, X, Pencil, Check, FileText } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Loader2,
+  Copy,
+  Share2,
+  Sparkles,
+  Download,
+  Package,
+  ExternalLink,
+  X,
+  Pencil,
+  Check,
+  FileText,
+  Plus,
+} from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { ExtractionProgress } from "@/components/extraction-progress";
 import { QuietLoader } from "@/components/quiet-loader";
@@ -97,7 +122,11 @@ function KitPage() {
                 pdfTexts: payload?.pdfTexts,
               },
             }).finally(() => {
-              try { sessionStorage.removeItem(storageKey); } catch { /* ignore */ }
+              try {
+                sessionStorage.removeItem(storageKey);
+              } catch {
+                /* ignore */
+              }
               if (!cancelled) setReloadKey((k) => k + 1);
             });
           }
@@ -191,7 +220,8 @@ function KitPage() {
   const kit = data.kit as any;
   const status = kit.status as string;
   const processingSince = kit.updated_at ? Date.parse(kit.updated_at) : Date.now();
-  const isStalled = (status === "pending" || status === "processing") && Date.now() - processingSince > 90 * 1000;
+  const isStalled =
+    (status === "pending" || status === "processing") && Date.now() - processingSince > 90 * 1000;
 
   return (
     <div className="min-h-screen overflow-x-clip bg-background">
@@ -241,7 +271,9 @@ function KitPage() {
             bodyLines={
               kit.source_url
                 ? [
-                    isStalled ? "The extraction started, then stopped reporting progress for" : "We could not read a brand kit from",
+                    isStalled
+                      ? "The extraction started, then stopped reporting progress for"
+                      : "We could not read a brand kit from",
                     { mono: kit.source_url as string },
                     isStalled
                       ? "Retry will restart it from this kit instead of leaving the page waiting."
@@ -299,11 +331,7 @@ function KitPage() {
                 voice={data.voice}
               />
               <SectionAnchor id="overview" label="Overview">
-                <OverviewSection
-                  assets={data.assets}
-                  colors={data.colors}
-                  fonts={data.fonts}
-                />
+                <OverviewSection assets={data.assets} colors={data.colors} fonts={data.fonts} />
               </SectionAnchor>
               <SectionAnchor id="assets" label="Logos & Assets">
                 <AssetsSection
@@ -328,11 +356,23 @@ function KitPage() {
                     scale={(kit as any).typography_scale ?? []}
                     fonts={data.fonts}
                   />
-                  <FontsSection fonts={data.fonts} />
+                  <FontsSection
+                    fonts={data.fonts}
+                    kitId={kit.id}
+                    ownerToken={ownerToken}
+                    isOwner={kit.user_id === (user?.id ?? "") || kit.anon_token === ownerToken}
+                    onChanged={() => setReloadKey((k) => k + 1)}
+                  />
                 </div>
               </SectionAnchor>
               <SectionAnchor id="tokens" label="Tokens">
-                <TokensSection tokens={data.tokens} />
+                <TokensSection
+                  tokens={data.tokens}
+                  kitId={kit.id}
+                  ownerToken={ownerToken}
+                  isOwner={kit.user_id === (user?.id ?? "") || kit.anon_token === ownerToken}
+                  onChanged={() => setReloadKey((k) => k + 1)}
+                />
               </SectionAnchor>
               <SectionAnchor id="voice" label="Voice">
                 <VoiceSection voice={data.voice} kitId={kit.id} />
@@ -544,9 +584,7 @@ function OverviewSection({
   const logo =
     [...assets]
       .filter((a) => logoPriority.includes(a.kind))
-      .sort(
-        (a, b) => logoPriority.indexOf(a.kind) - logoPriority.indexOf(b.kind),
-      )[0] ?? null;
+      .sort((a, b) => logoPriority.indexOf(a.kind) - logoPriority.indexOf(b.kind))[0] ?? null;
 
   const swatches = colors.slice(0, 8);
   const display =
@@ -906,7 +944,11 @@ function ColorCard({
                 disabled={busy}
                 className="inline-flex h-7 flex-1 items-center justify-center gap-1 rounded-md bg-foreground font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-60"
               >
-                {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                {busy ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Check className="h-3 w-3" />
+                )}
                 Save
               </button>
               <button
@@ -925,11 +967,7 @@ function ColorCard({
           </div>
         </>
       ) : (
-        <button
-          type="button"
-          onClick={() => copy(color.hex)}
-          className="block w-full text-left"
-        >
+        <button type="button" onClick={() => copy(color.hex)} className="block w-full text-left">
           <div className="h-16" style={{ background: color.hex }} />
           <div className="flex items-start justify-between gap-2 p-3">
             <div className="min-w-0">
@@ -961,7 +999,8 @@ function ColorsSection({
   isOwner?: boolean;
   onChanged?: () => void;
 }) {
-  if (!colors.length) return <Empty label="No colors extracted" />;
+  const canEdit = !!(isOwner && kitId && ownerToken);
+  if (!colors.length && !canEdit) return <Empty label="No colors extracted" />;
   // Pick light + dark mode pairs from extracted colors so we can show pairings
   // for both surfaces. Fall back to pure white/black if extraction didn't yield
   // a sufficiently light or dark neutral.
@@ -984,28 +1023,134 @@ function ColorsSection({
             color={c}
             kitId={kitId}
             ownerToken={ownerToken}
-            canEdit={!!(isOwner && kitId && ownerToken)}
+            canEdit={canEdit}
             onChanged={onChanged}
           />
         ))}
+        {canEdit && <AddColorCard kitId={kitId!} ownerToken={ownerToken!} onAdded={onChanged} />}
       </div>
 
-      <PairingTable label="Light mode" colors={colors} bg={lightBg} text={lightText} />
-      <PairingTable label="Dark mode" colors={colors} bg={darkBg} text={darkText} />
+      {colors.length > 0 && (
+        <>
+          <PairingTable label="Light mode" colors={colors} bg={lightBg} text={lightText} />
+          <PairingTable label="Dark mode" colors={colors} bg={darkBg} text={darkText} />
+        </>
+      )}
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="text-foreground">✓</span>
-            Do — safe for body copy
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden className="text-foreground">
+            ✓
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden>~</span>
-            Large only — headings / icons ≥ 24px
+          Do — safe for body copy
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden>~</span>
+          Large only — headings / icons ≥ 24px
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden className="text-[color:var(--accent)]">
+            ×
           </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden className="text-[color:var(--accent)]">×</span>
-            Don't — decorative use only
-          </span>
+          Don't — decorative use only
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AddColorCard({
+  kitId,
+  ownerToken,
+  onAdded,
+}: {
+  kitId: string;
+  ownerToken: string;
+  onAdded?: () => void;
+}) {
+  const addColor = useServerFn(addKitColor);
+  const [open, setOpen] = useState(false);
+  const [hex, setHex] = useState("#0A0A0A");
+  const [role, setRole] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function add() {
+    const cleanHex = hex.trim().toUpperCase();
+    if (!/^#([0-9A-F]{6}|[0-9A-F]{8})$/.test(cleanHex)) {
+      toast.error("Hex must be #RRGGBB");
+      return;
+    }
+    setBusy(true);
+    try {
+      await addColor({
+        data: { kitId, ownerToken, hex: cleanHex, role: role.trim() || undefined },
+      });
+      setOpen(false);
+      setHex("#0A0A0A");
+      setRole("");
+      onAdded?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't add color");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[color:rgba(10,10,10,0.30)] font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+      >
+        <Plus className="h-4 w-4" strokeWidth={1.5} />
+        Add color
+      </button>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-card">
+      <label className="relative block h-16 cursor-pointer" style={{ background: hex }}>
+        <input
+          type="color"
+          value={/^#[0-9A-F]{6}$/i.test(hex) ? hex : "#000000"}
+          onChange={(e) => setHex(e.target.value.toUpperCase())}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          aria-label="Pick color"
+        />
+      </label>
+      <div className="space-y-2 p-3">
+        <Input
+          value={hex}
+          onChange={(e) => setHex(e.target.value)}
+          className="h-7 font-mono text-[11px]"
+          aria-label="Hex value"
+        />
+        <Input
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          placeholder="role (e.g. accent)"
+          className="h-7 font-mono text-[10px]"
+          aria-label="Color role"
+        />
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={add}
+            disabled={busy}
+            className="flex-1 rounded-md bg-foreground py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-50"
+          >
+            {busy ? "Adding…" : "Add"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="rounded-md border border-[color:var(--border-subtle)] px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1046,11 +1191,15 @@ function PairingTable({
                 <span className="font-mono text-xs">{c.hex}</span>
               </span>
               <div className="flex items-center gap-2 sm:contents">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">As text</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">
+                  As text
+                </span>
                 <PairingSample ratio={r1} fg={c.hex} bg={bg} />
               </div>
               <div className="flex items-center gap-2 sm:contents">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">As fill</span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">
+                  As fill
+                </span>
                 <PairingSample ratio={r2} fg={text} bg={c.hex} />
               </div>
             </div>
@@ -1121,13 +1270,7 @@ type ScaleRow = {
   sample_text?: string | null;
 };
 
-function TypographyScaleSection({
-  scale,
-  fonts,
-}: {
-  scale: ScaleRow[];
-  fonts?: any[];
-}) {
+function TypographyScaleSection({ scale, fonts }: { scale: ScaleRow[]; fonts?: any[] }) {
   // Auto-import the actual brand fonts (Google + any discovered self-hosted
   // file_urls). Without this the scale silently falls back to serif.
   useAutoImportFonts(fonts);
@@ -1150,8 +1293,7 @@ function TypographyScaleSection({
 
   function resolveFont(role: string, rawFamily: string) {
     const match = rawFamily ? byName.get(rawFamily.toLowerCase()) : undefined;
-    const roleDefault =
-      role === "body" || role === "caption" ? bodyFont : headingFont;
+    const roleDefault = role === "body" || role === "caption" ? bodyFont : headingFont;
     const picked = match ?? roleDefault ?? null;
     if (!picked) {
       return { renderFamily: rawFamily || "", source: rawFamily, substituted: false };
@@ -1190,7 +1332,10 @@ function TypographyScaleSection({
           const sample = r.sample_text || sampleFor(r.role);
           const previewSize = Math.min(Math.max(r.font_size_px ?? defaultSize(r.role), 12), 96);
           return (
-            <div key={`${r.role}-${i}`} className="grid gap-4 p-5 sm:grid-cols-[140px_1fr_220px] sm:items-baseline">
+            <div
+              key={`${r.role}-${i}`}
+              className="grid gap-4 p-5 sm:grid-cols-[140px_1fr_220px] sm:items-baseline"
+            >
               <div className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {r.role}
               </div>
@@ -1232,43 +1377,153 @@ function TypographyScaleSection({
 
 function defaultSize(role: string): number {
   switch (role) {
-    case "h1": return 56;
-    case "h2": return 40;
-    case "h3": return 28;
-    case "body": return 16;
-    case "caption": return 13;
-    case "label": return 12;
-    default: return 18;
+    case "h1":
+      return 56;
+    case "h2":
+      return 40;
+    case "h3":
+      return 28;
+    case "body":
+      return 16;
+    case "caption":
+      return 13;
+    case "label":
+      return 12;
+    default:
+      return 18;
   }
 }
 
 function sampleFor(role: string): string {
   switch (role) {
-    case "h1": return "The headline carries the brand";
-    case "h2": return "Section heading";
-    case "h3": return "Subsection heading";
-    case "body": return "Body copy sets the rhythm of the page and shapes how every other element is read.";
-    case "caption": return "Caption — supporting detail";
-    case "label": return "LABEL TEXT";
-    default: return "Sample";
+    case "h1":
+      return "The headline carries the brand";
+    case "h2":
+      return "Section heading";
+    case "h3":
+      return "Subsection heading";
+    case "body":
+      return "Body copy sets the rhythm of the page and shapes how every other element is read.";
+    case "caption":
+      return "Caption — supporting detail";
+    case "label":
+      return "LABEL TEXT";
+    default:
+      return "Sample";
   }
 }
 
-function FontsSection({ fonts }: { fonts: any[] }) {
+function FontsSection({
+  fonts,
+  kitId,
+  ownerToken,
+  isOwner,
+  onChanged,
+}: {
+  fonts: any[];
+  kitId?: string;
+  ownerToken?: string;
+  isOwner?: boolean;
+  onChanged?: () => void;
+}) {
   useAutoImportFonts(fonts);
+  const canEdit = !!(isOwner && kitId && ownerToken);
 
-  if (!fonts.length) return <Empty label="No fonts extracted" />;
+  if (!fonts.length && !canEdit) return <Empty label="No fonts extracted" />;
   return (
     <div className="grid gap-4">
       {fonts.map((f) => (
-        <FontCard key={f.id} font={f} />
+        <FontCard
+          key={f.id}
+          font={f}
+          kitId={kitId}
+          ownerToken={ownerToken}
+          canEdit={canEdit}
+          onChanged={onChanged}
+        />
       ))}
+      {canEdit && <AddFontCard kitId={kitId!} ownerToken={ownerToken!} onAdded={onChanged} />}
     </div>
   );
 }
 
-function FontCard({ font: f }: { font: any }) {
+function FontCard({
+  font: f,
+  kitId,
+  ownerToken,
+  canEdit,
+  onChanged,
+}: {
+  font: any;
+  kitId?: string;
+  ownerToken?: string;
+  canEdit?: boolean;
+  onChanged?: () => void;
+}) {
   const fallback = f.role === "mono" ? "monospace" : "sans-serif";
+  const updateFont = useServerFn(updateKitFont);
+  const deleteFont = useServerFn(deleteKitFont);
+  const [editing, setEditing] = useState(false);
+  const [familyDraft, setFamilyDraft] = useState<string>(f.family ?? "");
+  const [roleDraft, setRoleDraft] = useState<string>(f.role ?? "");
+  const [weightsDraft, setWeightsDraft] = useState<string>(
+    Array.isArray(f.weights) ? f.weights.join(", ") : "",
+  );
+  const [editBusy, setEditBusy] = useState(false);
+
+  useEffect(() => {
+    setFamilyDraft(f.family ?? "");
+    setRoleDraft(f.role ?? "");
+    setWeightsDraft(Array.isArray(f.weights) ? f.weights.join(", ") : "");
+  }, [f.family, f.role, f.weights]);
+
+  async function saveFont() {
+    if (!canEdit || !kitId || !ownerToken) return;
+    const fam = familyDraft.trim();
+    if (!fam) {
+      toast.error("Family is required");
+      return;
+    }
+    const weights = weightsDraft
+      .split(/[,\s]+/)
+      .map((w) => w.replace(/[^0-9]/g, ""))
+      .filter(Boolean)
+      .slice(0, 12);
+    setEditBusy(true);
+    try {
+      await updateFont({
+        data: {
+          kitId,
+          ownerToken,
+          fontId: f.id,
+          family: fam,
+          role: roleDraft.trim() || f.role,
+          weights,
+        },
+      });
+      setEditing(false);
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't save font");
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
+  async function removeFont() {
+    if (!canEdit || !kitId || !ownerToken) return;
+    if (!confirm(`Delete font "${f.family}"?`)) return;
+    setEditBusy(true);
+    try {
+      await deleteFont({ data: { kitId, ownerToken, fontId: f.id } });
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't delete font");
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
   const directFileCount = Array.isArray(f.file_urls) ? f.file_urls.length : 0;
   // Google Fonts can be downloaded on-demand via the css2 API even when no
   // file_urls were captured at extraction time.
@@ -1333,9 +1588,13 @@ function FontCard({ font: f }: { font: any }) {
     if (!canDownload || downloading) return;
     setDownloading(true);
     try {
-      let urls: string[] = directFileCount > 0
-        ? f.file_urls.slice(0, 40).map((u: any) => u.url).filter(Boolean)
-        : [];
+      let urls: string[] =
+        directFileCount > 0
+          ? f.file_urls
+              .slice(0, 40)
+              .map((u: any) => u.url)
+              .filter(Boolean)
+          : [];
       if (urls.length === 0 && f.google_font && f.family) {
         const r = await resolveGoogle({
           data: { family: f.family, weights: f.weights ?? undefined },
@@ -1410,8 +1669,7 @@ function FontCard({ font: f }: { font: any }) {
             </div>
           ) : isSub && f.source_family ? (
             <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              substitute for{" "}
-              <span className="text-foreground">{f.source_family}</span>
+              substitute for <span className="text-foreground">{f.source_family}</span>
             </div>
           ) : null}
         </div>
@@ -1480,8 +1738,77 @@ function FontCard({ font: f }: { font: any }) {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          {canEdit && !editing && (
+            <>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                aria-label="Edit font"
+                disabled={editBusy}
+                className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--border-subtle)] bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground hover:bg-foreground hover:text-background transition-colors disabled:opacity-60"
+              >
+                <Pencil className="h-3 w-3" />
+                edit
+              </button>
+              <button
+                type="button"
+                onClick={removeFont}
+                aria-label="Delete font"
+                disabled={editBusy}
+                className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--border-subtle)] bg-background px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-[color:var(--accent)] hover:border-[color:rgba(139,26,26,0.4)] transition-colors disabled:opacity-60"
+              >
+                <X className="h-3 w-3" />
+                delete
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {canEdit && editing && (
+        <div className="mt-4 space-y-2 rounded-lg border border-[color:var(--border-subtle)] bg-background p-3">
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Input
+              value={familyDraft}
+              onChange={(e) => setFamilyDraft(e.target.value)}
+              className="h-8 font-mono text-[11px]"
+              aria-label="Font family"
+              placeholder="Family (e.g. Inter)"
+            />
+            <Input
+              value={roleDraft}
+              onChange={(e) => setRoleDraft(e.target.value)}
+              className="h-8 font-mono text-[11px]"
+              aria-label="Font role"
+              placeholder="role (e.g. body)"
+            />
+            <Input
+              value={weightsDraft}
+              onChange={(e) => setWeightsDraft(e.target.value)}
+              className="h-8 font-mono text-[11px]"
+              aria-label="Font weights"
+              placeholder="weights (e.g. 400, 700)"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={saveFont}
+              disabled={editBusy}
+              className="rounded-md bg-foreground px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-50"
+            >
+              {editBusy ? "Saving…" : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="rounded-md border border-[color:var(--border-subtle)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div
         className="mt-5 break-words text-2xl leading-tight sm:text-3xl md:text-4xl"
@@ -1514,6 +1841,115 @@ function FontCard({ font: f }: { font: any }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function AddFontCard({
+  kitId,
+  ownerToken,
+  onAdded,
+}: {
+  kitId: string;
+  ownerToken: string;
+  onAdded?: () => void;
+}) {
+  const addFont = useServerFn(addKitFont);
+  const [open, setOpen] = useState(false);
+  const [family, setFamily] = useState("");
+  const [role, setRole] = useState("");
+  const [weights, setWeights] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function add() {
+    const fam = family.trim();
+    if (!fam) {
+      toast.error("Family is required");
+      return;
+    }
+    const cleanWeights = weights
+      .split(/[,\s]+/)
+      .map((w) => w.replace(/[^0-9]/g, ""))
+      .filter(Boolean)
+      .slice(0, 12);
+    setBusy(true);
+    try {
+      await addFont({
+        data: {
+          kitId,
+          ownerToken,
+          family: fam,
+          role: role.trim() || undefined,
+          weights: cleanWeights,
+        },
+      });
+      setOpen(false);
+      setFamily("");
+      setRole("");
+      setWeights("");
+      onAdded?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't add font");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-[color:rgba(10,10,10,0.30)] p-5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+      >
+        <Plus className="h-4 w-4" strokeWidth={1.5} />
+        Add font
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-[color:var(--border-subtle)] bg-card p-4">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Input
+          value={family}
+          onChange={(e) => setFamily(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Font family"
+          placeholder="Family (e.g. Inter)"
+        />
+        <Input
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Font role"
+          placeholder="role (e.g. body)"
+        />
+        <Input
+          value={weights}
+          onChange={(e) => setWeights(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Font weights"
+          placeholder="weights (e.g. 400, 700)"
+        />
+      </div>
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          onClick={add}
+          disabled={busy}
+          className="rounded-md bg-foreground px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-50"
+        >
+          {busy ? "Adding…" : "Add"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-md border border-[color:var(--border-subtle)] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -1665,8 +2101,7 @@ function AssetsSection({
           <div className="flex flex-wrap items-center gap-2">
             {allVariantKeys.map((k) => {
               const have = existingKinds.has(k);
-              const isBusy =
-                !busyAll && busy === sourceLogo.id && busyKinds.includes(k);
+              const isBusy = !busyAll && busy === sourceLogo.id && busyKinds.includes(k);
               return (
                 <button
                   key={k}
@@ -1704,83 +2139,100 @@ function AssetsSection({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {assets.map((a) => {
-        const rehosted = publicFor(a.storage_path);
-        const primary = rehosted ?? a.url;
-        const showChecker =
-          a.kind === "logo-mark" ||
-          a.kind === "logo-on-light" ||
-          a.kind === "logo-on-dark" ||
-          a.kind === "logo-inverted" ||
-          a.kind === "favicon" ||
-          a.kind === "logo" ||
-          a.kind === "logomark" ||
-          a.kind === "wordmark" ||
-          a.kind === "icon";
-        return (
-          <div
-            key={a.id}
-            className="group relative overflow-hidden rounded-xl border border-[color:var(--border-subtle)] bg-card shadow-[0_1px_0_rgba(10,10,10,0.04),0_8px_24px_-16px_rgba(10,10,10,0.18)]"
-          >
-            <button
-              type="button"
-              aria-label="Delete asset"
-              onClick={() => handleDelete(a.id, a.kind)}
-              disabled={deleting === a.id}
-              className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-background/85 text-foreground shadow-sm backdrop-blur-sm opacity-0 transition-all duration-150 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-[color:var(--accent)] hover:text-background disabled:opacity-50"
-            >
-              {deleting === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-            </button>
+          const rehosted = publicFor(a.storage_path);
+          const primary = rehosted ?? a.url;
+          const showChecker =
+            a.kind === "logo-mark" ||
+            a.kind === "logo-on-light" ||
+            a.kind === "logo-on-dark" ||
+            a.kind === "logo-inverted" ||
+            a.kind === "favicon" ||
+            a.kind === "logo" ||
+            a.kind === "logomark" ||
+            a.kind === "wordmark" ||
+            a.kind === "icon";
+          return (
             <div
-              className="flex h-40 items-center justify-center p-6"
-              style={{
-                background: "var(--surface)",
-                backgroundImage: showChecker
-                  ? "linear-gradient(45deg, rgba(10,10,10,0.04) 25%, transparent 25%), linear-gradient(-45deg, rgba(10,10,10,0.04) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(10,10,10,0.04) 75%), linear-gradient(-45deg, transparent 75%, rgba(10,10,10,0.04) 75%)"
-                  : undefined,
-                backgroundSize: "12px 12px",
-                backgroundPosition: "0 0, 0 6px, 6px -6px, -6px 0px",
-              }}
+              key={a.id}
+              className="group relative overflow-hidden rounded-xl border border-[color:var(--border-subtle)] bg-card shadow-[0_1px_0_rgba(10,10,10,0.04),0_8px_24px_-16px_rgba(10,10,10,0.18)]"
             >
-              <img
-                src={primary}
-                alt={a.kind}
-                className="max-h-full max-w-full object-contain"
-                style={
-                  a.kind === "favicon"
-                    ? { imageRendering: "pixelated", maxHeight: 64, maxWidth: 64 }
-                    : undefined
-                }
-                onError={(e) => {
-                  const img = e.target as HTMLImageElement;
-                  if (rehosted && img.src !== a.url) img.src = a.url;
-                  else img.style.opacity = "0.3";
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between border-t border-[color:var(--border-subtle)] p-3">
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                {a.kind}
-              </span>
-              <a
-                href={primary}
-                download
-                target="_blank"
-                rel="noreferrer"
-                className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
+              <button
+                type="button"
+                aria-label="Delete asset"
+                onClick={() => handleDelete(a.id, a.kind)}
+                disabled={deleting === a.id}
+                className="absolute right-2 top-2 z-10 grid h-7 w-7 place-items-center rounded-full bg-background/85 text-foreground shadow-sm backdrop-blur-sm opacity-0 transition-all duration-150 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-[color:var(--accent)] hover:text-background disabled:opacity-50"
               >
-                Download
-              </a>
+                {deleting === a.id ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <X className="h-3.5 w-3.5" />
+                )}
+              </button>
+              <div
+                className="flex h-40 items-center justify-center p-6"
+                style={{
+                  background: "var(--surface)",
+                  backgroundImage: showChecker
+                    ? "linear-gradient(45deg, rgba(10,10,10,0.04) 25%, transparent 25%), linear-gradient(-45deg, rgba(10,10,10,0.04) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(10,10,10,0.04) 75%), linear-gradient(-45deg, transparent 75%, rgba(10,10,10,0.04) 75%)"
+                    : undefined,
+                  backgroundSize: "12px 12px",
+                  backgroundPosition: "0 0, 0 6px, 6px -6px, -6px 0px",
+                }}
+              >
+                <img
+                  src={primary}
+                  alt={a.kind}
+                  className="max-h-full max-w-full object-contain"
+                  style={
+                    a.kind === "favicon"
+                      ? { imageRendering: "pixelated", maxHeight: 64, maxWidth: 64 }
+                      : undefined
+                  }
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    if (rehosted && img.src !== a.url) img.src = a.url;
+                    else img.style.opacity = "0.3";
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between border-t border-[color:var(--border-subtle)] p-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  {a.kind}
+                </span>
+                <a
+                  href={primary}
+                  download
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
+                >
+                  Download
+                </a>
+              </div>
             </div>
-          </div>
-        );
+          );
         })}
       </div>
     </div>
   );
 }
 
-export function TokensSection({ tokens }: { tokens: any[] }) {
-  if (!tokens.length) return <Empty label="No tokens extracted" />;
+export function TokensSection({
+  tokens,
+  kitId,
+  ownerToken,
+  isOwner,
+  onChanged,
+}: {
+  tokens: any[];
+  kitId?: string;
+  ownerToken?: string;
+  isOwner?: boolean;
+  onChanged?: () => void;
+}) {
+  const canEdit = !!(isOwner && kitId && ownerToken);
+  if (!tokens.length && !canEdit) return <Empty label="No tokens extracted" />;
   const grouped = tokens.reduce<Record<string, any[]>>((acc, t) => {
     (acc[t.category] ||= []).push(t);
     return acc;
@@ -1794,17 +2246,259 @@ export function TokensSection({ tokens }: { tokens: any[] }) {
           </h3>
           <div className="grid gap-2 sm:grid-cols-2">
             {items.map((t) => (
-              <div
+              <TokenRow
                 key={t.id}
-                className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2"
-              >
-                <span className="font-mono text-sm">{t.name}</span>
-                <span className="font-mono text-sm text-muted-foreground">{t.value}</span>
-              </div>
+                token={t}
+                kitId={kitId}
+                ownerToken={ownerToken}
+                canEdit={canEdit}
+                onChanged={onChanged}
+              />
             ))}
           </div>
         </div>
       ))}
+      {canEdit && <AddTokenCard kitId={kitId!} ownerToken={ownerToken!} onAdded={onChanged} />}
+    </div>
+  );
+}
+
+function TokenRow({
+  token: t,
+  kitId,
+  ownerToken,
+  canEdit,
+  onChanged,
+}: {
+  token: any;
+  kitId?: string;
+  ownerToken?: string;
+  canEdit?: boolean;
+  onChanged?: () => void;
+}) {
+  const updateToken = useServerFn(updateKitToken);
+  const deleteToken = useServerFn(deleteKitToken);
+  const [editing, setEditing] = useState(false);
+  const [categoryDraft, setCategoryDraft] = useState<string>(t.category ?? "");
+  const [nameDraft, setNameDraft] = useState<string>(t.name ?? "");
+  const [valueDraft, setValueDraft] = useState<string>(t.value ?? "");
+  const [editBusy, setEditBusy] = useState(false);
+
+  async function save() {
+    if (!canEdit || !kitId || !ownerToken) return;
+    if (!categoryDraft.trim() || !nameDraft.trim() || !valueDraft.trim()) {
+      toast.error("Category, name and value are all required");
+      return;
+    }
+    setEditBusy(true);
+    try {
+      await updateToken({
+        data: {
+          kitId,
+          ownerToken,
+          tokenId: t.id,
+          category: categoryDraft.trim(),
+          name: nameDraft.trim(),
+          value: valueDraft.trim(),
+        },
+      });
+      setEditing(false);
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't save token");
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
+  async function remove() {
+    if (!canEdit || !kitId || !ownerToken) return;
+    if (!confirm(`Delete token "${t.name}"?`)) return;
+    setEditBusy(true);
+    try {
+      await deleteToken({ data: { kitId, ownerToken, tokenId: t.id } });
+      onChanged?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't delete token");
+    } finally {
+      setEditBusy(false);
+    }
+  }
+
+  if (editing) {
+    return (
+      <div className="col-span-full space-y-2 rounded-lg border border-border bg-background p-3">
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Input
+            value={categoryDraft}
+            onChange={(e) => setCategoryDraft(e.target.value)}
+            className="h-8 font-mono text-[11px]"
+            aria-label="Token category"
+            placeholder="category"
+          />
+          <Input
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            className="h-8 font-mono text-[11px]"
+            aria-label="Token name"
+            placeholder="name"
+          />
+          <Input
+            value={valueDraft}
+            onChange={(e) => setValueDraft(e.target.value)}
+            className="h-8 font-mono text-[11px]"
+            aria-label="Token value"
+            placeholder="value"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={save}
+            disabled={editBusy}
+            className="rounded-md bg-foreground px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-50"
+          >
+            {editBusy ? "Saving…" : "Save"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="rounded-md border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2">
+      <span className="min-w-0 truncate font-mono text-sm">{t.name}</span>
+      <span className="shrink-0 font-mono text-sm text-muted-foreground">{t.value}</span>
+      {canEdit && (
+        <span className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            aria-label={`Edit token ${t.name}`}
+            className="grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-foreground hover:text-background"
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            onClick={remove}
+            aria-label={`Delete token ${t.name}`}
+            className="grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-[color:var(--accent)] hover:text-background"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </span>
+      )}
+    </div>
+  );
+}
+
+function AddTokenCard({
+  kitId,
+  ownerToken,
+  onAdded,
+}: {
+  kitId: string;
+  ownerToken: string;
+  onAdded?: () => void;
+}) {
+  const addToken = useServerFn(addKitToken);
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState("");
+  const [name, setName] = useState("");
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function add() {
+    if (!category.trim() || !name.trim() || !value.trim()) {
+      toast.error("Category, name and value are all required");
+      return;
+    }
+    setBusy(true);
+    try {
+      await addToken({
+        data: {
+          kitId,
+          ownerToken,
+          category: category.trim(),
+          name: name.trim(),
+          value: value.trim(),
+        },
+      });
+      setOpen(false);
+      setCategory("");
+      setName("");
+      setValue("");
+      onAdded?.();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't add token");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[color:rgba(10,10,10,0.30)] p-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+      >
+        <Plus className="h-4 w-4" strokeWidth={1.5} />
+        Add token
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4">
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Input
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Token category"
+          placeholder="category (e.g. spacing)"
+        />
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Token name"
+          placeholder="name (e.g. space-md)"
+        />
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="h-8 font-mono text-[11px]"
+          aria-label="Token value"
+          placeholder="value (e.g. 16px)"
+        />
+      </div>
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          onClick={add}
+          disabled={busy}
+          className="rounded-md bg-foreground px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-background hover:opacity-90 disabled:opacity-50"
+        >
+          {busy ? "Adding…" : "Add"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-md border border-border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -1894,7 +2588,9 @@ export function VoiceSection({ voice, kitId }: { voice: any; kitId: string }) {
 
 function SampleCopyGenerator({ kitId }: { kitId: string }) {
   const gen = useServerFn(generateSampleCopy);
-  const [kind, setKind] = useState<"headline" | "cta" | "slide_title" | "email_intro" | "social_post">("headline");
+  const [kind, setKind] = useState<
+    "headline" | "cta" | "slide_title" | "email_intro" | "social_post"
+  >("headline");
   const [topic, setTopic] = useState("");
   const [output, setOutput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -2100,17 +2796,37 @@ function ExportSection(props: {
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ExportBlock title="Design tokens (W3C JSON)" content={tokensJson} filename={`${base}-tokens.json`} />
-        <ExportBlock title="Tailwind v4 theme" content={tailwind} filename={`${base}-tailwind.css`} />
+        <ExportBlock
+          title="Design tokens (W3C JSON)"
+          content={tokensJson}
+          filename={`${base}-tokens.json`}
+        />
+        <ExportBlock
+          title="Tailwind v4 theme"
+          content={tailwind}
+          filename={`${base}-tailwind.css`}
+        />
         <ExportBlock title="CSS variables" content={css} filename={`${base}.css`} />
-        <ExportBlock title="Tokens Studio (Figma)" content={studio} filename={`${base}-tokens-studio.json`} />
+        <ExportBlock
+          title="Tokens Studio (Figma)"
+          content={studio}
+          filename={`${base}-tokens-studio.json`}
+        />
         <ExportBlock title="Brand voice (.md)" content={voiceMd} filename={`${base}-voice.md`} />
       </div>
     </div>
   );
 }
 
-function ExportBlock({ title, content, filename }: { title: string; content: string; filename: string }) {
+function ExportBlock({
+  title,
+  content,
+  filename,
+}: {
+  title: string;
+  content: string;
+  filename: string;
+}) {
   function download() {
     const blob = new Blob([content], { type: "text/plain" });
     downloadBlob(blob, filename);
@@ -2128,11 +2844,12 @@ function ExportBlock({ title, content, filename }: { title: string; content: str
           </Button>
         </div>
       </div>
-      <pre className="max-h-80 overflow-auto whitespace-pre rounded-lg bg-surface p-3 font-mono text-[11px] leading-relaxed sm:text-xs">{content}</pre>
+      <pre className="max-h-80 overflow-auto whitespace-pre rounded-lg bg-surface p-3 font-mono text-[11px] leading-relaxed sm:text-xs">
+        {content}
+      </pre>
     </div>
   );
 }
-
 
 function Empty({ label }: { label: string }) {
   return (
@@ -2265,7 +2982,7 @@ function FailurePanel({
             >
               {line.mono}
             </p>
-          )
+          ),
         )}
       </div>
 
@@ -2274,7 +2991,7 @@ function FailurePanel({
         const status = details?.status ?? null;
         const message = details?.message ?? null;
         if (!code && status == null && !message) return null;
-        const causeText = code ? CAUSE_LABELS[code] ?? "Cause unknown" : null;
+        const causeText = code ? (CAUSE_LABELS[code] ?? "Cause unknown") : null;
         return (
           <details
             style={{
@@ -2295,11 +3012,19 @@ function FailurePanel({
                 transition: "opacity 150ms ease",
                 userSelect: "none",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.6"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.6";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
-              <span className="fp-marker fp-marker-closed" style={{ marginRight: 12 }}>[ + ]</span>
-              <span className="fp-marker fp-marker-open" style={{ marginRight: 12 }}>[ − ]</span>
+              <span className="fp-marker fp-marker-closed" style={{ marginRight: 12 }}>
+                [ + ]
+              </span>
+              <span className="fp-marker fp-marker-open" style={{ marginRight: 12 }}>
+                [ − ]
+              </span>
               What happened
             </summary>
             <div
@@ -2316,19 +3041,46 @@ function FailurePanel({
             >
               {causeText && (
                 <>
-                  <span style={{ opacity: 0.6, letterSpacing: "0.18em", textTransform: "uppercase", fontSize: 12 }}>Cause</span>
+                  <span
+                    style={{
+                      opacity: 0.6,
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      fontSize: 12,
+                    }}
+                  >
+                    Cause
+                  </span>
                   <span style={{ wordBreak: "break-word" }}>{causeText}</span>
                 </>
               )}
               {status != null && (
                 <>
-                  <span style={{ opacity: 0.6, letterSpacing: "0.18em", textTransform: "uppercase", fontSize: 12 }}>Status</span>
+                  <span
+                    style={{
+                      opacity: 0.6,
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      fontSize: 12,
+                    }}
+                  >
+                    Status
+                  </span>
                   <span>{status}</span>
                 </>
               )}
               {message && (
                 <>
-                  <span style={{ opacity: 0.6, letterSpacing: "0.18em", textTransform: "uppercase", fontSize: 12 }}>Message</span>
+                  <span
+                    style={{
+                      opacity: 0.6,
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      fontSize: 12,
+                    }}
+                  >
+                    Message
+                  </span>
                   <span style={{ wordBreak: "break-word" }}>{message}</span>
                 </>
               )}
@@ -2381,8 +3133,12 @@ function FailurePanel({
               outline: "none",
               transition: "border-color 150ms ease",
             }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = ink; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = hair; }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = ink;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = hair;
+            }}
           />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 16 }}>
             <button
@@ -2431,8 +3187,12 @@ function FailurePanel({
                 opacity: urlEditor.busy ? 0.5 : 1,
                 transition: "border-color 150ms ease",
               }}
-              onMouseEnter={(e) => { if (!urlEditor.busy) e.currentTarget.style.borderColor = ink; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = hair; }}
+              onMouseEnter={(e) => {
+                if (!urlEditor.busy) e.currentTarget.style.borderColor = ink;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = hair;
+              }}
             >
               [ CANCEL ]
             </button>
@@ -2507,8 +3267,12 @@ function FailurePanel({
               cursor: "pointer",
               transition: "border-color 150ms ease",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = ink; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = hair; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = ink;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = hair;
+            }}
           >
             {secondaryLabel}
           </button>
