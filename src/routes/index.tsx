@@ -33,7 +33,9 @@ function Landing() {
 
       <div className="page">
         <nav className="nav">
-          <Link to="/" className="brand">Brand Kit</Link>
+          <Link to="/" className="brand">
+            Brand Kit
+          </Link>
           <div className="nav-center">
             <StartHereButton />
           </div>

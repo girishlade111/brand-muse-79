@@ -11,17 +11,17 @@ The Start Here page must feel like it shipped with the template, not bolted on. 
 
 ## 2. Inherit, don't invent
 
-| Property | Where to source from |
-|---|---|
-| Background color | Home page body / `--background` token |
-| Body text color | `--foreground` token |
-| Display font | Home page H1 font-family |
-| Body font | Home page paragraph font-family |
-| Mono / UI font | Home page eyebrow or button font-family |
-| Accent color | Existing CTA color (e.g. `--primary`, `--hanko`) |
-| Border radius | Existing button / input radius (pill, 8px, 16px, etc.) |
-| Eyebrow style | Existing eyebrow markup verbatim (`// 01 — section`, `01.`, etc.) |
-| Divider style | Hairline rule, blank space, or whatever sections use on home |
+| Property         | Where to source from                                              |
+| ---------------- | ----------------------------------------------------------------- |
+| Background color | Home page body / `--background` token                             |
+| Body text color  | `--foreground` token                                              |
+| Display font     | Home page H1 font-family                                          |
+| Body font        | Home page paragraph font-family                                   |
+| Mono / UI font   | Home page eyebrow or button font-family                           |
+| Accent color     | Existing CTA color (e.g. `--primary`, `--hanko`)                  |
+| Border radius    | Existing button / input radius (pill, 8px, 16px, etc.)            |
+| Eyebrow style    | Existing eyebrow markup verbatim (`// 01 — section`, `01.`, etc.) |
+| Divider style    | Hairline rule, blank space, or whatever sections use on home      |
 
 If a project doesn't define a token, leave the property unset rather than inventing one.
 
@@ -37,6 +37,7 @@ Read the home headline and primary CTA. Match:
 ## 4. Connectors visual
 
 Each connector card uses:
+
 - The project's surface color (one shade off background)
 - The project's hairline border
 - The connector's brand color as a tiny accent only (mark background, ~36px square) — never as the card's main color

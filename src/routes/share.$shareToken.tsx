@@ -81,7 +81,9 @@ function SharedKitPage() {
               <div key={c.id} className="overflow-hidden rounded-xl border border-border bg-card">
                 <div className="h-28" style={{ background: c.hex }} />
                 <div className="p-4">
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{c.role}</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {c.role}
+                  </div>
                   <div className="font-medium">{c.name}</div>
                   <div className="font-mono text-sm">{c.hex}</div>
                 </div>
@@ -99,11 +101,15 @@ function SharedKitPage() {
             <div className="grid gap-4">
               {data.fonts.map((f: any) => (
                 <div key={f.id} className="rounded-xl border border-border bg-card p-6">
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{f.role}</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {f.role}
+                  </div>
                   <div className="text-2xl font-semibold">{f.family}</div>
                   <div
                     className="mt-3 text-3xl"
-                    style={{ fontFamily: `"${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"}` }}
+                    style={{
+                      fontFamily: `"${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"}`,
+                    }}
                   >
                     The quick brown fox jumps over the lazy dog
                   </div>
@@ -123,7 +129,11 @@ function SharedKitPage() {
               {data.assets.map((a: any) => (
                 <div key={a.id} className="overflow-hidden rounded-xl border border-border bg-card">
                   <div className="flex h-40 items-center justify-center bg-surface p-6">
-                    <img src={a.url} alt={a.kind} className="max-h-full max-w-full object-contain" />
+                    <img
+                      src={a.url}
+                      alt={a.kind}
+                      className="max-h-full max-w-full object-contain"
+                    />
                   </div>
                   <div className="border-t border-border p-3 text-xs uppercase tracking-wider text-muted-foreground">
                     {a.kind}

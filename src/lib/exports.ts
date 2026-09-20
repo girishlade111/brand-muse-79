@@ -41,7 +41,10 @@ type Voice = {
 } | null;
 
 export function slug(s: string) {
-  return String(s || "kit").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return String(s || "kit")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 // W3C Design Tokens JSON
@@ -72,9 +75,13 @@ export function buildCSS(p: { colors: Color[]; fonts: Font[]; tokens: Token[] })
 
 // Tailwind v4 @theme block
 export function buildTailwindTheme(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }) {
-  const lines = ["@import \"tailwindcss\";", "", "@theme {"];
+  const lines = ['@import "tailwindcss";', "", "@theme {"];
   p.colors.forEach((c) => lines.push(`  --color-${c.role || slug(c.name || c.hex)}: ${c.hex};`));
-  p.fonts.forEach((f) => lines.push(`  --font-${f.role || slug(f.family)}: "${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"};`));
+  p.fonts.forEach((f) =>
+    lines.push(
+      `  --font-${f.role || slug(f.family)}: "${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"};`,
+    ),
+  );
   p.tokens.forEach((t) => {
     if (t.category === "radius") lines.push(`  --radius-${slug(t.name)}: ${t.value};`);
     else if (t.category === "spacing") lines.push(`  --spacing-${slug(t.name)}: ${t.value};`);
@@ -182,7 +189,10 @@ export function buildDesignMarkdown(args: {
       r >= 7 ? "AAA ✅" : r >= 4.5 ? "AA ✅" : r >= 3 ? "AA Large ⚠️" : "FAIL ❌";
 
     L.push("**Pairing matrix** (foreground × background)", "");
-    L.push("| Foreground | Background | Ratio | Verdict | Allowed for |", "| --- | --- | --- | --- | --- |");
+    L.push(
+      "| Foreground | Background | Ratio | Verdict | Allowed for |",
+      "| --- | --- | --- | --- | --- |",
+    );
     for (const fg of palette) {
       for (const bg of palette) {
         if (fg.hex.toLowerCase() === bg.hex.toLowerCase()) continue;
@@ -221,7 +231,7 @@ export function buildDesignMarkdown(args: {
       // Dedupe symmetric pairs (a→b == b→a for ratio), keep one direction.
       const seen = new Set<string>();
       const unique = forbidden.filter((line) => {
-        const m = line.match(/`([^`]+)`[^`]*\`([^`]+)`/);
+        const m = line.match(/`([^`]+)`[^`]*`([^`]+)`/);
         if (!m) return true;
         const key = [m[1], m[2]].sort().join("|");
         if (seen.has(key)) return false;
@@ -291,7 +301,7 @@ export function buildDesignMarkdown(args: {
   L.push("## 04. Tokens", "");
   if (args.tokens.length) {
     const grouped: Record<string, Token[]> = {};
-    args.tokens.forEach((t) => ((grouped[t.category] ||= []).push(t)));
+    args.tokens.forEach((t) => (grouped[t.category] ||= []).push(t));
     for (const [cat, items] of Object.entries(grouped)) {
       L.push(`### ${cat}`, "");
       L.push("| Name | Value |", "| --- | --- |");
@@ -323,7 +333,9 @@ export function buildVoiceMarkdown(name: string, voice: Voice) {
   if (voice.summary) lines.push(voice.summary, "");
   if (voice.tone?.length) {
     lines.push("## Tone", "");
-    voice.tone.forEach((t: any) => lines.push(`- ${t.label}${t.confidence ? ` (${Math.round(t.confidence * 100)}%)` : ""}`));
+    voice.tone.forEach((t: any) =>
+      lines.push(`- ${t.label}${t.confidence ? ` (${Math.round(t.confidence * 100)}%)` : ""}`),
+    );
     lines.push("");
   }
   if (voice.vocabulary?.length) {
@@ -349,7 +361,9 @@ export function buildVoiceMarkdown(name: string, voice: Voice) {
 }
 
 // PDF brand guide
-async function fetchGoogleFontBase64(family: string): Promise<{ regular?: string; bold?: string } | null> {
+async function fetchGoogleFontBase64(
+  family: string,
+): Promise<{ regular?: string; bold?: string } | null> {
   try {
     const familySlug = slug(family);
     const meta = await fetch(`https://gwfh.mranftl.com/api/fonts/${familySlug}?subsets=latin`);
@@ -375,9 +389,7 @@ async function fetchGoogleFontBase64(family: string): Promise<{ regular?: string
       (v) => v.fontStyle === "normal",
       () => true,
     ]);
-    const bold = await pick([
-      (v) => v.fontWeight === "700" || v.fontWeight === "bold",
-    ]);
+    const bold = await pick([(v) => v.fontWeight === "700" || v.fontWeight === "bold"]);
     return { regular, bold };
   } catch {
     return null;
@@ -393,8 +405,8 @@ export async function buildBrandPDF(args: {
 }): Promise<Blob> {
   // Editorial brand guide. A4 portrait. Washi paper / sumi ink / hanko red accent.
   const doc = new jsPDF({ unit: "pt", format: "a4" });
-  const pageW = doc.internal.pageSize.getWidth();   // 595.28
-  const pageH = doc.internal.pageSize.getHeight();  // 841.89
+  const pageW = doc.internal.pageSize.getWidth(); // 595.28
+  const pageH = doc.internal.pageSize.getHeight(); // 841.89
   const M = 56; // outer margin
   const colW = pageW - M * 2;
 
@@ -430,9 +442,12 @@ export async function buildBrandPDF(args: {
   };
 
   const nonMono = args.fonts.filter((f) => f.role !== "mono");
-  const brandHeading = nonMono.find((f) => f.role === "heading" || f.role === "display") ?? nonMono[0];
+  const brandHeading =
+    nonMono.find((f) => f.role === "heading" || f.role === "display") ?? nonMono[0];
   const brandBody =
-    nonMono.find((f) => f.role === "body") ?? nonMono.find((f) => f !== brandHeading) ?? brandHeading;
+    nonMono.find((f) => f.role === "body") ??
+    nonMono.find((f) => f !== brandHeading) ??
+    brandHeading;
 
   // Frame fonts (project aesthetic)
   const frameDisplayName = "Cormorant Garamond";
@@ -440,8 +455,9 @@ export async function buildBrandPDF(args: {
   const frameMonoName = "Courier Prime";
 
   const wantedFrame = [frameDisplayName, frameBodyName, frameMonoName];
-  const brandFamilies = [brandHeading?.family, brandBody?.family]
-    .filter((f): f is string => !!f && f.length > 0 && !wantedFrame.includes(f));
+  const brandFamilies = [brandHeading?.family, brandBody?.family].filter(
+    (f): f is string => !!f && f.length > 0 && !wantedFrame.includes(f),
+  );
   const uniqueFamilies = Array.from(new Set([...wantedFrame, ...brandFamilies]));
   const registered: Record<string, { ok: boolean; bold: boolean }> = {};
   await Promise.all(
@@ -464,8 +480,18 @@ export async function buildBrandPDF(args: {
 
   const hexToRgb = (hex: string): [number, number, number] => {
     const h = hex.replace("#", "").trim();
-    const v = h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
-    return [parseInt(v.slice(0, 2), 16) || 0, parseInt(v.slice(2, 4), 16) || 0, parseInt(v.slice(4, 6), 16) || 0];
+    const v =
+      h.length === 3
+        ? h
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : h.padEnd(6, "0");
+    return [
+      parseInt(v.slice(0, 2), 16) || 0,
+      parseInt(v.slice(2, 4), 16) || 0,
+      parseInt(v.slice(4, 6), 16) || 0,
+    ];
   };
   const paintWashi = () => {
     setRGB("fill", WASHI);
@@ -524,7 +550,8 @@ export async function buildBrandPDF(args: {
     s = s.replace(/^["'`]+|["'`]+$/g, "");
     s = s.replace(/\s+(Variable|VF|Subset|Latin)$/i, "");
     s = s.replace(/\s+/g, " ").trim();
-    if (!s || /^(serif|sans-serif|monospace|system-ui|ui-[a-z-]+)$/i.test(s)) return "System Default";
+    if (!s || /^(serif|sans-serif|monospace|system-ui|ui-[a-z-]+)$/i.test(s))
+      return "System Default";
     return s.replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
@@ -535,7 +562,12 @@ export async function buildBrandPDF(args: {
     y += 18;
   };
 
-  const body = (text: string, size = 10.5, lineH = 1.55, color: [number, number, number] = INK_SOFT) => {
+  const body = (
+    text: string,
+    size = 10.5,
+    lineH = 1.55,
+    color: [number, number, number] = INK_SOFT,
+  ) => {
     setRGB("text", color);
     doc.setFont(FRAME_BODY, "normal");
     doc.setFontSize(size);
@@ -700,7 +732,8 @@ export async function buildBrandPDF(args: {
     const pairs: Pair[] = [];
     for (let i = 0; i < stops.length; i++) {
       for (let j = i + 1; j < stops.length; j++) {
-        const a = stops[i], b = stops[j];
+        const a = stops[i],
+          b = stops[j];
         if (a.hex === b.hex) continue;
         const key = [a.hex, b.hex].sort().join("|");
         if (seen.has(key)) continue;
@@ -761,7 +794,12 @@ export async function buildBrandPDF(args: {
       doc.text(`${fg.hex} / ${bg.hex}`, mx, my + 12);
     };
 
-    const renderGroup = (title: string, sub: string, list: Pair[], accent: [number, number, number]) => {
+    const renderGroup = (
+      title: string,
+      sub: string,
+      list: Pair[],
+      accent: [number, number, number],
+    ) => {
       ensure(40);
       // Group header bar
       setRGB("text", accent);
@@ -794,18 +832,8 @@ export async function buildBrandPDF(args: {
       y += cardH + 22;
     };
 
-    renderGroup(
-      "Do — use these",
-      "AA and above (≥ 4.5 : 1)",
-      doPairs,
-      [40, 90, 50],
-    );
-    renderGroup(
-      "Don't — avoid for text & UI",
-      "Below AA (< 4.5 : 1)",
-      dontPairs,
-      HANKO,
-    );
+    renderGroup("Do — use these", "AA and above (≥ 4.5 : 1)", doPairs, [40, 90, 50]);
+    renderGroup("Don't — avoid for text & UI", "Below AA (< 4.5 : 1)", dontPairs, HANKO);
 
     // Closing rule for AI/designers.
     ensure(60);
@@ -908,7 +936,7 @@ export async function buildBrandPDF(args: {
     y += 6;
 
     const grouped: Record<string, Token[]> = {};
-    args.tokens.forEach((t) => ((grouped[t.category] ||= []).push(t)));
+    args.tokens.forEach((t) => (grouped[t.category] ||= []).push(t));
     Object.entries(grouped).forEach(([cat, items]) => {
       ensure(40);
       label(cat);
@@ -1062,9 +1090,14 @@ export async function buildBrandPDF(args: {
     doc.setFont(FRAME_MONO, "normal");
     doc.setFontSize(7.5);
     doc.text(`${args.name.toUpperCase()} — BRAND GUIDELINES`, M, M + 18);
-    doc.text(`P. ${String(p).padStart(2, "0")} / ${String(total).padStart(2, "0")}`, pageW - M, M + 18, {
-      align: "right",
-    });
+    doc.text(
+      `P. ${String(p).padStart(2, "0")} / ${String(total).padStart(2, "0")}`,
+      pageW - M,
+      M + 18,
+      {
+        align: "right",
+      },
+    );
     // bottom hairline + footer
     doc.line(M, pageH - M - 18, pageW - M, pageH - M - 18);
     doc.text("EDITION 01", M, pageH - M - 6);
@@ -1139,10 +1172,7 @@ export async function buildKitZip(args: {
           const pre = preFetched.get(a.url);
           if (pre?.base64) {
             const ext = guessAssetExt(pre.contentType, a.url);
-            assetsFolder.file(
-              `${i + 1}-${slug(a.kind)}.${ext}`,
-              base64ToUint8(pre.base64),
-            );
+            assetsFolder.file(`${i + 1}-${slug(a.kind)}.${ext}`, base64ToUint8(pre.base64));
             return;
           }
           const res = await fetch(a.url);
@@ -1191,9 +1221,7 @@ function guessAssetExt(contentType?: string, url?: string): string {
   if (ct.includes("avif")) return "avif";
   if (ct.includes("gif")) return "gif";
   if (ct.includes("ico") || ct.includes("icon")) return "ico";
-  const m = (url ?? "")
-    .toLowerCase()
-    .match(/\.(svg|png|jpg|jpeg|webp|avif|gif|ico)(\?|#|$)/);
+  const m = (url ?? "").toLowerCase().match(/\.(svg|png|jpg|jpeg|webp|avif|gif|ico)(\?|#|$)/);
   if (m) return m[1] === "jpeg" ? "jpg" : m[1];
   return "img";
 }
@@ -1226,7 +1254,8 @@ export function buildFontsReadme(fonts: Font[]): string {
     if (f.license_note) lines.push(`- Note: ${f.license_note}`);
     if (f.provider_url) lines.push(`- Source: <${f.provider_url}>`);
     if (f.file_urls?.length) {
-      const bundled = f.license === "open" ? "Bundled in `/fonts/`." : "Files NOT bundled (license restricted).";
+      const bundled =
+        f.license === "open" ? "Bundled in `/fonts/`." : "Files NOT bundled (license restricted).";
       lines.push(`- Files: ${f.file_urls.length} detected. ${bundled}`);
     }
     lines.push("");
@@ -1314,7 +1343,7 @@ export function buildDesignInstructionsMarkdown(args: {
   if (tokens.length) {
     L.push("## Design tokens", "");
     const grouped: Record<string, Token[]> = {};
-    tokens.forEach((t) => ((grouped[t.category] ||= []).push(t)));
+    tokens.forEach((t) => (grouped[t.category] ||= []).push(t));
     Object.entries(grouped).forEach(([cat, items]) => {
       L.push(`### ${cat}`, "", "| Name | Value |", "| --- | --- |");
       items.forEach((t) => L.push(`| \`${t.name}\` | \`${t.value}\` |`));

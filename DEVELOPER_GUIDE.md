@@ -34,6 +34,7 @@ Welcome to the **Brand DNA / Brand Muse** developer manual. This document provid
 ## System Requirements & Prerequisites
 
 Before setting up the repository locally, ensure your machine has:
+
 - **Node.js**: `v20.x` or higher (LTS recommended)
 - **Bun**: `v1.1+` (recommended for ultra-fast package management and local script execution)
 - **npm** or **pnpm**
@@ -45,12 +46,14 @@ Before setting up the repository locally, ensure your machine has:
 ## Quick Start: Local Environment Setup
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/girishlade111/brand-muse-79.git
    cd brand-muse-79
    ```
 
 2. **Install dependencies**:
+
    ```bash
    # Using npm
    npm install
@@ -61,9 +64,11 @@ Before setting up the repository locally, ensure your machine has:
 
 3. **Configure Environment Variables**:
    Copy the example `.env` file:
+
    ```bash
    cp .env.example .env
    ```
+
    Open `.env` in your editor and configure your Supabase and AI keys (refer to [ENVIRONMENT_AND_CONFIGURATION.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/ENVIRONMENT_AND_CONFIGURATION.md) for variable definitions).
 
 4. **Launch the Development Server**:
@@ -151,6 +156,7 @@ Brand DNA adopts **TanStack Start**, bringing type-safe full-stack capabilities 
    Routes defined under `src/routes/` are automatically scanned by `@tanstack/router-plugin`, which continuously updates `src/routeTree.gen.ts`.
 2. **Server Functions (`createServerFn`)**:
    Backend RPC methods are defined using `createServerFn` from `@tanstack/react-start`:
+
    ```typescript
    import { createServerFn } from "@tanstack/react-start";
    import { z } from "zod";
@@ -164,6 +170,7 @@ Brand DNA adopts **TanStack Start**, bringing type-safe full-stack capabilities 
        return result;
      });
    ```
+
 3. **Server Function Invocations**:
    On the client, server functions are consumed using `useServerFn`:
    ```typescript
@@ -176,6 +183,7 @@ Brand DNA adopts **TanStack Start**, bringing type-safe full-stack capabilities 
 ### Client vs. Server Boundary Rules
 
 To ensure server secrets never leak into browser bundles and avoid build crashes:
+
 1. **Never Import `.server.ts` Files into Components or Routes**:
    Files named `*.server.ts` (e.g. `src/server/ai.server.ts`, `src/server/supabase-admin.server.ts`) contain Node.js or secret credentials.
 2. **Use Dynamic Imports Inside Server Handlers**:
@@ -187,17 +195,17 @@ To ensure server secrets never leak into browser bundles and avoid build crashes
 
 ## Route Architecture & File-Based Routing
 
-| Route | File Path | Type | Purpose |
-|---|---|---|---|
-| `/` | `src/routes/index.tsx` | Dynamic | Homepage with hero section, ingestion bar (URL/PDF/Upload), and recent kits archive. |
-| `/kit/$kitId` | `src/routes/kit.$kitId.tsx` | Dynamic | Master Workbench for inspecting colors, typography, logos, design tokens, voice, and exports. |
-| `/build` | `src/routes/build.tsx` | Dynamic | Hand-builder page for uploading custom assets and manually defining tokens. |
-| `/library` | `src/routes/library.tsx` | Dynamic | Collection of saved brand kits with search and filter capabilities. |
-| `/design` | `src/routes/design.tsx` | Static / SSR | Live documentation view of `DESIGN.md` (The Invisible Instrument design system). |
-| `/design/history` | `src/routes/design.history.tsx` | Dynamic | Historical log of design system changes. |
-| `/design/history/diff` | `src/routes/design.history.diff.tsx` | Dynamic | Side-by-side visual diff viewer between design system revisions. |
-| `/share/$shareToken` | `src/routes/share.$shareToken.tsx` | Public | Read-only presentation view for sharing kits with clients. |
-| `/start-here` | `src/routes/start-here.tsx` | Static / SSR | Interactive onboarding guide explaining features and connectors. |
+| Route                  | File Path                            | Type         | Purpose                                                                                       |
+| ---------------------- | ------------------------------------ | ------------ | --------------------------------------------------------------------------------------------- |
+| `/`                    | `src/routes/index.tsx`               | Dynamic      | Homepage with hero section, ingestion bar (URL/PDF/Upload), and recent kits archive.          |
+| `/kit/$kitId`          | `src/routes/kit.$kitId.tsx`          | Dynamic      | Master Workbench for inspecting colors, typography, logos, design tokens, voice, and exports. |
+| `/build`               | `src/routes/build.tsx`               | Dynamic      | Hand-builder page for uploading custom assets and manually defining tokens.                   |
+| `/library`             | `src/routes/library.tsx`             | Dynamic      | Collection of saved brand kits with search and filter capabilities.                           |
+| `/design`              | `src/routes/design.tsx`              | Static / SSR | Live documentation view of `DESIGN.md` (The Invisible Instrument design system).              |
+| `/design/history`      | `src/routes/design.history.tsx`      | Dynamic      | Historical log of design system changes.                                                      |
+| `/design/history/diff` | `src/routes/design.history.diff.tsx` | Dynamic      | Side-by-side visual diff viewer between design system revisions.                              |
+| `/share/$shareToken`   | `src/routes/share.$shareToken.tsx`   | Public       | Read-only presentation view for sharing kits with clients.                                    |
+| `/start-here`          | `src/routes/start-here.tsx`          | Static / SSR | Interactive onboarding guide explaining features and connectors.                              |
 
 ---
 
@@ -272,6 +280,7 @@ Located in `src/lib/exports.ts`:
 Brand DNA uses **Vitest** for fast, isolated unit and function tests.
 
 Run tests:
+
 ```bash
 npm run test
 ```
@@ -283,15 +292,18 @@ Vitest watches files during development or executes single runs in CI.
 ### End-to-End Testing (Playwright)
 
 Full user journey and browser automation testing is powered by **Playwright**:
+
 - Test directory: `e2e/`
 - Configuration: [playwright.config.ts](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/playwright.config.ts)
 
 Run end-to-end tests:
+
 ```bash
 npm run test:e2e
 ```
 
 To run tests with a visible browser:
+
 ```bash
 npx playwright test --headed
 ```
@@ -303,9 +315,11 @@ npx playwright test --headed
 File: [scripts/check-await-build-brand-pdf.mjs](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/scripts/check-await-build-brand-pdf.mjs)
 
 #### Why It Exists:
+
 The export function `buildBrandPDF(kit)` is asynchronous and returns `Promise<Blob>`. If a developer calls `buildBrandPDF` without an `await`, JavaScript passes the unfulfilled Promise object into `JSZip` or `downloadBlob`. This causes silent export corruption where users download corrupted 0-byte PDFs.
 
 #### How It Works:
+
 This custom script is executed automatically as part of `npm run lint`. It recursively traverses `src/`, strips comments and string literals, finds all occurrences of `buildBrandPDF(`, and lexically verifies that each call is preceded by `await` (or wrapped in `await Promise.all(...)`).
 
 If any unawaited call is detected, the build immediately halts with an exit code of `1` and outputs the exact file, line, and column:
@@ -326,11 +340,13 @@ If any unawaited call is detected, the build immediately halts with an exit code
 ### Linting and Formatting
 
 Run the linter and custom scripts:
+
 ```bash
 npm run lint
 ```
 
 Format the entire codebase with Prettier:
+
 ```bash
 npm run format
 ```
@@ -343,12 +359,14 @@ All database schema changes are tracked in `supabase/migrations/`:
 
 1. **Create a Migration**:
    Create a timestamped `.sql` file in `supabase/migrations/`:
+
    ```sql
    -- Example: 20260920120000_add_custom_field.sql
    ALTER TABLE public.brand_kits ADD COLUMN IF NOT EXISTS notes text;
    ```
 
 2. **Push Migrations to Remote Supabase**:
+
    ```bash
    npx supabase db push
    ```
@@ -366,6 +384,7 @@ All database schema changes are tracked in `supabase/migrations/`:
 ### Building for Production
 
 Compile client assets and server functions:
+
 ```bash
 npm run build
 ```
@@ -389,9 +408,11 @@ Wrangler uses the settings in [wrangler.jsonc](file:///c:/Users/Girish%20Lade/On
 ### Memory & Stack Size Tuning
 
 For systems encountering Node.js stack overflow errors during large TypeScript / Vite builds, use the dedicated memory-allocated script:
+
 ```bash
 npm run build:dev
 ```
+
 This runs Vite with `node --stack-size=16000`.
 
 ---

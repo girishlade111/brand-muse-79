@@ -4,11 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { SiteHeader } from "@/components/site-header";
 import { diffDesignVersions } from "@/lib/design-doc.functions";
-import {
-  summarizeDiff,
-  type DesignDocDiff,
-  type DesignDocFieldDiff,
-} from "@/lib/design-doc";
+import { summarizeDiff, type DesignDocDiff, type DesignDocFieldDiff } from "@/lib/design-doc";
 
 const searchSchema = z.object({
   a: z.string().uuid(),
@@ -68,9 +64,10 @@ function DiffPage() {
               }}
             >
               {data
-                ? `v${String(data.a.version).padStart(2, "0")} → v${String(
-                    data.b.version,
-                  ).padStart(2, "0")}`
+                ? `v${String(data.a.version).padStart(2, "0")} → v${String(data.b.version).padStart(
+                    2,
+                    "0",
+                  )}`
                 : "—"}
             </h1>
           </div>
@@ -158,7 +155,10 @@ function DiffRow({ entry }: { entry: DesignDocFieldDiff }) {
         {gutterMap[entry.kind]}
       </span>
       <span className={monoCell + " break-words"}>{entry.key}</span>
-      <span className={monoCell + " break-words"} style={{ color: "var(--muted, rgba(10,10,10,0.6))" }}>
+      <span
+        className={monoCell + " break-words"}
+        style={{ color: "var(--muted, rgba(10,10,10,0.6))" }}
+      >
         {entry.kind === "changed" ? (
           <>
             {entry.from} <span style={{ color: "var(--accent)" }}>→</span> {entry.to}

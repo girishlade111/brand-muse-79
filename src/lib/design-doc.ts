@@ -109,14 +109,12 @@ function parseVoice(section: string | undefined): ParsedDesignDoc["voice"] {
     const line = raw.trim();
     if (!line.startsWith("-")) continue;
     const m = line.match(
-      /^-\s*(?:\*\*)?([A-Za-z0-9 .\/+\-]+?)(?:\*\*)?\s*[:\-—]\s*[`"“'](.+?)[`"”']/
+      /^-\s*(?:\*\*)?([A-Za-z0-9 ./+-]+?)(?:\*\*)?\s*[:\-—]\s*[`"“'](.+?)[`"”']/,
     );
     if (m) out.lockedLines[m[1].trim()] = m[2].trim();
   }
   // Forbidden words: look for a line containing "forbidden" then collect comma-separated words on same/next lines, or bullets after.
-  const forbiddenIdx = section
-    .split("\n")
-    .findIndex((l) => /forbidden/i.test(l));
+  const forbiddenIdx = section.split("\n").findIndex((l) => /forbidden/i.test(l));
   if (forbiddenIdx >= 0) {
     const sub = section.split("\n").slice(forbiddenIdx).join("\n");
     const inline = sub.match(/forbidden[^:]*:\s*([^\n]+)/i);
@@ -158,10 +156,7 @@ export function parseDesignDoc(markdown: string): ParsedDesignDoc {
 
 // ---------- diff ----------
 
-function diffRecord(
-  a: Record<string, string>,
-  b: Record<string, string>
-): DesignDocFieldDiff[] {
+function diffRecord(a: Record<string, string>, b: Record<string, string>): DesignDocFieldDiff[] {
   const keys = Array.from(new Set([...Object.keys(a), ...Object.keys(b)])).sort();
   const out: DesignDocFieldDiff[] = [];
   for (const k of keys) {
@@ -189,7 +184,7 @@ function diffStringList(a: string[], b: string[]): DesignDocFieldDiff[] {
 
 function diffTypography(
   a: ParsedDesignDoc["typography"],
-  b: ParsedDesignDoc["typography"]
+  b: ParsedDesignDoc["typography"],
 ): DesignDocFieldDiff[] {
   const aMap = Object.fromEntries(a.map((r) => [r.role, `${r.family} · ${r.weight} · ${r.usage}`]));
   const bMap = Object.fromEntries(b.map((r) => [r.role, `${r.family} · ${r.weight} · ${r.usage}`]));
@@ -215,7 +210,11 @@ export function diffDesignDocs(a: ParsedDesignDoc, b: ParsedDesignDoc): DesignDo
   };
 }
 
-export function summarizeDiff(diff: DesignDocDiff): { changed: number; added: number; removed: number } {
+export function summarizeDiff(diff: DesignDocDiff): {
+  changed: number;
+  added: number;
+  removed: number;
+} {
   let changed = 0;
   let added = 0;
   let removed = 0;

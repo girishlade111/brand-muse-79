@@ -52,7 +52,6 @@ function LibraryPage() {
 
   const [kits, setKits] = useState<Kit[]>([]);
   const [busy, setBusy] = useState(true);
-  const [hydrated, setHydrated] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -62,10 +61,10 @@ function LibraryPage() {
     if (!ownerToken) return;
     // Hydrate from cache immediately so the page never flashes empty.
     const cached = readKitsCache();
-    if (cached && cached.length > 0) {
+    const hadCache = !!(cached && cached.length > 0);
+    if (hadCache) {
       setKits(cached as Kit[]);
       setBusy(false);
-      setHydrated(true);
     }
     (async () => {
       try {
@@ -81,7 +80,7 @@ function LibraryPage() {
         }
       } catch (e: any) {
         // Keep any cached kits visible — only surface error if we have nothing.
-        if (!hydrated) toast.error(e?.message ?? "Failed to load kits");
+        if (!hadCache) toast.error(e?.message ?? "Failed to load kits");
       } finally {
         setBusy(false);
       }

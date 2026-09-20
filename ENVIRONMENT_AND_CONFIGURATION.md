@@ -34,10 +34,10 @@ Brand DNA is a full-stack web application built on **TanStack Start**, **React 1
 
 ### Client vs. Server Scopes
 
-| Scope | Mechanism | Prefix | Security Level | Bundled to Client? |
-|---|---|---|---|---|
-| **Client-Side (Vite)** | `import.meta.env.VITE_*` | `VITE_` | Public | **Yes** — Inlined into JS assets during `vite build` |
-| **Server-Side (SSR & Server Functions)** | `process.env.*` | Any | Private / Restricted | **No** — Kept in server runtime / Cloudflare Workers environment |
+| Scope                                    | Mechanism                | Prefix  | Security Level       | Bundled to Client?                                               |
+| ---------------------------------------- | ------------------------ | ------- | -------------------- | ---------------------------------------------------------------- |
+| **Client-Side (Vite)**                   | `import.meta.env.VITE_*` | `VITE_` | Public               | **Yes** — Inlined into JS assets during `vite build`             |
+| **Server-Side (SSR & Server Functions)** | `process.env.*`          | Any     | Private / Restricted | **No** — Kept in server runtime / Cloudflare Workers environment |
 
 > [!CAUTION]
 > Never prefix private credentials, service role keys, or API tokens with `VITE_`. Any variable starting with `VITE_` is statically embedded into the client bundle and can be read by anyone inspecting browser traffic.
@@ -201,7 +201,9 @@ export default defineConfig();
 ```
 
 #### Architecture & Built-in Plugins:
+
 The project uses `@lovable.dev/vite-tanstack-config` to provide a consolidated, pre-configured build pipeline. It automatically integrates:
+
 - **`@tanstack/react-start` & `@tanstack/router-plugin`**: Handles full-stack SSR, file-based route code splitting, and type-safe routing.
 - **`@tailwindcss/vite` (v4)**: Modern compile-time Tailwind CSS integration without PostCSS overhead.
 - **`vite-tsconfig-paths`**: Enables clean `@/*` path alias resolution pointing to `src/*`.
@@ -223,11 +225,12 @@ File: [wrangler.jsonc](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-mus
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "@tanstack/react-start/server-entry",
 }
 ```
 
 #### Key Settings:
+
 - **`compatibility_flags: ["nodejs_compat"]`**: Enables Node.js runtime compatibility inside Cloudflare Workers. Crucial for crypto (`node:crypto`), buffers, and stream handling in server functions.
 - **`main: "@tanstack/react-start/server-entry"`**: Directs Cloudflare Workers to the TanStack Start server runtime entry point.
 
@@ -268,6 +271,7 @@ File: [tsconfig.json](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse
 ```
 
 #### Key Settings:
+
 - **`moduleResolution: "Bundler"`**: Optimized for modern bundlers like Vite that resolve bare module specifiers.
 - **`paths: { "@/*": ["./src/*"] }`**: Configures path alias mapping for clean, refactor-safe imports across the entire `src/` tree.
 
@@ -298,6 +302,7 @@ Tailwind CSS v4 replaces legacy `tailwind.config.js` with pure CSS directives an
 ```
 
 #### Core Design Tokens:
+
 - **`--background`**: `#F4EFE6` (Washi paper light) / `#0A0A0A` (Sumi ink dark).
 - **`--foreground`**: `#0A0A0A` (Sumi ink light) / `#F4EFE6` (Washi paper dark).
 - **`--accent`**: `#8B1A1A` (Hanko seal red) / `#C0392B` (Dark mode seal red).
@@ -311,6 +316,7 @@ Tailwind CSS v4 replaces legacy `tailwind.config.js` with pure CSS directives an
 File: [playwright.config.ts](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/playwright.config.ts)
 
 Configures browser-level automated testing:
+
 - **Timeout**: 90,000ms per test suite.
 - **WebServer**: Automatically boots `bun run dev` at `http://localhost:8080` before starting tests.
 - **Trace**: `retain-on-failure` captures screenshots, DOM snapshots, and network traces for failed tests.

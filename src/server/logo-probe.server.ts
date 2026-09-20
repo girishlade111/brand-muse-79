@@ -4,7 +4,11 @@
 type Probe = { kind: string; url: string };
 
 function abs(href: string, base: string): string | null {
-  try { return new URL(href, base).toString(); } catch { return null; }
+  try {
+    return new URL(href, base).toString();
+  } catch {
+    return null;
+  }
 }
 
 async function head(url: string, timeoutMs = 4000): Promise<boolean> {
@@ -47,10 +51,7 @@ function metaContent(html: string, attr: "property" | "name", key: string): stri
  * Probe a site for logo / icon assets via deterministic paths and meta tags.
  * Cheap, parallel, fails open.
  */
-export async function probeLogos(args: {
-  baseUrl: string;
-  rawHtml?: string;
-}): Promise<Probe[]> {
+export async function probeLogos(args: { baseUrl: string; rawHtml?: string }): Promise<Probe[]> {
   const { baseUrl, rawHtml } = args;
   const out: Probe[] = [];
   const seen = new Set<string>();
@@ -62,7 +63,8 @@ export async function probeLogos(args: {
 
   // 1. Meta tag candidates
   if (rawHtml) {
-    const og = metaContent(rawHtml, "property", "og:image") ?? metaContent(rawHtml, "name", "og:image");
+    const og =
+      metaContent(rawHtml, "property", "og:image") ?? metaContent(rawHtml, "name", "og:image");
     if (og) push("og-image", abs(og, baseUrl));
     const tw = metaContent(rawHtml, "name", "twitter:image");
     if (tw) push("og-image", abs(tw, baseUrl));

@@ -39,7 +39,7 @@ This document outlines all third-party services, cloud APIs, and specialized run
 ```mermaid
 flowchart TD
     User([User / Browser])
-    
+
     subgraph ClientLayer ["Client Browser Layer"]
         ViteClient[React 19 / TanStack Router]
         SupaClient[Supabase Client SDK]
@@ -92,17 +92,17 @@ Supabase serves as the primary persistence, authentication, and object storage l
 
 Defined in TypeScript via `src/integrations/supabase/types.ts` and managed through `supabase/migrations/`:
 
-| Table Name | Description | Key Columns |
-|---|---|---|
-| **`brand_kits`** | Root record for each extracted or manually assembled brand kit. | `id`, `name`, `status`, `source_type`, `source_url`, `source_text`, `brand_positioning`, `typography_scale`, `imagery_style`, `motion_style`, `share_token`, `anon_token` |
-| **`kit_colors`** | Extracted and normalized hex colors with semantic UI assignments. | `id`, `kit_id`, `hex`, `name`, `role`, `locked`, `position` |
-| **`kit_fonts`** | Typography families, weights, source families, and Google Font status. | `id`, `kit_id`, `family`, `source_family`, `role`, `weights`, `google_font`, `is_substitute`, `file_urls` |
-| **`kit_assets`** | Brand logos, favicons, open-graph imagery, and generated variants. | `id`, `kit_id`, `kind`, `url`, `storage_path`, `width`, `height`, `position` |
-| **`kit_tokens`** | Inferred design tokens (spacing, border radius, elevation, transitions). | `id`, `kit_id`, `category`, `name`, `value`, `position` |
-| **`kit_voice`** | Brand voice guidelines, tone attributes, vocabulary, and dos/don'ts. | `id`, `kit_id`, `summary`, `tone`, `vocabulary`, `dos`, `donts`, `samples` |
-| **`design_doc_versions`** | Audit log and version history of design system specifications (`DESIGN.md`). | `id`, `version`, `label`, `markdown`, `parsed`, `created_by` |
-| **`profiles`** | User display names, avatars, and account metadata. | `id`, `user_id`, `display_name`, `avatar_url` |
-| **`user_roles`** | Role-based access control (RBAC). | `id`, `user_id`, `role` (`'admin'` \| `'user'`) |
+| Table Name                | Description                                                                  | Key Columns                                                                                                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`brand_kits`**          | Root record for each extracted or manually assembled brand kit.              | `id`, `name`, `status`, `source_type`, `source_url`, `source_text`, `brand_positioning`, `typography_scale`, `imagery_style`, `motion_style`, `share_token`, `anon_token` |
+| **`kit_colors`**          | Extracted and normalized hex colors with semantic UI assignments.            | `id`, `kit_id`, `hex`, `name`, `role`, `locked`, `position`                                                                                                               |
+| **`kit_fonts`**           | Typography families, weights, source families, and Google Font status.       | `id`, `kit_id`, `family`, `source_family`, `role`, `weights`, `google_font`, `is_substitute`, `file_urls`                                                                 |
+| **`kit_assets`**          | Brand logos, favicons, open-graph imagery, and generated variants.           | `id`, `kit_id`, `kind`, `url`, `storage_path`, `width`, `height`, `position`                                                                                              |
+| **`kit_tokens`**          | Inferred design tokens (spacing, border radius, elevation, transitions).     | `id`, `kit_id`, `category`, `name`, `value`, `position`                                                                                                                   |
+| **`kit_voice`**           | Brand voice guidelines, tone attributes, vocabulary, and dos/don'ts.         | `id`, `kit_id`, `summary`, `tone`, `vocabulary`, `dos`, `donts`, `samples`                                                                                                |
+| **`design_doc_versions`** | Audit log and version history of design system specifications (`DESIGN.md`). | `id`, `version`, `label`, `markdown`, `parsed`, `created_by`                                                                                                              |
+| **`profiles`**            | User display names, avatars, and account metadata.                           | `id`, `user_id`, `display_name`, `avatar_url`                                                                                                                             |
+| **`user_roles`**          | Role-based access control (RBAC).                                            | `id`, `user_id`, `role` (`'admin'` \| `'user'`)                                                                                                                           |
 
 ### Client-Side vs. Server-Side Clients
 
@@ -165,10 +165,11 @@ export async function callAIStructured<T>(opts: {
   toolDescription: string;
   parameters: any; // JSON Schema definition
   model?: string;
-}): Promise<T>
+}): Promise<T>;
 ```
 
 #### Key Schemas Enforced:
+
 1. **Brand Positioning**: `tagline`, `mission`, `audience_description`, `industry_vertical`, `value_props`.
 2. **Color Semantics**: Semantic color role assignment (`primary`, `secondary`, `accent`, `surface`, `chart-1`, etc.).
 3. **Typography Scale**: Extraction of observed hierarchy (`h1`, `h2`, `h3`, `body`, `caption`, `label`) with font weights and line heights.
@@ -178,6 +179,7 @@ export async function callAIStructured<T>(opts: {
 ### Resilience, Retry & Error Handling
 
 To prevent transient network glitches or gateway rate limits from failing a multi-second extraction, `src/server/ai.server.ts` implements:
+
 - **Retryable HTTP Status Codes**: `408`, `425`, `429`, `500`, `502`, `503`, `504`, `522`, `524`.
 - **Jittered Exponential Backoff**: Base 600ms, scaling by $2^{\text{attempt}-1} \pm 30\%$ jitter, capped at 15,000ms. Respects `Retry-After` headers if returned.
 - **Fail-Fast HTTP Codes**:
@@ -187,6 +189,7 @@ To prevent transient network glitches or gateway rate limits from failing a mult
 ### Generative Image Processing
 
 In `src/lib/logo-variants.functions.ts`, the AI Gateway is invoked with image data URLs to isolate standalone brand marks (`logo-mark`) from wordmarks:
+
 ```typescript
 const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
   method: "POST",
@@ -255,6 +258,7 @@ The application detects the key type automatically in `src/server/ai.server.ts`:
 ### Zero-Dependency Direct Scrape Fallback
 
 If `FIRECRAWL_API_KEY` is not provided or Firecrawl fails, Brand DNA automatically executes `directScrape(url)`:
+
 - Emulates a modern desktop Chrome User-Agent to pass standard WAF inspections.
 - Scrapes the raw HTML, strips noise (`<script>`, `<style>`, `<svg>`), and converts semantic tags to markdown.
 - Extracts OpenGraph tags, `<link rel="icon">`, and `<img logo>` attributes deterministically.
@@ -268,6 +272,7 @@ Located in [src/integrations/lovable/index.ts](file:///c:/Users/Girish%20Lade/On
 ### OAuth Provider Handshake
 
 Uses `@lovable.dev/cloud-auth-js` to offer frictionless authentication:
+
 - Supported Providers: `"google"`, `"apple"`, `"microsoft"`, `"lovable"`.
 - Authentication flow:
   1. `lovableAuth.signInWithOAuth(provider, { redirect_uri, extraParams })` executes the OAuth redirect.

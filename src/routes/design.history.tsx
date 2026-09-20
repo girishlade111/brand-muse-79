@@ -2,10 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/site-header";
-import {
-  listDesignVersions,
-  type DesignVersionListItem,
-} from "@/lib/design-doc.functions";
+import { listDesignVersions, type DesignVersionListItem } from "@/lib/design-doc.functions";
 
 export const Route = createFileRoute("/design/history")({
   head: () => ({
@@ -63,10 +60,7 @@ function HistoryPage() {
               History
             </h1>
           </div>
-          <Link
-            to="/design"
-            className={mono + " hover:opacity-70 transition-opacity"}
-          >
+          <Link to="/design" className={mono + " hover:opacity-70 transition-opacity"}>
             ← Back to DESIGN.md
           </Link>
         </div>
@@ -157,9 +151,7 @@ function HistoryPage() {
                   >
                     {v.label ?? "—"}
                   </p>
-                  <p className={eyebrow + " mt-1"}>
-                    {new Date(v.created_at).toLocaleString()}
-                  </p>
+                  <p className={eyebrow + " mt-1"}>{new Date(v.created_at).toLocaleString()}</p>
                 </div>
                 <Link
                   to="/design/history/diff"

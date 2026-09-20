@@ -1,12 +1,8 @@
 import { describe, it, expect } from "vitest";
-import {
-  findUnawaitedCalls,
-  sanitize,
-} from "./check-await-build-brand-pdf.mjs";
+import { findUnawaitedCalls, sanitize } from "./check-await-build-brand-pdf.mjs";
 
 const ok = (src) => expect(findUnawaitedCalls(src)).toEqual([]);
-const bad = (src, n = 1) =>
-  expect(findUnawaitedCalls(src).length).toBe(n);
+const bad = (src, n = 1) => expect(findUnawaitedCalls(src).length).toBe(n);
 
 describe("findUnawaitedCalls — passing patterns", () => {
   it("direct await", () => {
@@ -73,10 +69,10 @@ describe("findUnawaitedCalls — violations", () => {
   });
   it("mixed: one awaited + one bare → exactly 1 violation on correct line", () => {
     const src = [
-      "async function f() {",                 // 1
-      "  await buildBrandPDF(a);",             // 2 (ok)
-      "  buildBrandPDF(b);",                   // 3 (violation)
-      "}",                                     // 4
+      "async function f() {", // 1
+      "  await buildBrandPDF(a);", // 2 (ok)
+      "  buildBrandPDF(b);", // 3 (violation)
+      "}", // 4
     ].join("\n");
     const v = findUnawaitedCalls(src);
     expect(v.length).toBe(1);
@@ -106,14 +102,7 @@ describe("findUnawaitedCalls — enriched output", () => {
     expect(v[0].column).toBe(15);
   });
   it("includes ±2 lines of context in snippet", () => {
-    const src = [
-      "// 1",
-      "// 2",
-      "function f(){",
-      "  buildBrandPDF(a);",
-      "}",
-      "// 6",
-    ].join("\n");
+    const src = ["// 1", "// 2", "function f(){", "  buildBrandPDF(a);", "}", "// 6"].join("\n");
     const v = findUnawaitedCalls(src);
     expect(v[0].line).toBe(4);
     expect(v[0].snippet.map((s) => s.lineNo)).toEqual([2, 3, 4, 5, 6]);

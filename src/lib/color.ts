@@ -2,7 +2,11 @@
 
 export function hexToRgb(hex: string): [number, number, number] {
   let h = hex.replace("#", "").trim();
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length === 3)
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   const num = parseInt(h, 16);
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
@@ -11,7 +15,11 @@ export function rgbToHex(r: number, g: number, b: number): string {
   return (
     "#" +
     [r, g, b]
-      .map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0"))
+      .map((v) =>
+        Math.max(0, Math.min(255, Math.round(v)))
+          .toString(16)
+          .padStart(2, "0"),
+      )
       .join("")
   );
 }
@@ -56,6 +64,10 @@ export function isValidHex(s: string): boolean {
 
 export function normalizeHex(s: string): string {
   let h = s.replace("#", "").trim().toLowerCase();
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  if (h.length === 3)
+    h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   return "#" + h;
 }

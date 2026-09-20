@@ -65,9 +65,9 @@ export const resolveGoogleFontFiles = createServerFn({ method: "POST" })
   .inputValidator((d) => GoogleInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ urls: string[] }> => {
     try {
-      const weights = (data.weights && data.weights.length
-        ? data.weights
-        : ["300", "400", "500", "600", "700"])
+      const weights = (
+        data.weights && data.weights.length ? data.weights : ["300", "400", "500", "600", "700"]
+      )
         .map((w) => String(w).replace(/[^0-9]/g, ""))
         .filter(Boolean);
       const familyParam = encodeURIComponent(data.family).replace(/%20/g, "+");

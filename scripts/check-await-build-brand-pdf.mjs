@@ -34,26 +34,78 @@ export function sanitize(source) {
     const c = source[i];
     const c2 = source[i + 1];
     if (state === "code") {
-      if (c === "/" && c2 === "/") { state = "line"; out += "  "; i += 2; continue; }
-      if (c === "/" && c2 === "*") { state = "block"; out += "  "; i += 2; continue; }
-      if (c === "'") { state = "sq"; out += " "; i++; continue; }
-      if (c === '"') { state = "dq"; out += " "; i++; continue; }
-      if (c === "`") { state = "tpl"; out += " "; i++; continue; }
-      out += c; i++; continue;
+      if (c === "/" && c2 === "/") {
+        state = "line";
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      if (c === "/" && c2 === "*") {
+        state = "block";
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      if (c === "'") {
+        state = "sq";
+        out += " ";
+        i++;
+        continue;
+      }
+      if (c === '"') {
+        state = "dq";
+        out += " ";
+        i++;
+        continue;
+      }
+      if (c === "`") {
+        state = "tpl";
+        out += " ";
+        i++;
+        continue;
+      }
+      out += c;
+      i++;
+      continue;
     }
     if (state === "line") {
-      if (c === "\n") { state = "code"; out += "\n"; i++; continue; }
-      out += c === "\n" ? "\n" : " "; i++; continue;
+      if (c === "\n") {
+        state = "code";
+        out += "\n";
+        i++;
+        continue;
+      }
+      out += c === "\n" ? "\n" : " ";
+      i++;
+      continue;
     }
     if (state === "block") {
-      if (c === "*" && c2 === "/") { state = "code"; out += "  "; i += 2; continue; }
-      out += c === "\n" ? "\n" : " "; i++; continue;
+      if (c === "*" && c2 === "/") {
+        state = "code";
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      out += c === "\n" ? "\n" : " ";
+      i++;
+      continue;
     }
     if (state === "sq" || state === "dq" || state === "tpl") {
       const quote = state === "sq" ? "'" : state === "dq" ? '"' : "`";
-      if (c === "\\") { out += "  "; i += 2; continue; }
-      if (c === quote) { state = "code"; out += " "; i++; continue; }
-      out += c === "\n" ? "\n" : " "; i++; continue;
+      if (c === "\\") {
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      if (c === quote) {
+        state = "code";
+        out += " ";
+        i++;
+        continue;
+      }
+      out += c === "\n" ? "\n" : " ";
+      i++;
+      continue;
     }
   }
   return out;
@@ -189,6 +241,5 @@ function main() {
 }
 
 // Run as CLI only when invoked directly (not when imported by tests).
-const invokedDirectly =
-  process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+const invokedDirectly = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (invokedDirectly) main();

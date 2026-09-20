@@ -44,76 +44,80 @@
 
 :root {
   --radius: 6px;
-  --background: #F4EFE6;
-  --foreground: #0A0A0A;
-  --surface: #EDE8DE;
-  --surface-foreground: #0A0A0A;
-  --surface-raised: #F9F6F0;
-  --card: #F9F6F0;
-  --card-foreground: #0A0A0A;
-  --popover: #F9F6F0;
-  --popover-foreground: #0A0A0A;
-  --primary: #0A0A0A;
-  --primary-foreground: #F4EFE6;
+  --background: #f4efe6;
+  --foreground: #0a0a0a;
+  --surface: #ede8de;
+  --surface-foreground: #0a0a0a;
+  --surface-raised: #f9f6f0;
+  --card: #f9f6f0;
+  --card-foreground: #0a0a0a;
+  --popover: #f9f6f0;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #f4efe6;
   --secondary: transparent;
-  --secondary-foreground: #0A0A0A;
+  --secondary-foreground: #0a0a0a;
   --muted: rgba(10, 10, 10, 0.08);
   --muted-foreground: rgba(10, 10, 10, 0.45);
-  --accent: #8B1A1A;
-  --accent-foreground: #F4EFE6;
-  --destructive: #8B1A1A;
-  --destructive-foreground: #F4EFE6;
-  --success: #0A0A0A;
-  --success-foreground: #F4EFE6;
-  --warning: #0A0A0A;
-  --warning-foreground: #F4EFE6;
-  --border: #0A0A0A;
+  --accent: #8b1a1a;
+  --accent-foreground: #f4efe6;
+  --destructive: #8b1a1a;
+  --destructive-foreground: #f4efe6;
+  --success: #0a0a0a;
+  --success-foreground: #f4efe6;
+  --warning: #0a0a0a;
+  --warning-foreground: #f4efe6;
+  --border: #0a0a0a;
   --border-subtle: rgba(10, 10, 10, 0.12);
   --input: rgba(10, 10, 10, 0.12);
-  --ring: #0A0A0A;
+  --ring: #0a0a0a;
   /* Liquid glass tokens (light) */
   --glass-bg: rgba(249, 246, 240, 0.55);
   --glass-bg-strong: rgba(249, 246, 240, 0.72);
   --glass-border: rgba(10, 10, 10, 0.18);
   --glass-highlight: rgba(255, 255, 255, 0.55);
-  --glass-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -12px rgba(10,10,10,0.18), 0 1px 2px rgba(10,10,10,0.06);
+  --glass-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 8px 24px -12px rgba(10, 10, 10, 0.18),
+    0 1px 2px rgba(10, 10, 10, 0.06);
   --glass-blur: 18px;
 }
 
 .dark {
-  --background: #0A0A0A;
-  --foreground: #F4EFE6;
+  --background: #0a0a0a;
+  --foreground: #f4efe6;
   --surface: #141414;
-  --surface-foreground: #F4EFE6;
-  --surface-raised: #1A1A1A;
+  --surface-foreground: #f4efe6;
+  --surface-raised: #1a1a1a;
   --card: #141414;
-  --card-foreground: #F4EFE6;
+  --card-foreground: #f4efe6;
   --popover: #141414;
-  --popover-foreground: #F4EFE6;
-  --primary: #F4EFE6;
-  --primary-foreground: #0A0A0A;
+  --popover-foreground: #f4efe6;
+  --primary: #f4efe6;
+  --primary-foreground: #0a0a0a;
   --secondary: transparent;
-  --secondary-foreground: #F4EFE6;
+  --secondary-foreground: #f4efe6;
   --muted: rgba(244, 239, 230, 0.08);
   --muted-foreground: rgba(244, 239, 230, 0.45);
-  --accent: #C0392B;
-  --accent-foreground: #0A0A0A;
-  --destructive: #C0392B;
-  --destructive-foreground: #0A0A0A;
-  --success: #F4EFE6;
-  --success-foreground: #0A0A0A;
-  --warning: #F4EFE6;
-  --warning-foreground: #0A0A0A;
-  --border: #F4EFE6;
+  --accent: #c0392b;
+  --accent-foreground: #0a0a0a;
+  --destructive: #c0392b;
+  --destructive-foreground: #0a0a0a;
+  --success: #f4efe6;
+  --success-foreground: #0a0a0a;
+  --warning: #f4efe6;
+  --warning-foreground: #0a0a0a;
+  --border: #f4efe6;
   --border-subtle: rgba(244, 239, 230, 0.12);
   --input: rgba(244, 239, 230, 0.12);
-  --ring: #F4EFE6;
+  --ring: #f4efe6;
   /* Liquid glass tokens (dark) */
   --glass-bg: rgba(26, 26, 26, 0.45);
   --glass-bg-strong: rgba(26, 26, 26, 0.65);
   --glass-border: rgba(244, 239, 230, 0.18);
-  --glass-highlight: rgba(244, 239, 230, 0.10);
-  --glass-shadow: 0 1px 0 rgba(244,239,230,0.08) inset, 0 8px 24px -12px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.4);
+  --glass-highlight: rgba(244, 239, 230, 0.1);
+  --glass-shadow:
+    0 1px 0 rgba(244, 239, 230, 0.08) inset, 0 8px 24px -12px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.4);
   --glass-blur: 18px;
 }
 
@@ -144,7 +148,8 @@
     overflow-x: hidden;
   }
 
-  html, body {
+  html,
+  body {
     max-width: 100%;
     overflow-x: clip;
     overscroll-behavior-x: none;
@@ -156,7 +161,12 @@
     font-family: var(--font-sans);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     font-weight: 700;
     line-height: 1.05;

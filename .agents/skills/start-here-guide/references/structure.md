@@ -3,6 +3,7 @@
 ## Button component
 
 `src/components/start-here-button.tsx` — single pill, accent color, links to `/start-here`. Inherit:
+
 - `border-radius`: project's pill token (usually `rounded-full`)
 - `font-family`: project's UI/button font (Courier Prime, Inter, etc.)
 - `letter-spacing` and `text-transform`: match the project's other buttons
@@ -19,6 +20,7 @@ Re-use the project's existing site header / layout chrome inside the route so th
 ## Nav placement
 
 ### Top header
+
 Place the button absolutely centered in the header bar so it reads as the canonical entry point, not just another link. The header's left logo and right nav items stay where they are.
 
 ```tsx
@@ -34,9 +36,11 @@ Place the button absolutely centered in the header bar so it reads as the canoni
 If the home page renders its own custom header (separate from the shared header component), add the button to both.
 
 ### Sidebar
+
 Mount as the first item, visually separated from the rest of the nav with a divider beneath it. Use the same pill treatment, full width of the sidebar's content area.
 
 ### No nav
+
 Mount fixed `top-4 left-1/2 -translate-x-1/2 z-40` on the home route only.
 
 ## What NOT to do

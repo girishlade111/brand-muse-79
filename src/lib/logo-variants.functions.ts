@@ -30,7 +30,10 @@ async function ensureResvg() {
 async function rasterizeSvg(svg: string): Promise<{ buf: Uint8Array; contentType: string }> {
   await ensureResvg();
   const { Resvg } = await import("@resvg/resvg-wasm");
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: 1024 }, background: "rgba(0,0,0,0)" });
+  const resvg = new Resvg(svg, {
+    fitTo: { mode: "width", value: 1024 },
+    background: "rgba(0,0,0,0)",
+  });
   const png = resvg.render().asPng();
   return { buf: png, contentType: "image/png" };
 }
@@ -42,19 +45,40 @@ async function rasterizeSvg(svg: string): Promise<{ buf: Uint8Array; contentType
 
 type RGBA = { r: number; g: number; b: number; a: number };
 
-function toRgba8(img: ReturnType<typeof decodePng>): { width: number; height: number; data: Uint8Array } {
+function toRgba8(img: ReturnType<typeof decodePng>): {
+  width: number;
+  height: number;
+  data: Uint8Array;
+} {
   const { width, height, channels, depth } = img;
   const src = img.data as Uint8Array | Uint16Array;
   const out = new Uint8Array(width * height * 4);
   const scale = depth === 16 ? 1 / 257 : 1;
   for (let i = 0, j = 0; i < width * height; i++) {
     const o = i * channels;
-    let r = 0, g = 0, b = 0, a = 255;
-    if (channels === 1) { r = g = b = src[o] * scale; }
-    else if (channels === 2) { r = g = b = src[o] * scale; a = src[o + 1] * scale; }
-    else if (channels === 3) { r = src[o] * scale; g = src[o + 1] * scale; b = src[o + 2] * scale; }
-    else { r = src[o] * scale; g = src[o + 1] * scale; b = src[o + 2] * scale; a = src[o + 3] * scale; }
-    out[j++] = r; out[j++] = g; out[j++] = b; out[j++] = a;
+    let r = 0,
+      g = 0,
+      b = 0,
+      a = 255;
+    if (channels === 1) {
+      r = g = b = src[o] * scale;
+    } else if (channels === 2) {
+      r = g = b = src[o] * scale;
+      a = src[o + 1] * scale;
+    } else if (channels === 3) {
+      r = src[o] * scale;
+      g = src[o + 1] * scale;
+      b = src[o + 2] * scale;
+    } else {
+      r = src[o] * scale;
+      g = src[o + 1] * scale;
+      b = src[o + 2] * scale;
+      a = src[o + 3] * scale;
+    }
+    out[j++] = r;
+    out[j++] = g;
+    out[j++] = b;
+    out[j++] = a;
   }
   return { width, height, data: out };
 }
@@ -69,7 +93,8 @@ function sampleBg(width: number, height: number, data: Uint8Array): RGBA | null 
   if (corners.some((c) => c.a < 250)) return null; // already transparent
   const ref = corners[0];
   for (const c of corners) {
-    if (Math.abs(c.r - ref.r) > 12 || Math.abs(c.g - ref.g) > 12 || Math.abs(c.b - ref.b) > 12) return null;
+    if (Math.abs(c.r - ref.r) > 12 || Math.abs(c.g - ref.g) > 12 || Math.abs(c.b - ref.b) > 12)
+      return null;
   }
   return ref;
 }
@@ -85,9 +110,18 @@ function recolorPng(
   const tol = 18;
   for (let i = 0; i < width * height; i++) {
     const o = i * 4;
-    const r = data[o], g = data[o + 1], b = data[o + 2], a = data[o + 3];
+    const r = data[o],
+      g = data[o + 1],
+      b = data[o + 2],
+      a = data[o + 3];
     // Key out background → fully transparent
-    if (bg && a >= 250 && Math.abs(r - bg.r) <= tol && Math.abs(g - bg.g) <= tol && Math.abs(b - bg.b) <= tol) {
+    if (
+      bg &&
+      a >= 250 &&
+      Math.abs(r - bg.r) <= tol &&
+      Math.abs(g - bg.g) <= tol &&
+      Math.abs(b - bg.b) <= tol
+    ) {
       data[o + 3] = 0;
       continue;
     }
@@ -100,9 +134,14 @@ function recolorPng(
       // Combine with original alpha so semi-transparent pixels stay soft.
       const ink = 1 - lum / 255;
       const finalA = Math.round(Math.min(255, ink * 255) * (a / 255));
-      data[o] = target.r; data[o + 1] = target.g; data[o + 2] = target.b; data[o + 3] = finalA;
+      data[o] = target.r;
+      data[o + 1] = target.g;
+      data[o + 2] = target.b;
+      data[o + 3] = finalA;
     } else if (mode === "invert") {
-      data[o] = 255 - r; data[o + 1] = 255 - g; data[o + 2] = 255 - b;
+      data[o] = 255 - r;
+      data[o + 1] = 255 - g;
+      data[o + 2] = 255 - b;
     }
   }
   const encoded = encodePng({ width, height, data, channels: 4, depth: 8 });
@@ -145,7 +184,10 @@ const InputSchema = z.object({
   kitId: z.string().uuid(),
   assetId: z.string().uuid(),
   ownerToken: z.string().min(1).max(200),
-  variants: z.array(z.enum(["logo-mark", "logo-on-light", "logo-on-dark", "logo-inverted"])).min(1).max(8),
+  variants: z
+    .array(z.enum(["logo-mark", "logo-on-light", "logo-on-dark", "logo-inverted"]))
+    .min(1)
+    .max(8),
 });
 
 async function fetchAsDataUrl(url: string): Promise<string> {
@@ -159,7 +201,8 @@ async function fetchAsDataUrl(url: string): Promise<string> {
   const isSvg =
     ct.includes("svg") ||
     url.toLowerCase().endsWith(".svg") ||
-    (bytes.length > 0 && new TextDecoder().decode(bytes.slice(0, 512)).trimStart().toLowerCase().startsWith("<svg")) ||
+    (bytes.length > 0 &&
+      new TextDecoder().decode(bytes.slice(0, 512)).trimStart().toLowerCase().startsWith("<svg")) ||
     (bytes.length > 0 && new TextDecoder().decode(bytes.slice(0, 512)).includes("<svg"));
   if (isSvg) {
     const svgText = new TextDecoder().decode(bytes);
@@ -171,7 +214,10 @@ async function fetchAsDataUrl(url: string): Promise<string> {
   return `data:${ct};base64,${buf.toString("base64")}`;
 }
 
-async function editImage(prompt: string, imageUrl: string): Promise<{ buf: Uint8Array; contentType: string }> {
+async function editImage(
+  prompt: string,
+  imageUrl: string,
+): Promise<{ buf: Uint8Array; contentType: string }> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -245,9 +291,10 @@ export const generateLogoVariants = createServerFn({ method: "POST" })
     );
     const requestedVariants = Array.from(new Set(data.variants)) as typeof data.variants;
     const variantsToRun = requestedVariants.filter((k) => !existingKinds.has(k));
-    const skippedResults: Array<{ kind: string; ok: boolean; skipped: boolean; error?: string }> = requestedVariants
-      .filter((k) => existingKinds.has(k))
-      .map((k) => ({ kind: k as string, ok: true, skipped: true }));
+    const skippedResults: Array<{ kind: string; ok: boolean; skipped: boolean; error?: string }> =
+      requestedVariants
+        .filter((k) => existingKinds.has(k))
+        .map((k) => ({ kind: k as string, ok: true, skipped: true }));
     if (!variantsToRun.length) {
       return { ok: true, results: skippedResults };
     }

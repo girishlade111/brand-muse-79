@@ -41,5 +41,6 @@ export function smoothScrollTo(target: string | HTMLElement, offset = -80) {
     return;
   }
   const el = typeof target === "string" ? document.querySelector(target) : target;
-  if (el && "scrollIntoView" in el) (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
+  if (el && "scrollIntoView" in el)
+    (el as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
 }

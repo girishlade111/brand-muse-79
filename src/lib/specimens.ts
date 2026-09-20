@@ -15,7 +15,9 @@ export type Specimen = {
 
 export const demoSpecimens: Specimen[] = [
   {
-    name: "Aesop", tld: ".com", id: "#00.418",
+    name: "Aesop",
+    tld: ".com",
+    id: "#00.418",
     hex: ["1A1A18", "2C2924", "84766B", "C8BFA8", "ECE7DC"],
     typeMeta: "Sg / 1 weight",
     typeName: "Suisse BP Int'l · Times Now",
@@ -23,7 +25,9 @@ export const demoSpecimens: Specimen[] = [
     time: "Extracted 4.18s",
   },
   {
-    name: "Hermès", tld: ".com", id: "#00.419",
+    name: "Hermès",
+    tld: ".com",
+    id: "#00.419",
     hex: ["F37021", "C0501C", "3E2718", "F5EBDA", "FFFFFF"],
     typeMeta: "Serif / 3 weights",
     typeName: "HermesSerif · Diane",
@@ -31,7 +35,9 @@ export const demoSpecimens: Specimen[] = [
     time: "Extracted 3.91s",
   },
   {
-    name: "Stripe", tld: ".com", id: "#00.420",
+    name: "Stripe",
+    tld: ".com",
+    id: "#00.420",
     hex: ["635BFF", "0A2540", "425466", "ADBDCC", "F6F9FC"],
     typeMeta: "Sans / 4 weights",
     typeName: "Sohne · Camera Mono",
@@ -39,7 +45,9 @@ export const demoSpecimens: Specimen[] = [
     time: "Extracted 4.42s",
   },
   {
-    name: "Loewe", tld: ".com", id: "#00.421",
+    name: "Loewe",
+    tld: ".com",
+    id: "#00.421",
     hex: ["8B4513", "D4A574", "3A2E1F", "EAE0CD", "FAFAFA"],
     typeMeta: "Display / 2 styles",
     typeName: "Loewe Bespoke · Aktiv",
@@ -47,7 +55,9 @@ export const demoSpecimens: Specimen[] = [
     time: "Extracted 4.07s",
   },
   {
-    name: "A24", tld: ".com", id: "#00.422",
+    name: "A24",
+    tld: ".com",
+    id: "#00.422",
     hex: ["000000", "FF0033", "FFFFFF", "C0C0C0", "1A1A1A"],
     typeMeta: "Mono + Serif",
     typeName: "GT Pressura · Cardinal",
@@ -55,7 +65,9 @@ export const demoSpecimens: Specimen[] = [
     time: "Extracted 3.74s",
   },
   {
-    name: "Dior", tld: ".com", id: "#00.423",
+    name: "Dior",
+    tld: ".com",
+    id: "#00.423",
     hex: ["111111", "464343", "9A9492", "D2C9BD", "F5F1EA"],
     typeMeta: "Serif / 2 weights",
     typeName: "Nizzoli · Dior Display",
@@ -98,10 +110,10 @@ function normalizeHex(raw: unknown): string | null {
   return /^[0-9a-fA-F]{6}$/.test(h) ? h.toUpperCase() : null;
 }
 
-function takeFiveHex(colors: Array<{ hex?: string | null; position?: number | null }> | null | undefined): string[] {
-  const sorted = [...(colors ?? [])].sort(
-    (a, b) => (a.position ?? 0) - (b.position ?? 0),
-  );
+function takeFiveHex(
+  colors: Array<{ hex?: string | null; position?: number | null }> | null | undefined,
+): string[] {
+  const sorted = [...(colors ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   const out: string[] = [];
   for (const c of sorted) {
     const h = normalizeHex(c.hex);
@@ -142,7 +154,12 @@ function extractVoice(tone: unknown): string[] {
   const tokens: string[] = [];
   for (const item of arr) {
     if (typeof item === "string") tokens.push(item);
-    else if (item && typeof item === "object" && "label" in item && typeof (item as any).label === "string") {
+    else if (
+      item &&
+      typeof item === "object" &&
+      "label" in item &&
+      typeof (item as any).label === "string"
+    ) {
       tokens.push((item as any).label);
     }
     if (tokens.length === 4) break;
@@ -178,9 +195,7 @@ export function mapKitToSpecimen(row: KitRowForSpecimen, idx: number): Specimen 
   const tld = parsed?.tld ?? "";
 
   const voiceRow = Array.isArray(row.kit_voice) ? row.kit_voice[0] : row.kit_voice;
-  const fonts = (row.kit_fonts ?? []).slice().sort(
-    (a, b) => (a.position ?? 0) - (b.position ?? 0),
-  );
+  const fonts = (row.kit_fonts ?? []).slice().sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return {
     name,

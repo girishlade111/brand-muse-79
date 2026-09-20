@@ -28,16 +28,19 @@ Include only if the project actually uses one or more third-party connectors. Sk
 For each connector:
 
 ### Branded card
+
 A small card showing the connector's name (display font), a short tag line (mono / uppercase tracked), and a single visual mark. Use the connector's brand color as a small accent only — do not flood the card.
 
 ### Pricing sub-section
+
 Sub-heading `Pricing — mostly free` (or `Pricing` if the template uses heavy quota).
 
-One paragraph: state the free tier in concrete numbers (credits, sends, requests), estimate how much a typical use of *this* template consumes, then mention the entry paid plan with price. End with whether casual use stays free.
+One paragraph: state the free tier in concrete numbers (credits, sends, requests), estimate how much a typical use of _this_ template consumes, then mention the entry paid plan with price. End with whether casual use stays free.
 
 Example: "Firecrawl gives every new account **500 free credits** on sign-up, no card required. One brand extraction typically uses 1–5 credits, so casual use rarely leaves the free tier. If you do run out, their Hobby plan starts at **$16/mo** for 3,000 credits — only needed for heavy or commercial use."
 
 ### Connecting it sub-section
+
 Sub-heading `Connecting it`.
 
 One short paragraph noting that Lovable may have already linked the connector via remix, then a copy-paste prompt block:
@@ -53,6 +56,7 @@ Short paragraph: once they have their bearings, they can remove the button and p
 ## 5. Footer
 
 Two items on one row:
+
 - Left: `← Back to {home page name}` link, mono, underlined
 - Right: small mono `{Project name} / v1.0`
 

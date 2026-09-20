@@ -31,7 +31,8 @@ export const fetchAssetFiles = createServerFn({ method: "POST" })
             headers: {
               "User-Agent":
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-              Accept: "image/avif,image/webp,image/png,image/jpeg,image/svg+xml,image/*;q=0.9,*/*;q=0.8",
+              Accept:
+                "image/avif,image/webp,image/png,image/jpeg,image/svg+xml,image/*;q=0.9,*/*;q=0.8",
             },
           });
           clearTimeout(t);

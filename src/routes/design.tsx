@@ -22,10 +22,8 @@ export const Route = createFileRoute("/design")({
   component: DesignPage,
 });
 
-const labelMono =
-  "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
-const eyebrow =
-  "font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground";
+const labelMono = "font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground";
+const eyebrow = "font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground";
 const buttonClass =
   "font-mono text-[12px] uppercase tracking-[0.1em] px-6 py-2 hover:opacity-90 transition-opacity";
 
@@ -134,10 +132,7 @@ function DesignPage() {
           </div>
         </div>
 
-        <div
-          className="mt-2"
-          style={{ borderTop: "1px solid rgba(10,10,10,0.25)" }}
-        />
+        <div className="mt-2" style={{ borderTop: "1px solid rgba(10,10,10,0.25)" }} />
 
         {error ? (
           <p

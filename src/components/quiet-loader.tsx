@@ -1,6 +1,12 @@
 import { cn } from "@/lib/utils";
 
-export function QuietLoader({ label = "Loading", className }: { label?: string; className?: string }) {
+export function QuietLoader({
+  label = "Loading",
+  className,
+}: {
+  label?: string;
+  className?: string;
+}) {
   return (
     <div className={cn("flex min-h-[40vh] items-center justify-center", className)}>
       <div className="flex flex-col items-center gap-5 animate-fade-in">

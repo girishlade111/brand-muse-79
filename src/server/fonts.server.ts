@@ -28,112 +28,233 @@ export type DetectedFont = {
   weights: string[];
 };
 
-const SYSTEM_FONTS = new Set([
-  "system-ui","ui-sans-serif","ui-serif","ui-monospace","ui-rounded",
-  "sans-serif","serif","monospace","cursive","fantasy",
-  "-apple-system","blinkmacsystemfont","segoe ui","helvetica neue",
-  "helvetica","arial","apple color emoji","segoe ui emoji","noto color emoji",
-  "inherit","initial","unset","revert",
-].map((s) => s.toLowerCase()));
+const SYSTEM_FONTS = new Set(
+  [
+    "system-ui",
+    "ui-sans-serif",
+    "ui-serif",
+    "ui-monospace",
+    "ui-rounded",
+    "sans-serif",
+    "serif",
+    "monospace",
+    "cursive",
+    "fantasy",
+    "-apple-system",
+    "blinkmacsystemfont",
+    "segoe ui",
+    "helvetica neue",
+    "helvetica",
+    "arial",
+    "apple color emoji",
+    "segoe ui emoji",
+    "noto color emoji",
+    "inherit",
+    "initial",
+    "unset",
+    "revert",
+  ].map((s) => s.toLowerCase()),
+);
 
-const KNOWN_OPEN_FAMILIES = new Set([
-  "Inter","Roboto","Open Sans","Lato","Montserrat","Poppins",
-  "Source Sans 3","Source Sans Pro","Source Serif 4","Source Code Pro",
-  "Nunito","Nunito Sans","Raleway","Work Sans","Manrope","DM Sans",
-  "DM Serif Display","DM Mono","Plus Jakarta Sans","Space Grotesk","Space Mono",
-  "JetBrains Mono","IBM Plex Sans","IBM Plex Serif","IBM Plex Mono",
-  "Fira Sans","Fira Code","Fira Mono","Cormorant Garamond","Libre Baskerville",
-  "Libre Franklin","Courier Prime","Playfair Display","Merriweather","Lora",
-  "Crimson Pro","EB Garamond","Karla","Mulish","Outfit","Public Sans",
-  "Archivo","Bricolage Grotesque","Geist","Geist Mono","Onest","Figtree",
-  "Hanken Grotesk","Albert Sans","Instrument Serif","Instrument Sans",
-  "Fraunces","Syne","Bitter","Cabin","Inconsolata","PT Sans","PT Serif",
-  "Quicksand","Ubuntu","Ubuntu Mono","Roboto Mono","Roboto Slab","Roboto Condensed",
-].map((s) => s.toLowerCase()));
+const KNOWN_OPEN_FAMILIES = new Set(
+  [
+    "Inter",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Montserrat",
+    "Poppins",
+    "Source Sans 3",
+    "Source Sans Pro",
+    "Source Serif 4",
+    "Source Code Pro",
+    "Nunito",
+    "Nunito Sans",
+    "Raleway",
+    "Work Sans",
+    "Manrope",
+    "DM Sans",
+    "DM Serif Display",
+    "DM Mono",
+    "Plus Jakarta Sans",
+    "Space Grotesk",
+    "Space Mono",
+    "JetBrains Mono",
+    "IBM Plex Sans",
+    "IBM Plex Serif",
+    "IBM Plex Mono",
+    "Fira Sans",
+    "Fira Code",
+    "Fira Mono",
+    "Cormorant Garamond",
+    "Libre Baskerville",
+    "Libre Franklin",
+    "Courier Prime",
+    "Playfair Display",
+    "Merriweather",
+    "Lora",
+    "Crimson Pro",
+    "EB Garamond",
+    "Karla",
+    "Mulish",
+    "Outfit",
+    "Public Sans",
+    "Archivo",
+    "Bricolage Grotesque",
+    "Geist",
+    "Geist Mono",
+    "Onest",
+    "Figtree",
+    "Hanken Grotesk",
+    "Albert Sans",
+    "Instrument Serif",
+    "Instrument Sans",
+    "Fraunces",
+    "Syne",
+    "Bitter",
+    "Cabin",
+    "Inconsolata",
+    "PT Sans",
+    "PT Serif",
+    "Quicksand",
+    "Ubuntu",
+    "Ubuntu Mono",
+    "Roboto Mono",
+    "Roboto Slab",
+    "Roboto Condensed",
+  ].map((s) => s.toLowerCase()),
+);
 
-const FONTSHARE_FAMILIES = new Set([
-  "Satoshi","Cabinet Grotesk","General Sans","Switzer","Clash Display",
-  "Clash Grotesk","Erode","Excon","Sentient","Author","Tanker","Boska",
-  "Synonym","Ranade","Supreme",
-].map((s) => s.toLowerCase()));
+const FONTSHARE_FAMILIES = new Set(
+  [
+    "Satoshi",
+    "Cabinet Grotesk",
+    "General Sans",
+    "Switzer",
+    "Clash Display",
+    "Clash Grotesk",
+    "Erode",
+    "Excon",
+    "Sentient",
+    "Author",
+    "Tanker",
+    "Boska",
+    "Synonym",
+    "Ranade",
+    "Supreme",
+  ].map((s) => s.toLowerCase()),
+);
 
 const COMMERCIAL_FAMILIES: Record<string, { foundry: string; url: string }> = {
-  "söhne": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/soehne/" },
-  "sohne": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/soehne/" },
-  "söhne mono": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/soehne-mono/" },
-  "national 2": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/national-2/" },
-  "tiempos": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/tiempos/" },
-  "founders grotesk": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/founders-grotesk/" },
-  "calibre": { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/calibre/" },
+  söhne: { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/soehne/" },
+  sohne: { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/soehne/" },
+  "söhne mono": {
+    foundry: "Klim Type Foundry",
+    url: "https://klim.co.nz/retail-fonts/soehne-mono/",
+  },
+  "national 2": {
+    foundry: "Klim Type Foundry",
+    url: "https://klim.co.nz/retail-fonts/national-2/",
+  },
+  tiempos: { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/tiempos/" },
+  "founders grotesk": {
+    foundry: "Klim Type Foundry",
+    url: "https://klim.co.nz/retail-fonts/founders-grotesk/",
+  },
+  calibre: { foundry: "Klim Type Foundry", url: "https://klim.co.nz/retail-fonts/calibre/" },
   "gt america": { foundry: "Grilli Type", url: "https://www.grillitype.com/typeface/gt-america" },
   "gt walsheim": { foundry: "Grilli Type", url: "https://www.grillitype.com/typeface/gt-walsheim" },
   "gt sectra": { foundry: "Grilli Type", url: "https://www.grillitype.com/typeface/gt-sectra" },
   "gt super": { foundry: "Grilli Type", url: "https://www.grillitype.com/typeface/gt-super" },
-  "graphik": { foundry: "Commercial Type", url: "https://commercialtype.com/catalog/graphik" },
-  "publico": { foundry: "Commercial Type", url: "https://commercialtype.com/catalog/publico" },
+  graphik: { foundry: "Commercial Type", url: "https://commercialtype.com/catalog/graphik" },
+  publico: { foundry: "Commercial Type", url: "https://commercialtype.com/catalog/publico" },
   "neue haas grotesk": { foundry: "Linotype", url: "https://www.linotype.com/" },
   "neue haas unica": { foundry: "Monotype", url: "https://www.monotype.com/fonts/neue-haas-unica" },
-  "helvetica": { foundry: "Monotype", url: "https://www.monotype.com/fonts/helvetica" },
+  helvetica: { foundry: "Monotype", url: "https://www.monotype.com/fonts/helvetica" },
   "helvetica now": { foundry: "Monotype", url: "https://www.monotype.com/fonts/helvetica-now" },
-  "futura": { foundry: "Monotype", url: "https://www.monotype.com/fonts/futura" },
-  "avenir": { foundry: "Monotype", url: "https://www.monotype.com/fonts/avenir" },
+  futura: { foundry: "Monotype", url: "https://www.monotype.com/fonts/futura" },
+  avenir: { foundry: "Monotype", url: "https://www.monotype.com/fonts/avenir" },
   "avenir next": { foundry: "Monotype", url: "https://www.monotype.com/fonts/avenir-next" },
-  "proxima nova": { foundry: "Mark Simonson Studio", url: "https://www.marksimonson.com/fonts/view/proxima-nova" },
-  "proxima": { foundry: "Mark Simonson Studio", url: "https://www.marksimonson.com/fonts/view/proxima-nova" },
-  "circular": { foundry: "Lineto", url: "https://lineto.com/typefaces/circular" },
+  "proxima nova": {
+    foundry: "Mark Simonson Studio",
+    url: "https://www.marksimonson.com/fonts/view/proxima-nova",
+  },
+  proxima: {
+    foundry: "Mark Simonson Studio",
+    url: "https://www.marksimonson.com/fonts/view/proxima-nova",
+  },
+  circular: { foundry: "Lineto", url: "https://lineto.com/typefaces/circular" },
   "circular std": { foundry: "Lineto", url: "https://lineto.com/typefaces/circular" },
-  "brown": { foundry: "Lineto", url: "https://lineto.com/typefaces/brown" },
+  brown: { foundry: "Lineto", url: "https://lineto.com/typefaces/brown" },
   "akzidenz-grotesk": { foundry: "Berthold", url: "https://www.bertholdtypes.com/" },
-  "fk grotesk": { foundry: "Florian Karsten Typefaces", url: "https://floriankarsten.com/fk-grotesk" },
+  "fk grotesk": {
+    foundry: "Florian Karsten Typefaces",
+    url: "https://floriankarsten.com/fk-grotesk",
+  },
   "fk display": { foundry: "Florian Karsten Typefaces", url: "https://floriankarsten.com/" },
-  "larsseit": { foundry: "Type Dynamic", url: "https://www.myfonts.com/" },
-  "neue montreal": { foundry: "Pangram Pangram", url: "https://pangrampangram.com/products/neue-montreal" },
-  "pp neue montreal": { foundry: "Pangram Pangram", url: "https://pangrampangram.com/products/neue-montreal" },
-  "pp editorial new": { foundry: "Pangram Pangram", url: "https://pangrampangram.com/products/editorial-new" },
+  larsseit: { foundry: "Type Dynamic", url: "https://www.myfonts.com/" },
+  "neue montreal": {
+    foundry: "Pangram Pangram",
+    url: "https://pangrampangram.com/products/neue-montreal",
+  },
+  "pp neue montreal": {
+    foundry: "Pangram Pangram",
+    url: "https://pangrampangram.com/products/neue-montreal",
+  },
+  "pp editorial new": {
+    foundry: "Pangram Pangram",
+    url: "https://pangrampangram.com/products/editorial-new",
+  },
   "pp mori": { foundry: "Pangram Pangram", url: "https://pangrampangram.com/products/mori" },
 };
 
 export const COMMERCIAL_SUBSTITUTES: Record<string, string> = {
-  "söhne": "Inter",
-  "sohne": "Inter",
+  söhne: "Inter",
+  sohne: "Inter",
   "söhne mono": "JetBrains Mono",
   "national 2": "Inter",
-  "tiempos": "Source Serif 4",
+  tiempos: "Source Serif 4",
   "founders grotesk": "Space Grotesk",
-  "calibre": "Public Sans",
+  calibre: "Public Sans",
   "gt america": "Inter",
   "gt walsheim": "DM Sans",
   "gt sectra": "Fraunces",
   "gt super": "Fraunces",
-  "graphik": "Inter",
-  "publico": "Source Serif 4",
-  "helvetica": "Inter",
+  graphik: "Inter",
+  publico: "Source Serif 4",
+  helvetica: "Inter",
   "helvetica now": "Inter",
-  "futura": "Outfit",
-  "avenir": "Nunito Sans",
+  futura: "Outfit",
+  avenir: "Nunito Sans",
   "avenir next": "Nunito Sans",
   "proxima nova": "Mulish",
-  "proxima": "Mulish",
-  "circular": "DM Sans",
+  proxima: "Mulish",
+  circular: "DM Sans",
   "circular std": "DM Sans",
-  "brown": "Hanken Grotesk",
+  brown: "Hanken Grotesk",
   "akzidenz-grotesk": "Inter",
   "fk grotesk": "Inter",
   "fk display": "Bricolage Grotesque",
-  "larsseit": "Plus Jakarta Sans",
+  larsseit: "Plus Jakarta Sans",
   "neue montreal": "Geist",
   "pp neue montreal": "Geist",
   "pp editorial new": "Fraunces",
   "pp mori": "Manrope",
 };
 
-function classify(family: string, fileHostHints: string[] = []): {
+function classify(
+  family: string,
+  fileHostHints: string[] = [],
+): {
   provider: DetectedFont["provider"];
   license: DetectedFont["license"];
   provider_url?: string;
   license_note?: string;
 } {
-  const f = family.toLowerCase().replace(/^["']|["']$/g, "").trim();
+  const f = family
+    .toLowerCase()
+    .replace(/^["']|["']$/g, "")
+    .trim();
 
   for (const host of fileHostHints) {
     const h = host.toLowerCase();
@@ -194,7 +315,10 @@ function classify(family: string, fileHostHints: string[] = []): {
 }
 
 function unquote(s: string) {
-  return s.trim().replace(/^["']|["']$/g, "").trim();
+  return s
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .trim();
 }
 
 function extractFamiliesFromCSS(css: string): string[] {
@@ -240,7 +364,11 @@ function parseFontFace(css: string): FontFaceEntry[] {
 }
 
 function absolutize(url: string, base: string): string {
-  try { return new URL(url, base).toString(); } catch { return url; }
+  try {
+    return new URL(url, base).toString();
+  } catch {
+    return url;
+  }
 }
 
 async function fetchText(url: string, timeoutMs = 6000): Promise<string | null> {
@@ -255,7 +383,9 @@ async function fetchText(url: string, timeoutMs = 6000): Promise<string | null> 
     clearTimeout(t);
     if (!res.ok) return null;
     return await res.text();
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export async function detectFontsFromSite(args: {
@@ -299,7 +429,8 @@ export async function detectFontsFromSite(args: {
     const faces = parseFontFace(block.css);
     for (const f of faces) {
       const key = f.family.toLowerCase();
-      if (!allFaces.has(key)) allFaces.set(key, { family: f.family, files: [], weights: new Set() });
+      if (!allFaces.has(key))
+        allFaces.set(key, { family: f.family, files: [], weights: new Set() });
       const target = allFaces.get(key)!;
       f.weights.forEach((w) => target.weights.add(w));
       for (const file of f.files) {
@@ -321,7 +452,11 @@ export async function detectFontsFromSite(args: {
 
   const linkHostHints: string[] = [];
   for (const link of cssLinks) {
-    try { linkHostHints.push(new URL(link).host); } catch { /* ignore */ }
+    try {
+      linkHostHints.push(new URL(link).host);
+    } catch {
+      /* ignore */
+    }
   }
 
   const result = new Map<string, DetectedFont>();
@@ -330,7 +465,13 @@ export async function detectFontsFromSite(args: {
     const key = fam.toLowerCase();
     const face = allFaces.get(key);
     const fileHints = [
-      ...(face?.files.map((f) => { try { return new URL(f.url).host; } catch { return ""; } }) ?? []),
+      ...(face?.files.map((f) => {
+        try {
+          return new URL(f.url).host;
+        } catch {
+          return "";
+        }
+      }) ?? []),
       ...linkHostHints,
     ];
     const cls = classify(fam, fileHints);
@@ -347,7 +488,13 @@ export async function detectFontsFromSite(args: {
 
   for (const [key, face] of allFaces) {
     if (result.has(key)) continue;
-    const fileHints = face.files.map((f) => { try { return new URL(f.url).host; } catch { return ""; } });
+    const fileHints = face.files.map((f) => {
+      try {
+        return new URL(f.url).host;
+      } catch {
+        return "";
+      }
+    });
     const cls = classify(face.family, fileHints);
     result.set(key, {
       source_family: face.family,

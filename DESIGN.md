@@ -1,17 +1,19 @@
 # Brand DNA — Design System Document
+
 ### The Invisible Instrument
 
 ---
 
 ## 01. Design Philosophy
 
-**Core emotion:** *"This is a precision instrument, not a toy."*
+**Core emotion:** _"This is a precision instrument, not a toy."_
 
 The user should feel like they've stepped into a high-end, quiet archive or a master's studio. Intimidatingly simple. The "Brute" element comes from the cold, raw efficiency of the tool. The "Shodō" element makes it feel like an art form. The feeling of a sharp scalpel hitting expensive paper — quiet, surgical, and final.
 
-**One-word target:** *Precise.*
+**One-word target:** _Precise._
 
 **What this is not:**
+
 - Not Stripe/Loom airy SaaS
 - Not purple-gradient AI tool
 - Not warm lifestyle brand (Aesop)
@@ -19,6 +21,7 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 - Not decorative
 
 **What this is:**
+
 - High-contrast editorial
 - Vercel's precision + Notion's structure + Japanese Art Catalog execution
 - Shodō (Japanese calligraphy): bold, high-contrast ink strokes
@@ -31,6 +34,7 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 **Concept:** Sumi ink on washi paper. The only color is a hanko seal red — used like a signature stamp, sparingly.
 
 ### Light Mode
+
 ```
 --background:     #F4EFE6   /* washi paper */
 --foreground:     #0A0A0A   /* sumi ink */
@@ -44,6 +48,7 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 ```
 
 ### Dark Mode
+
 ```
 --background:     #0A0A0A
 --foreground:     #F4EFE6
@@ -57,6 +62,7 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 ```
 
 **Rules:**
+
 - Hanko red used only for: primary CTA button active state, error states, one decorative accent element per page maximum
 - No other colors. No purple, teal, blue, orange.
 - When in doubt: black and white only.
@@ -67,13 +73,14 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 
 **Concept:** Luxury serif for titles (the ink stroke). Raw typewriter mono for data and labels (the instrument). Refined serif for body prose.
 
-| Role | Family | Weight | Usage |
-|---|---|---|---|
-| Display / Headings | Cormorant Garamond | 700 upright / 400 italic | H1, H2, hero titles, section headers, CTA quotes |
-| Data / Labels / UI | Courier Prime | 400 / 700 | Nav, buttons, tabs, badges, captions, form inputs, numbers, code |
-| Body Prose | Libre Baskerville | 400 / 700 | Descriptions, card body, long-form content |
+| Role               | Family             | Weight                   | Usage                                                            |
+| ------------------ | ------------------ | ------------------------ | ---------------------------------------------------------------- |
+| Display / Headings | Cormorant Garamond | 700 upright / 400 italic | H1, H2, hero titles, section headers, CTA quotes                 |
+| Data / Labels / UI | Courier Prime      | 400 / 700                | Nav, buttons, tabs, badges, captions, form inputs, numbers, code |
+| Body Prose         | Libre Baskerville  | 400 / 700                | Descriptions, card body, long-form content                       |
 
 **Rules:**
+
 - All buttons: Courier Prime, uppercase, letter-spacing 0.10em
 - All nav items: Courier Prime, uppercase, letter-spacing 0.12em
 - All section eyebrows: Courier Prime, 11px, uppercase, letter-spacing 0.15em, muted
@@ -88,17 +95,20 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 **Border radius:** `0px` everywhere. No exceptions. Sharp corners only — this is a scalpel, not a pill.
 
 **Borders:**
+
 - Structural (header bottom, section dividers, card edges): `1px solid #0A0A0A` (full ink)
 - Hairline rules (index rows, subtle separators): `1px solid rgba(10,10,10,0.20)`
 - Never use box-shadows for elevation — use borders instead
 
 **Spacing rhythm:**
+
 - Hero content: upper-center third of viewport, not dead-center
 - Sections: generous vertical padding (py-24 to py-32)
 - Index rows: py-8 per row with hairline separators between
 - Maximum content width: 4xl for hero copy, 7xl for full layout container
 
 **Texture:**
+
 - CSS grain overlay on `body::before` — SVG fractal noise, opacity ~0.06, `mix-blend-mode: multiply`
 - Feels like heavy paper weight, not digital noise
 
@@ -107,6 +117,7 @@ The user should feel like they've stepped into a high-end, quiet archive or a ma
 ## 05. UI Components
 
 ### Buttons
+
 ```
 Primary:
   background: var(--foreground)
@@ -126,6 +137,7 @@ Bracket format: [ LABEL ] — the brackets are part of the visual language
 ```
 
 ### Form Inputs
+
 ```
 background: transparent
 border: 1px solid var(--border)
@@ -136,6 +148,7 @@ focus: border-color stays ink, add no glow/ring — just ink
 ```
 
 ### Cards
+
 ```
 background: var(--surface) or var(--surface-raised)
 border: 1px solid var(--border-subtle)
@@ -145,6 +158,7 @@ No box-shadow
 ```
 
 ### Tabs
+
 ```
 Active tab: border-bottom 2px solid var(--foreground), Courier Prime uppercase
 Inactive: muted, same font
@@ -152,6 +166,7 @@ No background fills on tabs
 ```
 
 ### Header
+
 ```
 height: 48px
 background: var(--background)
@@ -169,12 +184,14 @@ No icons. No logo mark.
 **Rule: No decorative icons.**
 
 Lucide icons permitted only for functional actions:
+
 - Copy (`ti-copy`)
 - Download (`ti-download`)
 - External link (`ti-external-link`)
 - Close (`ti-x`)
 
 Replace all icon-on-tinted-square patterns with typographic markers:
+
 - `//` for section eyebrows
 - `01.` `02.` for numbered lists
 - `—` for list items
@@ -202,6 +219,7 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 **Tone:** Authoritative. Terse. Confident without selling. Like a brief from a senior creative director.
 
 **Rules:**
+
 - Short sentences. Periods land hard.
 - No exclamation marks. Ever.
 - No "powerful", "seamless", "game-changing", "next-level"
@@ -210,6 +228,7 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 - The tool does something specific — say what it does, not how great it is
 
 **Key lines (locked):**
+
 - Hero H1: `Steal any brand.`
 - Hero H2: `Leave nothing behind.`
 - Subhead: `Colors. Typography. Voice. Tokens. Extracted, structured, exported.`
@@ -223,6 +242,7 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 ## 09. Page-by-Page Notes
 
 ### Landing (`/`)
+
 - Hero: content in upper-center third, not dead-center
 - Headline dominates viewport — feel almost too big, like a newspaper masthead
 - Index section: numbered two-column editorial list, hairline rules between rows
@@ -230,12 +250,14 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 - Footer: one line, `BRAND DNA` left / `v1.0` right, mono, hairline top border
 
 ### Kit Creation (`/new`)
+
 - Three tabs (URL / Upload / Manual): Courier Prime, uppercase, no background fills
 - URL input dominates — large, full-width, typewriter feel
 - Submit: `[ EXTRACT ]` primary button, right-aligned or below input
 - All three tabs submit on Enter (fix from audit)
 
 ### Kit Viewer (`/kit/:id`)
+
 - Tab bar: horizontal, full-width, `border-bottom: 1px solid var(--border)`
 - Each tab: Courier Prime uppercase, 12px, muted inactive / ink active with 2px bottom border
 - Cards within tabs: `--surface` background, 0 radius, hairline borders
@@ -244,6 +266,7 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 - Export section: list of download options, each as a row with label + `[ DOWNLOAD ]` button
 
 ### design.md (`/kit/:id/design`)
+
 - Rendered in-app page — feels like a printed brand brief
 - Full-width, max-w-3xl centered, generous vertical padding
 - Sections separated by full-ink horizontal rules
@@ -269,5 +292,5 @@ No sparkles. No brain. No wand. No AI iconography of any kind.
 
 ---
 
-*Last updated: Prompt 2 execution — landing page + global design system*
-*Next: Prompt 3 — /new route | Prompt 4 — kit viewer | Prompt 5 — design.md*
+_Last updated: Prompt 2 execution — landing page + global design system_
+_Next: Prompt 3 — /new route | Prompt 4 — kit viewer | Prompt 5 — design.md_

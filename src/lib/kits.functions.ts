@@ -95,11 +95,7 @@ export const getKit = createServerFn({ method: "POST" })
 // Helper: verify ownership of a kit
 async function loadOwnedKit(kitId: string, ownerToken: string) {
   const admin = getAdmin();
-  const { data: kit } = await admin
-    .from("brand_kits")
-    .select("*")
-    .eq("id", kitId)
-    .maybeSingle();
+  const { data: kit } = await admin.from("brand_kits").select("*").eq("id", kitId).maybeSingle();
   if (!kit) throw new Error("Kit not found");
   // Personal app — no ownership gate.
   return kit as any;
@@ -314,8 +310,7 @@ export const listKitsByOwner = createServerFn({ method: "POST" })
     return {
       kits: rows.map((r: any) => {
         const colors = palette[r.id] ?? [];
-        const primary =
-          colors.find((c) => c.role === "primary")?.hex ?? colors[0]?.hex ?? null;
+        const primary = colors.find((c) => c.role === "primary")?.hex ?? colors[0]?.hex ?? null;
         return {
           ...r,
           primaryHex: primary,
@@ -339,10 +334,7 @@ export const bulkDeleteKits = createServerFn({ method: "POST" })
     const admin = getAdmin();
     // Shared workspace — anyone can delete any kit.
     void data.ownerToken;
-    const { data: rows } = await admin
-      .from("brand_kits")
-      .select("id")
-      .in("id", data.kitIds);
+    const { data: rows } = await admin.from("brand_kits").select("id").in("id", data.kitIds);
     const ownedIds = (rows ?? []).map((r: any) => r.id as string);
     if (ownedIds.length === 0) return { deleted: 0 };
     await Promise.all([

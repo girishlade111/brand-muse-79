@@ -16,7 +16,10 @@ function assetDedupKey(kind: string, url: string): string {
     u.hash = "";
     u.search = "";
     u.hostname = u.hostname.toLowerCase();
-    if ((u.protocol === "http:" && u.port === "80") || (u.protocol === "https:" && u.port === "443")) {
+    if (
+      (u.protocol === "http:" && u.port === "80") ||
+      (u.protocol === "https:" && u.port === "443")
+    ) {
       u.port = "";
     }
     if (u.pathname.length > 1 && u.pathname.endsWith("/")) {
@@ -330,7 +333,8 @@ function fallbackExtraction(input: {
     .map((hex) => (hex.startsWith("#") ? hex : `#${hex}`))
     .filter((hex, i, arr) => /^#[0-9a-f]{6}$/i.test(hex) && arr.indexOf(hex) === i)
     .slice(0, 6);
-  const palette = observed.length >= 3 ? observed : ["#0A0A0A", "#F4EFE6", "#8B1A1A", "#5F5A52", "#D8D0C3"];
+  const palette =
+    observed.length >= 3 ? observed : ["#0A0A0A", "#F4EFE6", "#8B1A1A", "#5F5A52", "#D8D0C3"];
   const families = [
     ...(input.manual?.fontFamilies ?? []),
     ...(input.detectedFonts ?? []).map((f) => substituteFor(f.source_family) ?? f.source_family),
@@ -343,7 +347,8 @@ function fallbackExtraction(input: {
     colors: palette.map((hex, i) => ({
       hex,
       role: ["primary", "background", "accent", "text", "muted", "secondary"][i] ?? "secondary",
-      name: ["Primary", "Background", "Accent", "Text", "Muted", "Secondary"][i] ?? `Color ${i + 1}`,
+      name:
+        ["Primary", "Background", "Accent", "Text", "Muted", "Secondary"][i] ?? `Color ${i + 1}`,
     })),
     fonts: [
       { family: heading, role: "heading", weights: ["400", "700"], google_font: false },
@@ -356,7 +361,10 @@ function fallbackExtraction(input: {
       { category: "animation", name: "standard", value: "200ms ease" },
     ],
     voice: {
-      tone: [{ label: "clear", confidence: 0.6 }, { label: "direct", confidence: 0.55 }],
+      tone: [
+        { label: "clear", confidence: 0.6 },
+        { label: "direct", confidence: 0.55 },
+      ],
       vocabulary: [name, host, "brand", "system"],
       dos: ["Keep language direct", "Use concise calls to action"],
       donts: ["Avoid vague claims", "Do not overstate unsupported details"],
@@ -369,13 +377,52 @@ function fallbackExtraction(input: {
     },
     assets: [],
     typography_scale: [
-      { role: "h1", font_family: heading, font_size_px: null, line_height: null, letter_spacing: null, font_weight: 700, sample_text: name },
-      { role: "h2", font_family: heading, font_size_px: null, line_height: null, letter_spacing: null, font_weight: 400, sample_text: "Brand system" },
-      { role: "body", font_family: body, font_size_px: null, line_height: null, letter_spacing: null, font_weight: 400, sample_text: "Core brand language and visual tokens." },
+      {
+        role: "h1",
+        font_family: heading,
+        font_size_px: null,
+        line_height: null,
+        letter_spacing: null,
+        font_weight: 700,
+        sample_text: name,
+      },
+      {
+        role: "h2",
+        font_family: heading,
+        font_size_px: null,
+        line_height: null,
+        letter_spacing: null,
+        font_weight: 400,
+        sample_text: "Brand system",
+      },
+      {
+        role: "body",
+        font_family: body,
+        font_size_px: null,
+        line_height: null,
+        letter_spacing: null,
+        font_weight: 400,
+        sample_text: "Core brand language and visual tokens.",
+      },
     ],
-    imagery_style: { photography_style: null, illustration_style: null, iconography_style: null, mood_keywords: ["clear", "restrained", "structured"] },
-    motion_style: { overall_tempo: "medium", easing_description: "simple ease transitions", transition_notes: "Keep motion functional and restrained." },
-    brand_positioning: { tagline: null, mission: null, audience_description: null, industry_vertical: null, value_props: [] },
+    imagery_style: {
+      photography_style: null,
+      illustration_style: null,
+      iconography_style: null,
+      mood_keywords: ["clear", "restrained", "structured"],
+    },
+    motion_style: {
+      overall_tempo: "medium",
+      easing_description: "simple ease transitions",
+      transition_notes: "Keep motion functional and restrained.",
+    },
+    brand_positioning: {
+      tagline: null,
+      mission: null,
+      audience_description: null,
+      industry_vertical: null,
+      value_props: [],
+    },
   };
 }
 
@@ -398,8 +445,10 @@ Rules:
 // Multi-page crawl: discover candidate pages and pick high-signal ones.
 // ============================================================================
 
-const PREFER_PATH = /\b(about|mission|manifesto|story|team|product|products|pricing|plans|solutions|features|work|cases|brand)\b/i;
-const SKIP_PATH = /\b(blog|news|docs?|legal|privacy|terms|careers|jobs|contact|login|signup|search|press|help|support|account|cart|checkout)\b/i;
+const PREFER_PATH =
+  /\b(about|mission|manifesto|story|team|product|products|pricing|plans|solutions|features|work|cases|brand)\b/i;
+const SKIP_PATH =
+  /\b(blog|news|docs?|legal|privacy|terms|careers|jobs|contact|login|signup|search|press|help|support|account|cart|checkout)\b/i;
 
 function pickExtraPages(homeUrl: string, links: string[], max = 2): string[] {
   let homeOrigin = "";
@@ -415,7 +464,11 @@ function pickExtraPages(homeUrl: string, links: string[], max = 2): string[] {
   const scored: Array<{ url: string; score: number }> = [];
   for (const raw of links) {
     let u: URL;
-    try { u = new URL(raw, homeUrl); } catch { continue; }
+    try {
+      u = new URL(raw, homeUrl);
+    } catch {
+      continue;
+    }
     if (u.origin !== homeOrigin) continue;
     const path = u.pathname.replace(/\/+$/, "") || "/";
     const norm = `${homeOrigin}${path}`;
@@ -445,7 +498,10 @@ function dataUrlToBuffer(input: string): { buf: Uint8Array; contentType: string 
   let b64 = input;
   let contentType = "image/png";
   const m = /^data:([^;]+);base64,(.+)$/.exec(input);
-  if (m) { contentType = m[1]; b64 = m[2]; }
+  if (m) {
+    contentType = m[1];
+    b64 = m[2];
+  }
   try {
     const bin = atob(b64);
     const buf = new Uint8Array(bin.length);
@@ -466,7 +522,11 @@ async function uploadScreenshot(
   if (/^https?:\/\//i.test(raw)) return raw;
   const decoded = dataUrlToBuffer(raw);
   if (!decoded) return null;
-  const ext = decoded.contentType.includes("jpeg") ? "jpg" : decoded.contentType.includes("webp") ? "webp" : "png";
+  const ext = decoded.contentType.includes("jpeg")
+    ? "jpg"
+    : decoded.contentType.includes("webp")
+      ? "webp"
+      : "png";
   const path = `${kitId}/screenshots/${crypto.randomUUID().slice(0, 8)}.${ext}`;
   const { error } = await admin.storage
     .from("brand-assets")
@@ -484,14 +544,42 @@ const InventorySchema = {
   type: "object",
   properties: {
     page_role: { type: "string", enum: ["home", "about", "product", "pricing", "other"] },
-    headlines: { type: "array", items: { type: "string" }, description: "Top 3-5 hero/section headlines verbatim" },
-    voice_samples: { type: "array", items: { type: "string" }, description: "5-10 short sentences capturing tone" },
-    cta_labels: { type: "array", items: { type: "string" }, description: "Button/CTA labels seen on page" },
-    notable_words: { type: "array", items: { type: "string" }, description: "Distinctive vocabulary used by the brand" },
-    color_mentions: { type: "array", items: { type: "string" }, description: "Hex colors observed in inline styles, prominent UI" },
-    font_mentions: { type: "array", items: { type: "string" }, description: "Font family names observed" },
+    headlines: {
+      type: "array",
+      items: { type: "string" },
+      description: "Top 3-5 hero/section headlines verbatim",
+    },
+    voice_samples: {
+      type: "array",
+      items: { type: "string" },
+      description: "5-10 short sentences capturing tone",
+    },
+    cta_labels: {
+      type: "array",
+      items: { type: "string" },
+      description: "Button/CTA labels seen on page",
+    },
+    notable_words: {
+      type: "array",
+      items: { type: "string" },
+      description: "Distinctive vocabulary used by the brand",
+    },
+    color_mentions: {
+      type: "array",
+      items: { type: "string" },
+      description: "Hex colors observed in inline styles, prominent UI",
+    },
+    font_mentions: {
+      type: "array",
+      items: { type: "string" },
+      description: "Font family names observed",
+    },
     tagline_or_mission: { type: ["string", "null"] },
-    industry_signals: { type: "array", items: { type: "string" }, description: "Words hinting at industry/audience" },
+    industry_signals: {
+      type: "array",
+      items: { type: "string" },
+      description: "Words hinting at industry/audience",
+    },
   },
   required: ["page_role", "headlines", "voice_samples"],
 };
@@ -509,10 +597,7 @@ const InventoryZ = z.object({
   industry_signals: z.array(z.string()).default([]),
 });
 
-async function inventoryPage(args: {
-  url: string;
-  markdown?: string;
-}): Promise<Inventory | null> {
+async function inventoryPage(args: { url: string; markdown?: string }): Promise<Inventory | null> {
   if (!args.markdown || args.markdown.trim().length < 40) return null;
   try {
     const raw = await callAIStructured<any>({
@@ -552,7 +637,8 @@ async function runExtraction(input: {
     textBlock += `User-provided hex colors: ${input.manual.hexColors.join(", ")}\n`;
   if (input.manual?.fontFamilies?.length)
     textBlock += `User-provided fonts: ${input.manual.fontFamilies.join(", ")}\n`;
-  if (input.branding) textBlock += `\nFirecrawl branding metadata:\n${JSON.stringify(input.branding).slice(0, 8000)}\n`;
+  if (input.branding)
+    textBlock += `\nFirecrawl branding metadata:\n${JSON.stringify(input.branding).slice(0, 8000)}\n`;
   if (input.detectedFonts?.length) {
     const lines = input.detectedFonts.map((f) => {
       const sub = substituteFor(f.source_family);
@@ -582,7 +668,8 @@ tagline: ${d.tagline_or_mission ?? ""}`;
       .join("\n\n");
     textBlock += `\nPer-page inventory (literal observations from a fast first pass):\n${blocks}\n`;
   }
-  if (input.markdown) textBlock += `\nPage content (markdown):\n${input.markdown.slice(0, 16000)}\n`;
+  if (input.markdown)
+    textBlock += `\nPage content (markdown):\n${input.markdown.slice(0, 16000)}\n`;
   if (input.pdfTexts?.length) {
     for (const t of input.pdfTexts.slice(0, 6)) {
       textBlock += `\n${t.slice(0, 12000)}\n`;
@@ -593,7 +680,10 @@ tagline: ${d.tagline_or_mission ?? ""}`;
     throw new Error("No content to analyze");
   }
 
-  userParts.push({ type: "text", text: textBlock || "Analyze the attached image(s) for brand identity." });
+  userParts.push({
+    type: "text",
+    text: textBlock || "Analyze the attached image(s) for brand identity.",
+  });
 
   for (const u of (input.imageUrls ?? []).slice(0, 4)) {
     userParts.push({ type: "image_url", image_url: { url: u } });
@@ -644,7 +734,10 @@ async function rehostAsset(
     const contentType = res.headers.get("content-type") ?? "application/octet-stream";
     const buf = new Uint8Array(await res.arrayBuffer());
     if (buf.byteLength === 0 || buf.byteLength > 10 * 1024 * 1024) return null;
-    const extFromUrl = url.split("?")[0].match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    const extFromUrl = url
+      .split("?")[0]
+      .match(/\.([a-z0-9]+)$/i)?.[1]
+      ?.toLowerCase();
     const ext =
       extFromUrl ??
       (contentType.includes("svg")
@@ -670,74 +763,75 @@ async function rehostAsset(
   }
 }
 
-
 export async function extractKitImpl(data: ExtractKitInput) {
-    const admin = getAdmin();
+  const admin = getAdmin();
 
-    // Shared workspace — any visitor may re-extract any kit.
-    void data.ownerToken;
-    const { data: kit, error: kitErr } = await admin
-      .from("brand_kits")
-      .select("id")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (kitErr || !kit) throw new Error("Kit not found");
+  // Shared workspace — any visitor may re-extract any kit.
+  void data.ownerToken;
+  const { data: kit, error: kitErr } = await admin
+    .from("brand_kits")
+    .select("id")
+    .eq("id", data.kitId)
+    .maybeSingle();
+  if (kitErr || !kit) throw new Error("Kit not found");
 
-    await admin.from("brand_kits").update({ status: "processing" }).eq("id", data.kitId);
+  await admin.from("brand_kits").update({ status: "processing" }).eq("id", data.kitId);
 
-    try {
-      let markdown: string | undefined;
-      let rawHtml: string | undefined;
-      let branding: any;
-      let assets: Array<{ kind: string; url: string }> = [];
-      let detectedFonts: DetectedFont[] = [];
-      let cssColors: ColorObservation[] = [];
-      let inventories: Array<{ url: string; data: Inventory }> = [];
-      let pageScreenshots: string[] = [];
-      let extraction: Extraction | null = null;
-      // Set when the source site could not be read and we fell back to a
-      // generic kit — surfaced to the client so users are never shown a
-      // plausible-looking but invented kit without warning.
-      let degradedReason: string | null = null;
+  try {
+    let markdown: string | undefined;
+    let rawHtml: string | undefined;
+    let branding: any;
+    const assets: Array<{ kind: string; url: string }> = [];
+    let detectedFonts: DetectedFont[] = [];
+    let cssColors: ColorObservation[] = [];
+    let inventories: Array<{ url: string; data: Inventory }> = [];
+    let pageScreenshots: string[] = [];
+    let extraction: Extraction | null = null;
+    // Set when the source site could not be read and we fell back to a
+    // generic kit — surfaced to the client so users are never shown a
+    // plausible-looking but invented kit without warning.
+    let degradedReason: string | null = null;
 
-      // 1. Scrape URL if provided
-      if (data.url) {
-        // 1a. Discover candidate pages and pick top extras alongside homepage.
-        const mapped = await firecrawlMap(data.url, 60);
-        const extras = pickExtraPages(data.url, mapped, 2);
-        const targets = [data.url, ...extras];
+    // 1. Scrape URL if provided
+    if (data.url) {
+      // 1a. Discover candidate pages and pick top extras alongside homepage.
+      const mapped = await firecrawlMap(data.url, 60);
+      const extras = pickExtraPages(data.url, mapped, 2);
+      const targets = [data.url, ...extras];
 
-        // 1b. Scrape all targets in parallel. Homepage is required; extras best-effort.
-        const scraped = await Promise.allSettled(targets.map((u) => firecrawlScrape(u)));
-        const homeRes = scraped[0];
-        if (homeRes.status === "rejected") {
-          console.warn("[extractKit] homepage scrape failed; using fallback extraction", homeRes.reason);
-          const reasonMsg = String((homeRes.reason as any)?.message ?? homeRes.reason ?? "");
-          degradedReason = /\[40[313]\]|forbidden/i.test(reasonMsg)
-            ? "This site blocked our request, so the kit uses generic defaults instead of its real brand. Connect Firecrawl or upload assets for accurate results."
-            : "We couldn't read this site, so the kit uses generic defaults instead of its real brand. Try again, connect Firecrawl, or upload brand assets.";
-          extraction = fallbackExtraction({
-            url: data.url,
-            manual: data.manual,
-            cssColors,
-            detectedFonts,
-          });
-        }
+      // 1b. Scrape all targets in parallel. Homepage is required; extras best-effort.
+      const scraped = await Promise.allSettled(targets.map((u) => firecrawlScrape(u)));
+      const homeRes = scraped[0];
+      if (homeRes.status === "rejected") {
+        console.warn(
+          "[extractKit] homepage scrape failed; using fallback extraction",
+          homeRes.reason,
+        );
+        const reasonMsg = String((homeRes.reason as any)?.message ?? homeRes.reason ?? "");
+        degradedReason = /\[40[313]\]|forbidden/i.test(reasonMsg)
+          ? "This site blocked our request, so the kit uses generic defaults instead of its real brand. Connect Firecrawl or upload assets for accurate results."
+          : "We couldn't read this site, so the kit uses generic defaults instead of its real brand. Try again, connect Firecrawl, or upload brand assets.";
+        extraction = fallbackExtraction({
+          url: data.url,
+          manual: data.manual,
+          cssColors,
+          detectedFonts,
+        });
+      }
 
+      if (!extraction) {
+        type PageDoc = { url: string; doc: any };
+        const pages: PageDoc[] = [];
+        scraped.forEach((r, i) => {
+          if (r.status === "fulfilled") {
+            pages.push({ url: targets[i], doc: r.value.data ?? r.value });
+          }
+        });
 
-        if (!extraction) {
-          type PageDoc = { url: string; doc: any };
-          const pages: PageDoc[] = [];
-          scraped.forEach((r, i) => {
-            if (r.status === "fulfilled") {
-              pages.push({ url: targets[i], doc: r.value.data ?? r.value });
-            }
-          });
-
-          const home = pages[0].doc;
-          markdown = pages.map((p) => `# ${p.url}\n\n${p.doc.markdown ?? ""}`).join("\n\n---\n\n");
-          rawHtml = home.rawHtml ?? home.html;
-          branding = home.branding;
+        const home = pages[0].doc;
+        markdown = pages.map((p) => `# ${p.url}\n\n${p.doc.markdown ?? ""}`).join("\n\n---\n\n");
+        rawHtml = home.rawHtml ?? home.html;
+        branding = home.branding;
 
         // 1c. Upload screenshots → public URLs the AI can ingest.
         const shotPromises = pages.map(async (p) => {
@@ -783,7 +877,9 @@ export async function extractKitImpl(data: ExtractKitInput) {
         try {
           const fontResults = await Promise.all(
             pages.map((p) =>
-              detectFontsFromSite({ url: p.url, rawHtml: p.doc.rawHtml ?? p.doc.html }).catch(() => []),
+              detectFontsFromSite({ url: p.url, rawHtml: p.doc.rawHtml ?? p.doc.html }).catch(
+                () => [],
+              ),
             ),
           );
           const seenFont = new Map<string, DetectedFont>();
@@ -800,216 +896,219 @@ export async function extractKitImpl(data: ExtractKitInput) {
 
         // 1h. CSS color frequency across every page (HTML + inline CSS).
         try {
-          const corpus = pages
-            .map((p) => (p.doc.rawHtml ?? p.doc.html ?? ""))
-            .join("\n");
+          const corpus = pages.map((p) => p.doc.rawHtml ?? p.doc.html ?? "").join("\n");
           if (corpus) cssColors = extractColorsFromText(corpus, 24);
         } catch (e) {
           console.warn("[extractKit] css color extraction failed", e);
         }
 
-          // Avoid an extra AI pass before synthesis; it caused first-run timeouts.
-          inventories = [];
-        }
+        // Avoid an extra AI pass before synthesis; it caused first-run timeouts.
+        inventories = [];
       }
+    }
 
-      // 2. Run AI extraction
-      if (!extraction) {
-        try {
-          extraction = await runExtraction({
-            url: data.url,
-            markdown: markdown ?? data.text,
-            branding,
-            imageUrls: data.imageUrls,
-            pdfTexts: data.pdfTexts,
-            manual: data.manual,
-            detectedFonts,
-            cssColors,
-            inventories,
-            pageScreenshots,
-          });
-        } catch (e: any) {
-          const msg = String(e?.message ?? "");
-          if (/rate limit/i.test(msg)) e.code = "ai_rate_limit";
-          else if (/credits exhausted/i.test(msg)) e.code = "ai_credits_exhausted";
-          else if (/no content to analyze/i.test(msg)) e.code = "parse_failed";
-          else if (!e.code) e.code = "ai_failed";
-          extraction = fallbackExtraction({
-            url: data.url,
-            manual: data.manual,
-            cssColors,
-            detectedFonts,
-          });
-        }
+    // 2. Run AI extraction
+    if (!extraction) {
+      try {
+        extraction = await runExtraction({
+          url: data.url,
+          markdown: markdown ?? data.text,
+          branding,
+          imageUrls: data.imageUrls,
+          pdfTexts: data.pdfTexts,
+          manual: data.manual,
+          detectedFonts,
+          cssColors,
+          inventories,
+          pageScreenshots,
+        });
+      } catch (e: any) {
+        const msg = String(e?.message ?? "");
+        if (/rate limit/i.test(msg)) e.code = "ai_rate_limit";
+        else if (/credits exhausted/i.test(msg)) e.code = "ai_credits_exhausted";
+        else if (/no content to analyze/i.test(msg)) e.code = "parse_failed";
+        else if (!e.code) e.code = "ai_failed";
+        extraction = fallbackExtraction({
+          url: data.url,
+          manual: data.manual,
+          cssColors,
+          detectedFonts,
+        });
       }
+    }
 
-      // Build merged font records: enrich AI fonts with detected metadata,
-      // then add any detected fonts the AI missed.
-      const detectedByName = new Map<string, DetectedFont>();
-      for (const d of detectedFonts) detectedByName.set(d.source_family.toLowerCase(), d);
+    // Build merged font records: enrich AI fonts with detected metadata,
+    // then add any detected fonts the AI missed.
+    const detectedByName = new Map<string, DetectedFont>();
+    for (const d of detectedFonts) detectedByName.set(d.source_family.toLowerCase(), d);
 
-      const usedDetected = new Set<string>();
-      const enrichedAiFonts = extraction.fonts.map((f) => {
-        // Try to match AI-suggested family to a detected family
-        const lc = f.family.toLowerCase();
-        const direct = detectedByName.get(lc);
-        if (direct) {
-          usedDetected.add(lc);
-          const sub = substituteFor(direct.source_family);
-          return {
-            family: sub ?? f.family,
-            role: f.role,
-            weights: f.weights ?? direct.weights ?? [],
-            google_font: sub ? true : direct.provider === "google" || (f.google_font ?? false),
-            source_family: direct.source_family,
-            provider: direct.provider,
-            provider_url: direct.provider_url,
-            license: direct.license,
-            license_note: direct.license_note,
-            file_urls: direct.file_urls,
-            is_substitute: !!sub,
-          };
-        }
+    const usedDetected = new Set<string>();
+    const enrichedAiFonts = extraction.fonts.map((f) => {
+      // Try to match AI-suggested family to a detected family
+      const lc = f.family.toLowerCase();
+      const direct = detectedByName.get(lc);
+      if (direct) {
+        usedDetected.add(lc);
+        const sub = substituteFor(direct.source_family);
         return {
-          family: f.family,
+          family: sub ?? f.family,
           role: f.role,
-          weights: f.weights ?? [],
-          google_font: f.google_font ?? false,
-          source_family: null,
-          provider: null,
-          provider_url: null,
-          license: null,
-          license_note: null,
-          file_urls: [],
-          is_substitute: false,
+          weights: f.weights ?? direct.weights ?? [],
+          google_font: sub ? true : direct.provider === "google" || (f.google_font ?? false),
+          source_family: direct.source_family,
+          provider: direct.provider,
+          provider_url: direct.provider_url,
+          license: direct.license,
+          license_note: direct.license_note,
+          file_urls: direct.file_urls,
+          is_substitute: !!sub,
+        };
+      }
+      return {
+        family: f.family,
+        role: f.role,
+        weights: f.weights ?? [],
+        google_font: f.google_font ?? false,
+        source_family: null,
+        provider: null,
+        provider_url: null,
+        license: null,
+        license_note: null,
+        file_urls: [],
+        is_substitute: false,
+      };
+    });
+
+    // Append detected fonts the AI didn't surface (e.g. body font missed).
+    const extraDetected = detectedFonts
+      .filter((d) => !usedDetected.has(d.source_family.toLowerCase()))
+      .slice(0, 4)
+      .map((d) => {
+        const sub = substituteFor(d.source_family);
+        // Heuristic role
+        const lc = d.source_family.toLowerCase();
+        const role = /mono|code/.test(lc)
+          ? "mono"
+          : enrichedAiFonts.some((f) => f.role === "heading")
+            ? "body"
+            : "heading";
+        return {
+          family: sub ?? d.source_family,
+          role,
+          weights: d.weights,
+          google_font: sub ? true : d.provider === "google",
+          source_family: d.source_family,
+          provider: d.provider,
+          provider_url: d.provider_url,
+          license: d.license,
+          license_note: d.license_note,
+          file_urls: d.file_urls,
+          is_substitute: !!sub,
         };
       });
 
-      // Append detected fonts the AI didn't surface (e.g. body font missed).
-      const extraDetected = detectedFonts
-        .filter((d) => !usedDetected.has(d.source_family.toLowerCase()))
-        .slice(0, 4)
-        .map((d) => {
-          const sub = substituteFor(d.source_family);
-          // Heuristic role
-          const lc = d.source_family.toLowerCase();
-          const role = /mono|code/.test(lc)
-            ? "mono"
-            : enrichedAiFonts.some((f) => f.role === "heading")
-              ? "body"
-              : "heading";
-          return {
-            family: sub ?? d.source_family,
-            role,
-            weights: d.weights,
-            google_font: sub ? true : d.provider === "google",
-            source_family: d.source_family,
-            provider: d.provider,
-            provider_url: d.provider_url,
-            license: d.license,
-            license_note: d.license_note,
-            file_urls: d.file_urls,
-            is_substitute: !!sub,
-          };
-        });
+    const mergedFonts = [...enrichedAiFonts, ...extraDetected];
 
-      const mergedFonts = [...enrichedAiFonts, ...extraDetected];
+    // Merge AI-found assets with scrape-found assets, dedupe by URL
+    // Absolutize any relative URLs (the AI sometimes returns "/foo/bar.png").
+    const absolutize = (u: string): string | null => {
+      if (!u) return null;
+      if (u.startsWith("data:")) return null;
+      try {
+        return new URL(u, data.url ?? undefined).toString();
+      } catch {
+        return null;
+      }
+    };
+    const allAssets = [...assets, ...extraction.assets]
+      .map((a) => ({ kind: a.kind, url: absolutize(a.url) }))
+      .filter((a): a is { kind: string; url: string } => !!a.url);
+    const dedupedAssets: Array<{ kind: string; url: string }> = dedupAssetsByKey(allAssets);
 
-      // Merge AI-found assets with scrape-found assets, dedupe by URL
-      // Absolutize any relative URLs (the AI sometimes returns "/foo/bar.png").
-      const absolutize = (u: string): string | null => {
-        if (!u) return null;
-        if (u.startsWith("data:")) return null;
-        try { return new URL(u, data.url ?? undefined).toString(); } catch { return null; }
-      };
-      const allAssets = [...assets, ...extraction.assets]
-        .map((a) => ({ kind: a.kind, url: absolutize(a.url) }))
-        .filter((a): a is { kind: string; url: string } => !!a.url);
-      const dedupedAssets: Array<{ kind: string; url: string }> = dedupAssetsByKey(allAssets);
-
-      // Keep the raw scraped text (page markdown and/or PDF text) so the kit
-      // page can show a readable "Source text" view alongside the visuals.
-      const sourceText = [markdown, ...((data.pdfTexts as string[] | undefined) ?? [])]
+    // Keep the raw scraped text (page markdown and/or PDF text) so the kit
+    // page can show a readable "Source text" view alongside the visuals.
+    const sourceText =
+      [markdown, ...((data.pdfTexts as string[] | undefined) ?? [])]
         .filter((s): s is string => !!s && !!s.trim())
         .join("\n\n---\n\n")
         .slice(0, 200000) || null;
 
-      // 3. Persist
-      const updateRow: Record<string, any> = {
-        source_text: sourceText,
-        name: extraction.name,
-        status: "ready",
-        typography_scale: extraction.typography_scale ?? [],
-        imagery_style: extraction.imagery_style ?? null,
-        motion_style: extraction.motion_style ?? null,
-        brand_positioning: extraction.brand_positioning ?? null,
-        error_code: degradedReason ? "scrape_blocked" : null,
-        error_status: null,
-        error_message: degradedReason,
+    // 3. Persist
+    const updateRow: Record<string, any> = {
+      source_text: sourceText,
+      name: extraction.name,
+      status: "ready",
+      typography_scale: extraction.typography_scale ?? [],
+      imagery_style: extraction.imagery_style ?? null,
+      motion_style: extraction.motion_style ?? null,
+      brand_positioning: extraction.brand_positioning ?? null,
+      error_code: degradedReason ? "scrape_blocked" : null,
+      error_status: null,
+      error_message: degradedReason,
+    };
+    if (data.url) updateRow.source_url = data.url;
+    await admin.from("brand_kits").update(updateRow).eq("id", data.kitId);
 
-      };
-      if (data.url) updateRow.source_url = data.url;
-      await admin.from("brand_kits").update(updateRow).eq("id", data.kitId);
+    // Wipe and re-insert children (simple approach for this template)
+    await Promise.all([
+      admin.from("kit_colors").delete().eq("kit_id", data.kitId),
+      admin.from("kit_fonts").delete().eq("kit_id", data.kitId),
+      admin.from("kit_tokens").delete().eq("kit_id", data.kitId),
+      admin.from("kit_assets").delete().eq("kit_id", data.kitId),
+      admin.from("kit_voice").delete().eq("kit_id", data.kitId),
+    ]);
 
-      // Wipe and re-insert children (simple approach for this template)
-      await Promise.all([
-        admin.from("kit_colors").delete().eq("kit_id", data.kitId),
-        admin.from("kit_fonts").delete().eq("kit_id", data.kitId),
-        admin.from("kit_tokens").delete().eq("kit_id", data.kitId),
-        admin.from("kit_assets").delete().eq("kit_id", data.kitId),
-        admin.from("kit_voice").delete().eq("kit_id", data.kitId),
-      ]);
-
-      if (extraction.colors.length)
-        await admin.from("kit_colors").insert(
-          extraction.colors.map((c, i) => ({
-            kit_id: data.kitId,
-            hex: c.hex.startsWith("#") ? c.hex : `#${c.hex}`,
-            role: c.role,
-            name: c.name,
-            position: i,
-          })),
-        );
-      if (mergedFonts.length)
-        await admin.from("kit_fonts").insert(
-          mergedFonts.map((f, i) => ({
-            kit_id: data.kitId,
-            family: f.family,
-            role: f.role,
-            weights: f.weights ?? [],
-            google_font: f.google_font ?? false,
-            source_family: f.source_family,
-            provider: f.provider,
-            provider_url: f.provider_url,
-            license: f.license,
-            license_note: f.license_note,
-            file_urls: f.file_urls ?? [],
-            is_substitute: f.is_substitute ?? false,
-            position: i,
-          })),
-        );
-      if (extraction.tokens.length)
-        await admin.from("kit_tokens").insert(
-          extraction.tokens.map((t, i) => ({
-            kit_id: data.kitId,
-            category: t.category,
-            name: t.name,
-            value: t.value,
-            position: i,
-          })),
-        );
-      if (dedupedAssets.length) {
-        // Best-effort rehost into brand-assets bucket so logos survive source changes.
-        const rehosted = await Promise.all(
-          dedupedAssets.map(async (a) => ({
-            ...a,
-            storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
-          })),
-        );
-        // Drop assets whose source URL we couldn't fetch — those are dead links
-        // that would render as broken images on the kit page.
-        const reachable = rehosted.filter((a) => !!a.storage_path);
-        if (reachable.length) await admin.from("kit_assets").insert(
+    if (extraction.colors.length)
+      await admin.from("kit_colors").insert(
+        extraction.colors.map((c, i) => ({
+          kit_id: data.kitId,
+          hex: c.hex.startsWith("#") ? c.hex : `#${c.hex}`,
+          role: c.role,
+          name: c.name,
+          position: i,
+        })),
+      );
+    if (mergedFonts.length)
+      await admin.from("kit_fonts").insert(
+        mergedFonts.map((f, i) => ({
+          kit_id: data.kitId,
+          family: f.family,
+          role: f.role,
+          weights: f.weights ?? [],
+          google_font: f.google_font ?? false,
+          source_family: f.source_family,
+          provider: f.provider,
+          provider_url: f.provider_url,
+          license: f.license,
+          license_note: f.license_note,
+          file_urls: f.file_urls ?? [],
+          is_substitute: f.is_substitute ?? false,
+          position: i,
+        })),
+      );
+    if (extraction.tokens.length)
+      await admin.from("kit_tokens").insert(
+        extraction.tokens.map((t, i) => ({
+          kit_id: data.kitId,
+          category: t.category,
+          name: t.name,
+          value: t.value,
+          position: i,
+        })),
+      );
+    if (dedupedAssets.length) {
+      // Best-effort rehost into brand-assets bucket so logos survive source changes.
+      const rehosted = await Promise.all(
+        dedupedAssets.map(async (a) => ({
+          ...a,
+          storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
+        })),
+      );
+      // Drop assets whose source URL we couldn't fetch — those are dead links
+      // that would render as broken images on the kit page.
+      const reachable = rehosted.filter((a) => !!a.storage_path);
+      if (reachable.length)
+        await admin.from("kit_assets").insert(
           reachable.map((a, i) => ({
             kit_id: data.kitId,
             kind: a.kind,
@@ -1018,36 +1117,36 @@ export async function extractKitImpl(data: ExtractKitInput) {
             position: i,
           })),
         );
-      }
-      await admin.from("kit_voice").insert({
-        kit_id: data.kitId,
-        tone: extraction.voice.tone ?? [],
-        vocabulary: extraction.voice.vocabulary ?? [],
-        dos: extraction.voice.dos ?? [],
-        donts: extraction.voice.donts ?? [],
-        samples: extraction.voice.samples ?? {},
-        summary: extraction.summary ?? null,
-      });
-
-      return { ok: true, kitId: data.kitId, degraded: !!degradedReason, degradedReason };
-    } catch (e: any) {
-      const rawMsg = String(e?.message ?? "Extraction failed");
-      const errMessage = rawMsg.slice(0, 500);
-      const code: string = e?.code ?? "unknown";
-      const statusMatch = rawMsg.match(/\[(\d{3})\]|error (\d{3})/i);
-      const errStatus = statusMatch ? Number(statusMatch[1] ?? statusMatch[2]) : null;
-      await admin
-        .from("brand_kits")
-        .update({
-          status: "error",
-          error_code: code,
-          error_status: errStatus,
-          error_message: errMessage,
-        })
-        .eq("id", data.kitId);
-      console.error("[extractKit]", e);
-      return { ok: false, error: errMessage, kitId: data.kitId };
     }
+    await admin.from("kit_voice").insert({
+      kit_id: data.kitId,
+      tone: extraction.voice.tone ?? [],
+      vocabulary: extraction.voice.vocabulary ?? [],
+      dos: extraction.voice.dos ?? [],
+      donts: extraction.voice.donts ?? [],
+      samples: extraction.voice.samples ?? {},
+      summary: extraction.summary ?? null,
+    });
+
+    return { ok: true, kitId: data.kitId, degraded: !!degradedReason, degradedReason };
+  } catch (e: any) {
+    const rawMsg = String(e?.message ?? "Extraction failed");
+    const errMessage = rawMsg.slice(0, 500);
+    const code: string = e?.code ?? "unknown";
+    const statusMatch = rawMsg.match(/\[(\d{3})\]|error (\d{3})/i);
+    const errStatus = statusMatch ? Number(statusMatch[1] ?? statusMatch[2]) : null;
+    await admin
+      .from("brand_kits")
+      .update({
+        status: "error",
+        error_code: code,
+        error_status: errStatus,
+        error_message: errMessage,
+      })
+      .eq("id", data.kitId);
+    console.error("[extractKit]", e);
+    return { ok: false, error: errMessage, kitId: data.kitId };
+  }
 }
 
 // Generate sample brand-voice copy on demand
@@ -1059,39 +1158,39 @@ export const GenerateSampleCopyInputSchema = z.object({
 export type GenerateSampleCopyInput = z.infer<typeof GenerateSampleCopyInputSchema>;
 
 export async function generateSampleCopyImpl(data: GenerateSampleCopyInput) {
-    const admin = getAdmin();
-    const { data: voice } = await admin
-      .from("kit_voice")
-      .select("tone, vocabulary, dos, donts, samples, summary")
-      .eq("kit_id", data.kitId)
-      .maybeSingle();
-    const { data: kit } = await admin
-      .from("brand_kits")
-      .select("name")
-      .eq("id", data.kitId)
-      .maybeSingle();
+  const admin = getAdmin();
+  const { data: voice } = await admin
+    .from("kit_voice")
+    .select("tone, vocabulary, dos, donts, samples, summary")
+    .eq("kit_id", data.kitId)
+    .maybeSingle();
+  const { data: kit } = await admin
+    .from("brand_kits")
+    .select("name")
+    .eq("id", data.kitId)
+    .maybeSingle();
 
-    if (!voice || !kit) throw new Error("Kit not found");
+  if (!voice || !kit) throw new Error("Kit not found");
 
-    const result = await callAIStructured<{ output: string }>({
-      system: `You write copy in a brand's voice. Brand: ${kit.name}.
+  const result = await callAIStructured<{ output: string }>({
+    system: `You write copy in a brand's voice. Brand: ${kit.name}.
 Tone: ${JSON.stringify(voice.tone)}
 Vocabulary to favor: ${JSON.stringify(voice.vocabulary)}
 DO: ${JSON.stringify(voice.dos)}
 DON'T: ${JSON.stringify(voice.donts)}
 Existing samples: ${JSON.stringify(voice.samples)}.
 Match this voice exactly. Be specific, not generic.`,
-      user: `Write a ${data.kind.replace("_", " ")} for: ${data.topic}`,
-      toolName: "save_copy",
-      toolDescription: "Return one piece of copy in the brand's voice.",
-      parameters: {
-        type: "object",
-        properties: { output: { type: "string" } },
-        required: ["output"],
-      },
-    });
+    user: `Write a ${data.kind.replace("_", " ")} for: ${data.topic}`,
+    toolName: "save_copy",
+    toolDescription: "Return one piece of copy in the brand's voice.",
+    parameters: {
+      type: "object",
+      properties: { output: { type: "string" } },
+      required: ["output"],
+    },
+  });
 
-    return result.output;
+  return result.output;
 }
 
 // Re-scan the kit's source URL for additional logo / mark / icon assets.
@@ -1104,92 +1203,90 @@ export const HarvestMoreAssetsInputSchema = z.object({
 export type HarvestMoreAssetsInput = z.infer<typeof HarvestMoreAssetsInputSchema>;
 
 export async function harvestMoreAssetsImpl(data: HarvestMoreAssetsInput) {
-    const admin = getAdmin();
+  const admin = getAdmin();
 
-    void data.ownerToken;
-    const { data: kit, error: kitErr } = await admin
-      .from("brand_kits")
-      .select("id, source_url")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (kitErr || !kit) throw new Error("Kit not found");
-    if (!kit.source_url) return { ok: false, added: 0, error: "No source URL" };
+  void data.ownerToken;
+  const { data: kit, error: kitErr } = await admin
+    .from("brand_kits")
+    .select("id, source_url")
+    .eq("id", data.kitId)
+    .maybeSingle();
+  if (kitErr || !kit) throw new Error("Kit not found");
+  if (!kit.source_url) return { ok: false, added: 0, error: "No source URL" };
 
-    const { data: existing } = await admin
-      .from("kit_assets")
-      .select("url, kind, position")
-      .eq("kit_id", data.kitId);
-    // Build a normalized-key set from existing rows so cache-busted / mirror
-    // URLs of the same logo don't get re-imported.
-    const existingKeys = new Set<string>(
-      (existing ?? []).map((a: { kind: string; url: string }) => assetDedupKey(a.kind, a.url)),
-    );
-    const existingBasenameKeys = new Set<string>(
-      (existing ?? []).map((a: { kind: string; url: string }) => {
-        const basename = assetDedupKey(a.kind, a.url).split("::")[2];
-        return `${a.kind}::${basename}`;
-      }),
-    );
-    const startPos = (existing ?? []).reduce(
-      (m: number, a: any) => Math.max(m, a.position ?? 0),
-      -1,
-    ) + 1;
+  const { data: existing } = await admin
+    .from("kit_assets")
+    .select("url, kind, position")
+    .eq("kit_id", data.kitId);
+  // Build a normalized-key set from existing rows so cache-busted / mirror
+  // URLs of the same logo don't get re-imported.
+  const existingKeys = new Set<string>(
+    (existing ?? []).map((a: { kind: string; url: string }) => assetDedupKey(a.kind, a.url)),
+  );
+  const existingBasenameKeys = new Set<string>(
+    (existing ?? []).map((a: { kind: string; url: string }) => {
+      const basename = assetDedupKey(a.kind, a.url).split("::")[2];
+      return `${a.kind}::${basename}`;
+    }),
+  );
+  const startPos =
+    (existing ?? []).reduce((m: number, a: any) => Math.max(m, a.position ?? 0), -1) + 1;
 
-    let scraped: any;
+  let scraped: any;
+  try {
+    scraped = await firecrawlScrape(kit.source_url);
+  } catch (e: any) {
+    return { ok: false, added: 0, error: e?.message ?? "Scrape failed" };
+  }
+  const doc = scraped.data ?? scraped;
+  const rawHtml: string | undefined = doc.rawHtml ?? doc.html;
+  const branding = doc.branding;
+
+  const candidates: Array<{ kind: string; url: string }> = [];
+  if (branding?.images) {
+    for (const k of ["logo", "favicon", "ogImage"] as const) {
+      if (branding.images[k]) {
+        candidates.push({
+          kind: k === "ogImage" ? "og-image" : k,
+          url: branding.images[k],
+        });
+      }
+    }
+  }
+  if (rawHtml) {
     try {
-      scraped = await firecrawlScrape(kit.source_url);
-    } catch (e: any) {
-      return { ok: false, added: 0, error: e?.message ?? "Scrape failed" };
+      for (const a of harvestLogosFromHtml(rawHtml, kit.source_url)) candidates.push(a);
+    } catch (e) {
+      console.warn("[harvestMoreAssets] harvest failed", e);
     }
-    const doc = scraped.data ?? scraped;
-    const rawHtml: string | undefined = doc.rawHtml ?? doc.html;
-    const branding = doc.branding;
+  }
 
-    const candidates: Array<{ kind: string; url: string }> = [];
-    if (branding?.images) {
-      for (const k of ["logo", "favicon", "ogImage"] as const) {
-        if (branding.images[k]) {
-          candidates.push({
-            kind: k === "ogImage" ? "og-image" : k,
-            url: branding.images[k],
-          });
-        }
-      }
-    }
-    if (rawHtml) {
-      try {
-        for (const a of harvestLogosFromHtml(rawHtml, kit.source_url)) candidates.push(a);
-      } catch (e) {
-        console.warn("[harvestMoreAssets] harvest failed", e);
-      }
-    }
+  // Dedup the new candidates among themselves AND against existing rows.
+  const dedupedCandidates = dedupAssetsByKey(candidates);
+  const fresh = dedupedCandidates.filter((c) => {
+    const key = assetDedupKey(c.kind, c.url);
+    const basenameKey = `${c.kind}::${key.split("::")[2]}`;
+    if (existingKeys.has(key)) return false;
+    if (basenameKey.split("::")[1] && existingBasenameKeys.has(basenameKey)) return false;
+    return true;
+  });
+  if (!fresh.length) return { ok: true, added: 0 };
 
-    // Dedup the new candidates among themselves AND against existing rows.
-    const dedupedCandidates = dedupAssetsByKey(candidates);
-    const fresh = dedupedCandidates.filter((c) => {
-      const key = assetDedupKey(c.kind, c.url);
-      const basenameKey = `${c.kind}::${key.split("::")[2]}`;
-      if (existingKeys.has(key)) return false;
-      if (basenameKey.split("::")[1] && existingBasenameKeys.has(basenameKey)) return false;
-      return true;
-    });
-    if (!fresh.length) return { ok: true, added: 0 };
-
-    const rehosted = await Promise.all(
-      fresh.map(async (a) => ({
-        ...a,
-        storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
-      })),
-    );
-    const { error: insErr } = await admin.from("kit_assets").insert(
-      rehosted.map((a, i) => ({
-        kit_id: data.kitId,
-        kind: a.kind,
-        url: a.url,
-        storage_path: a.storage_path,
-        position: startPos + i,
-      })),
-    );
-    if (insErr) return { ok: false, added: 0, error: insErr.message };
-    return { ok: true, added: fresh.length };
+  const rehosted = await Promise.all(
+    fresh.map(async (a) => ({
+      ...a,
+      storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
+    })),
+  );
+  const { error: insErr } = await admin.from("kit_assets").insert(
+    rehosted.map((a, i) => ({
+      kit_id: data.kitId,
+      kind: a.kind,
+      url: a.url,
+      storage_path: a.storage_path,
+      position: startPos + i,
+    })),
+  );
+  if (insErr) return { ok: false, added: 0, error: insErr.message };
+  return { ok: true, added: fresh.length };
 }

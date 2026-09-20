@@ -59,17 +59,17 @@ Assembling brand guidelines and developer handoff kits is traditionally a manual
 
 ## 🖋 Design Philosophy: The Invisible Instrument
 
-Brand DNA is designed around the concept of **"The Invisible Instrument"** — drawing inspiration from traditional Japanese calligraphy (*Shodō*) and sumi ink on washi paper:
+Brand DNA is designed around the concept of **"The Invisible Instrument"** — drawing inspiration from traditional Japanese calligraphy (_Shodō_) and sumi ink on washi paper:
 
 - **Target Aesthetic**: Quiet, surgical, high-contrast editorial minimalism. A precision scalpel, not a toy.
 - **Zero Radius (`0px`)**: Sharp corners everywhere. No pill buttons or decorative rounded borders.
 - **Palette**: Monochromatic core (`#F4EFE6` washi paper and `#0A0A0A` sumi ink) with single hanko seal red (`#8B1A1A`) reserved exclusively for primary CTA active moments.
 - **Typography Pairing**:
-  - **Display / Titles**: *Cormorant Garamond* (Bold, intentional ink strokes).
-  - **Data / Labels / UI**: *Courier Prime* (Raw typewriter mono precision).
-  - **Body Prose**: *Libre Baskerville* (Refined editorial readability).
+  - **Display / Titles**: _Cormorant Garamond_ (Bold, intentional ink strokes).
+  - **Data / Labels / UI**: _Courier Prime_ (Raw typewriter mono precision).
+  - **Body Prose**: _Libre Baskerville_ (Refined editorial readability).
 
-*For the complete design philosophy, consult [DESIGN.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DESIGN.md).*
+_For the complete design philosophy, consult [DESIGN.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DESIGN.md)._
 
 ---
 
@@ -130,36 +130,44 @@ flowchart TD
 ## ✨ Core Features Deep Dive
 
 ### 1. Multi-Modal Ingestion
+
 - **Website URL**: Deep URL scraping extracts favicons, high-resolution SVG/PNG logos, linked stylesheets, web fonts, and semantic text content.
 - **Document & PDF Upload**: Ingest brand guides, decks, and style sheets directly using client-side and server-side PDF parsing (`unpdf`).
 - **Asset Drop**: Drag-and-drop imagery, logos, or raw hex code strings.
 - **Multi-Page Discovery**: Automatically crawls companion pages (`/about`, `/mission`, `/product`, `/pricing`) to synthesize comprehensive brand context.
 
 ### 2. Semantic Color Intelligence & WCAG Contrast
+
 - **Automatic Role Assignment**: Maps extracted colors to semantic roles (`Primary`, `Secondary`, `Background`, `Surface`, `Text`, `Accent`, `Chart-1`, `Chart-2`).
 - **WCAG Contrast Ratios**: Automated AA and AAA contrast ratio verification with relative luminance analysis against both light and dark backgrounds.
 - **Interactive Palette Editor**: Rename colors, lock values during re-extraction, edit hex codes, or add custom brand swatches.
 
 ### 3. Typography Hierarchy & Google Fonts Resolution
+
 - **Scale Detection**: Identifies display headings (`H1` through `H6`), body prose, and code/mono font sizes.
 - **Google Fonts Auto-Resolution**: Resolves proprietary web fonts to open-source Google Font equivalents dynamically, with interactive live specimen previews.
 
 ### 4. Logo Studio & Pixel-Perfect Variants
+
 - **Vector Discovery**: Detects SVG marks, icons, and primary wordmarks across DOM tags, `<link>` icons, and OpenGraph metadata.
 - **Deterministic Pixel Manipulation**: Uses `fast-png` to recolor source logos into on-light (`#0A0A0A`), on-dark (`#F4EFE6`), and color-inverted variants without AI hallucinations or font distortion.
 - **Generative Mark Extraction**: Uses `@resvg/resvg-wasm` and Google Gemini 3 Flash to cleanly isolate standalone icons from wordmark text on transparent backgrounds.
 
 ### 5. Design Tokens Engine
+
 - Extracts spacing scales, structural border rules, elevation tokens, and animation durations/easings ready for immediate consumption in design tools and front-end frameworks.
 
 ### 6. Brand Voice & AI Copywriting
+
 - Extracts tone of voice, key brand vocabulary, and explicit dos and don'ts.
 - Automatically synthesizes on-brand sample copy tailored for sales outreach, landing page headers, and client proposals.
 
 ### 7. Version History & Visual Diff Viewer
+
 - Built-in design system versioning (`/design/history`) allowing teams to inspect visual side-by-side diffs (`/design/history/diff`) between iterations of a brand kit.
 
 ### 8. Frictionless Public Sharing
+
 - Generate secure public share tokens (`/share/$shareToken`) for read-only client presentations with zero login friction.
 
 ---
@@ -168,12 +176,12 @@ flowchart TD
 
 For comprehensive technical specifications, explore our dedicated topic guides:
 
-| Document | Description |
-|---|---|
+| Document                                                                                                                                  | Description                                                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 🔧 **[ENVIRONMENT_AND_CONFIGURATION.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/ENVIRONMENT_AND_CONFIGURATION.md)** | Complete environment variable reference (`.env`), client/server scopes, security rules, and deep dives into `vite.config.ts`, `wrangler.jsonc`, `tsconfig.json`, `styles.css`, and `playwright.config.ts`. |
-| 🔌 **[THIRD_PARTY_INTEGRATIONS.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/THIRD_PARTY_INTEGRATIONS.md)** | Detailed architecture of third-party services: Supabase PostgreSQL/Storage/Auth, Lovable AI Gateway & Google Gemini, Firecrawl scraping, Cloudflare Workers/Nitro, and WASM rendering engines. |
-| 💻 **[DEVELOPER_GUIDE.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DEVELOPER_GUIDE.md)** | Comprehensive developer handbook covering local setup, TanStack Start server functions, testing (Vitest & Playwright), custom lint scripts (`check-await-build-brand-pdf.mjs`), and deployment. |
-| 🎨 **[DESIGN.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DESIGN.md)** | Complete design system specification for "The Invisible Instrument" — color tokens, typography scales, spacing rhythm, and aesthetic philosophy. |
+| 🔌 **[THIRD_PARTY_INTEGRATIONS.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/THIRD_PARTY_INTEGRATIONS.md)**           | Detailed architecture of third-party services: Supabase PostgreSQL/Storage/Auth, Lovable AI Gateway & Google Gemini, Firecrawl scraping, Cloudflare Workers/Nitro, and WASM rendering engines.             |
+| 💻 **[DEVELOPER_GUIDE.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DEVELOPER_GUIDE.md)**                             | Comprehensive developer handbook covering local setup, TanStack Start server functions, testing (Vitest & Playwright), custom lint scripts (`check-await-build-brand-pdf.mjs`), and deployment.            |
+| 🎨 **[DESIGN.md](file:///c:/Users/Girish%20Lade/OneDrive/Desktop/brand-muse-79/DESIGN.md)**                                               | Complete design system specification for "The Invisible Instrument" — color tokens, typography scales, spacing rhythm, and aesthetic philosophy.                                                           |
 
 ---
 
@@ -248,6 +256,7 @@ brand-muse-79/
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
+
 - **Node.js**: `v20.x` or higher (or Bun `1.1+`)
 - **npm** or **bun**
 - **Git**
@@ -256,6 +265,7 @@ brand-muse-79/
 ### Installation
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/girishlade111/brand-muse-79.git
    cd brand-muse-79
@@ -271,11 +281,13 @@ brand-muse-79/
 ### Environment Setup
 
 Copy `.env.example` to `.env`:
+
 ```bash
 cp .env.example .env
 ```
 
 Configure your Supabase project credentials in `.env`:
+
 ```dotenv
 SUPABASE_PROJECT_ID="your-project-id"
 SUPABASE_PUBLISHABLE_KEY="your-supabase-publishable-key"
@@ -295,6 +307,7 @@ FIRECRAWL_API_KEY="your-firecrawl-api-key"
 ```bash
 npm run dev
 ```
+
 Open `http://localhost:3000` in your browser.
 
 ### Running Tests & Linting
@@ -319,14 +332,14 @@ npm run format
 
 Brand DNA enables 1-click export of brand kits across developer, designer, and executive formats:
 
-| Format | Output File | Purpose & Compatibility |
-|---|---|---|
-| **CSS Custom Properties** | `tokens.css` | Native CSS custom properties ready for root injection in standard web applications. |
-| **Tailwind CSS Config** | `tailwind.config.js` | Drop-in Tailwind theme extension block with mapped semantic colors and typography. |
-| **Tokens Studio / Figma** | `tokens.json` | Compatible with Figma Tokens Studio plugin for instant design handoff. |
-| **Brand Guidelines PDF** | `brand-guidelines.pdf` | Publication-grade vector PDF generated in-browser via `jsPDF` with swatches and type specimens. |
-| **Complete ZIP Archive** | `brand-kit.zip` | Bundles all SVG logos, PNG variants, font specimens, token JSONs, and CSS files via `JSZip`. |
-| **AI Design Prompt** | `DESIGN.md` | Context prompt for Lovable or AI web app builders specifying tokens and aesthetic rules. |
+| Format                    | Output File            | Purpose & Compatibility                                                                         |
+| ------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------- |
+| **CSS Custom Properties** | `tokens.css`           | Native CSS custom properties ready for root injection in standard web applications.             |
+| **Tailwind CSS Config**   | `tailwind.config.js`   | Drop-in Tailwind theme extension block with mapped semantic colors and typography.              |
+| **Tokens Studio / Figma** | `tokens.json`          | Compatible with Figma Tokens Studio plugin for instant design handoff.                          |
+| **Brand Guidelines PDF**  | `brand-guidelines.pdf` | Publication-grade vector PDF generated in-browser via `jsPDF` with swatches and type specimens. |
+| **Complete ZIP Archive**  | `brand-kit.zip`        | Bundles all SVG logos, PNG variants, font specimens, token JSONs, and CSS files via `JSZip`.    |
+| **AI Design Prompt**      | `DESIGN.md`            | Context prompt for Lovable or AI web app builders specifying tokens and aesthetic rules.        |
 
 ---
 
@@ -364,15 +377,19 @@ Deployment configuration is governed by [wrangler.jsonc](file:///c:/Users/Girish
 ## ❓ Troubleshooting & FAQ
 
 #### Q: Extraction failed with "Source URL is not allowed"
+
 **A**: Brand DNA enforces SSRF protection via `src/server/url-guard.server.ts`. Localhost, private IP ranges (e.g., `127.0.0.1`, `10.0.0.0/8`, `192.168.0.0/16`), and internal cloud metadata endpoints are blocked for security.
 
 #### Q: How does extraction work if I don't have a Firecrawl API key?
+
 **A**: Firecrawl is optional. When no key is detected, Brand DNA gracefully falls back to `directScrape` in `src/server/ai.server.ts`, fetching HTML directly and parsing metadata, stylesheets, and favicon links.
 
 #### Q: Why are logos sometimes recolored using code rather than AI?
+
 **A**: Generative AI models often hallucinate letterforms, modify kerning, or crop logos when recoloring. Brand DNA uses `fast-png` to deterministically replace color pixels in the raw PNG bytes, ensuring 100% preservation of the original logo geometry.
 
 #### Q: Why does `npm run lint` fail with "buildBrandPDF must always be awaited"?
+
 **A**: `buildBrandPDF` returns `Promise<Blob>`. Calling it without `await` passes an unfulfilled Promise to `JSZip` or download helpers, resulting in corrupted 0-byte PDF downloads. Prefix the call with `await`.
 
 ---
@@ -380,6 +397,7 @@ Deployment configuration is governed by [wrangler.jsonc](file:///c:/Users/Girish
 ## 🤝 Contributing & License
 
 Contributions, bug reports, and feature requests are welcome!
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'feat: add amazing feature'`)

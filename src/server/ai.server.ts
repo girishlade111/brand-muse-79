@@ -38,7 +38,11 @@ function attr(tag: string, name: string) {
 
 function absolutize(raw: string | undefined, baseUrl: string) {
   if (!raw || raw.startsWith("data:")) return undefined;
-  try { return new URL(raw, baseUrl).toString(); } catch { return undefined; }
+  try {
+    return new URL(raw, baseUrl).toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function metaContent(html: string, key: string) {
@@ -97,9 +101,14 @@ async function directScrape(url: string) {
     .map((m) => absolutize(m[1], url))
     .filter((v): v is string => !!v)
     .slice(0, 120);
-  const iconTag = html.match(/<link\b[^>]*rel\s*=\s*["'][^"']*(?:icon|apple-touch-icon)[^"']*["'][^>]*>/i)?.[0];
+  const iconTag = html.match(
+    /<link\b[^>]*rel\s*=\s*["'][^"']*(?:icon|apple-touch-icon)[^"']*["'][^>]*>/i,
+  )?.[0];
   const logoTag = html.match(/<img\b[^>]*(?:logo|wordmark|brand)[^>]*>/i)?.[0];
-  const ogImage = absolutize(metaContent(html, "og:image") ?? metaContent(html, "twitter:image"), url);
+  const ogImage = absolutize(
+    metaContent(html, "og:image") ?? metaContent(html, "twitter:image"),
+    url,
+  );
   const favicon = absolutize(attr(iconTag ?? "", "href"), url);
   const logo = absolutize(attr(logoTag ?? "", "src") ?? attr(logoTag ?? "", "data-src"), url);
   const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim();
@@ -166,7 +175,11 @@ export async function callAI(opts: {
         continue;
       }
       const name = (err as Error)?.name;
-      throw new Error(name === "AbortError" ? "AI gateway timeout" : `AI gateway unreachable: ${(err as Error)?.message ?? "network error"}`);
+      throw new Error(
+        name === "AbortError"
+          ? "AI gateway timeout"
+          : `AI gateway unreachable: ${(err as Error)?.message ?? "network error"}`,
+      );
     } finally {
       timeout.clear();
     }
@@ -187,9 +200,10 @@ export async function callAI(opts: {
     if (RETRYABLE_STATUSES.has(res.status) && attempt < MAX_ATTEMPTS) {
       // Honor Retry-After if present, else exponential backoff.
       const retryAfter = Number(res.headers.get("retry-after"));
-      const wait = Number.isFinite(retryAfter) && retryAfter > 0
-        ? Math.min(15000, retryAfter * 1000)
-        : backoffMs(attempt);
+      const wait =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(15000, retryAfter * 1000)
+          : backoffMs(attempt);
       console.warn(
         `[ai] gateway ${res.status} on attempt ${attempt}/${MAX_ATTEMPTS}, retrying in ${wait}ms`,
       );
@@ -204,9 +218,7 @@ export async function callAI(opts: {
     throw new Error(`AI gateway error ${res.status}: ${text.slice(0, 300)}`);
   }
 
-  throw lastErr instanceof Error
-    ? lastErr
-    : new Error("AI gateway failed after multiple retries");
+  throw lastErr instanceof Error ? lastErr : new Error("AI gateway failed after multiple retries");
 }
 
 export async function callAIStructured<T>(opts: {
@@ -285,9 +297,7 @@ export async function firecrawlScrape(url: string) {
         headers: req!.headers,
         body: JSON.stringify({
           url,
-          formats: isDoc
-            ? ["markdown"]
-            : ["markdown", "rawHtml", "links", "branding", "summary"],
+          formats: isDoc ? ["markdown"] : ["markdown", "rawHtml", "links", "branding", "summary"],
           onlyMainContent: false,
           timeout: isDoc ? 55000 : 7000,
         }),
@@ -311,7 +321,8 @@ export async function firecrawlScrape(url: string) {
     return await Promise.any([directScrape(url), apiScrape()]);
   } catch (e: any) {
     const errors = Array.isArray(e?.errors) ? e.errors : [];
-    const best = errors.find((err: any) => err?.message && err.name !== "AbortError") ?? errors[0] ?? e;
+    const best =
+      errors.find((err: any) => err?.message && err.name !== "AbortError") ?? errors[0] ?? e;
     throw best;
   }
 }

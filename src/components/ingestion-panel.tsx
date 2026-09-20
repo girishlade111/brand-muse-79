@@ -196,12 +196,14 @@ export function IngestionPanel() {
         throw new Error(extracted.error ?? "Extraction failed");
       }
       if ("degraded" in extracted && extracted.degraded) {
-        toast.warning(extracted.degradedReason ?? "Site could not be read — kit uses generic defaults.", {
-          duration: 12000,
-        });
+        toast.warning(
+          extracted.degradedReason ?? "Site could not be read — kit uses generic defaults.",
+          {
+            duration: 12000,
+          },
+        );
       }
       navigate({ to: "/kit/$kitId", params: { kitId: id } });
-
     } catch (err: any) {
       toast.error(err?.message ?? "Extraction failed");
     } finally {
@@ -216,7 +218,9 @@ export function IngestionPanel() {
 
       <form className="ingest" onSubmit={submit} aria-label="Brand ingestion">
         <div className="ingest-row">
-          <span className="ingest-prefix" aria-hidden="true">URL /</span>
+          <span className="ingest-prefix" aria-hidden="true">
+            URL /
+          </span>
           <input
             type="text"
             inputMode="url"
@@ -233,17 +237,36 @@ export function IngestionPanel() {
             className="ingest-input"
             aria-label="Website URL"
           />
-          <button type="submit" className="ingest-go" disabled={busy || !ready} aria-label="Extract">
+          <button
+            type="submit"
+            className="ingest-go"
+            disabled={busy || !ready}
+            aria-label="Extract"
+          >
             {!ready ? (
               <span className="ingest-go-label is-busy">
-                [ INITIALIZING<span className="ingest-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span> ]
+                [ INITIALIZING
+                <span className="ingest-dots" aria-hidden="true">
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </span>{" "}
+                ]
               </span>
             ) : busy ? (
               <span className="ingest-go-label is-busy">
-                [ EXTRACTING<span className="ingest-dots" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span> ]
+                [ EXTRACTING
+                <span className="ingest-dots" aria-hidden="true">
+                  <span>.</span>
+                  <span>.</span>
+                  <span>.</span>
+                </span>{" "}
+                ]
               </span>
             ) : (
-              <span key={stageTick} className="ingest-go-label">[ EXTRACT → ]</span>
+              <span key={stageTick} className="ingest-go-label">
+                [ EXTRACT → ]
+              </span>
             )}
           </button>
         </div>

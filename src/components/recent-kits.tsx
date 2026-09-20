@@ -98,11 +98,7 @@ export function RecentKits() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.04, ease: "easeOut" }}
             >
-              <Link
-                to="/kit/$kitId"
-                params={{ kitId: k.id }}
-                className="recent-row"
-              >
+              <Link to="/kit/$kitId" params={{ kitId: k.id }} className="recent-row">
                 <span
                   className="recent-mark"
                   style={{
@@ -148,19 +144,14 @@ export function RecentKits() {
                     {k.name}
                   </span>
                   {k.source_url && (
-                    <span className="recent-url">
-                      {k.source_url.replace(/^https?:\/\//, "")}
-                    </span>
+                    <span className="recent-url">{k.source_url.replace(/^https?:\/\//, "")}</span>
                   )}
                 </span>
 
                 {k.palette && k.palette.length > 0 && (
                   <span className="recent-pal" aria-hidden>
                     {k.palette.slice(0, 5).map((hex, idx) => (
-                      <span
-                        key={`${hex}-${idx}`}
-                        style={{ background: hex }}
-                      />
+                      <span key={`${hex}-${idx}`} style={{ background: hex }} />
                     ))}
                   </span>
                 )}

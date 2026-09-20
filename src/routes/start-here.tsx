@@ -44,58 +44,51 @@ function StartHerePage() {
 
         <Section number="01." title="What this template does">
           <P>
-            Paste any company URL. The app extracts the brand's palette,
-            typography, voice, and design tokens — and packages them as a
-            kit you can browse, share, and export.
+            Paste any company URL. The app extracts the brand's palette, typography, voice, and
+            design tokens — and packages them as a kit you can browse, share, and export.
           </P>
           <P>
-            Recent kits show up on the home page. Open one to see colors,
-            fonts, logos, and a generated <Mono>design.md</Mono>.
+            Recent kits show up on the home page. Open one to see colors, fonts, logos, and a
+            generated <Mono>design.md</Mono>.
           </P>
-          <P>
-            Drop these files into Lovable or your AI agent to use their
-            brand.
-          </P>
+          <P>Drop these files into Lovable or your AI agent to use their brand.</P>
         </Section>
 
         <Section number="02." title="Optional: Firecrawl connector">
           <FirecrawlCard />
           <P>
-            Extraction works without it. Adding Firecrawl gives you
-            better results on JavaScript-heavy sites and richer brand data.
+            Extraction works without it. Adding Firecrawl gives you better results on
+            JavaScript-heavy sites and richer brand data.
           </P>
 
           <SubHeading>Pricing — mostly free</SubHeading>
           <P>
-            Firecrawl gives every new account <strong>500 free credits</strong>{" "}
-            on sign-up, no card required. One brand extraction typically uses
-            1–5 credits, so casual use rarely leaves the free tier. If you do
-            run out, their Hobby plan starts at <strong>$16/mo</strong> for
+            Firecrawl gives every new account <strong>500 free credits</strong> on sign-up, no card
+            required. One brand extraction typically uses 1–5 credits, so casual use rarely leaves
+            the free tier. If you do run out, their Hobby plan starts at <strong>$16/mo</strong> for
             3,000 credits — only needed for heavy or commercial use.
           </P>
 
           <SubHeading>Connecting it</SubHeading>
           <P>
-            <strong>If you remixed this template,</strong> Lovable may have
-            already linked Firecrawl. If you're not sure, paste this into
-            the Lovable chat:
+            <strong>If you remixed this template,</strong> Lovable may have already linked
+            Firecrawl. If you're not sure, paste this into the Lovable chat:
           </P>
           <PromptBlock text={CONNECT_FIRECRAWL_PROMPT} />
           <P style={{ marginTop: 16 }}>
-            Lovable will open the connector picker. Pick an existing
-            Firecrawl connection or create one. No code changes needed.
+            Lovable will open the connector picker. Pick an existing Firecrawl connection or create
+            one. No code changes needed.
           </P>
         </Section>
 
         <Section number="03." title="When you're done with this guide">
           <P>
-            Once you've got your bearings, you can remove the Start Here
-            button and this page. Paste this into the Lovable chat:
+            Once you've got your bearings, you can remove the Start Here button and this page. Paste
+            this into the Lovable chat:
           </P>
           <PromptBlock text={REMOVE_PROMPT} />
           <P style={{ marginTop: 16, fontSize: 13, color: "rgba(10,10,10,0.6)" }}>
-            You can always restore it later by asking Lovable to add a
-            Start Here page back.
+            You can always restore it later by asking Lovable to add a Start Here page back.
           </P>
         </Section>
 
@@ -208,13 +201,7 @@ function Section({
   );
 }
 
-function P({
-  children,
-  style,
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-}) {
+function P({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <p
       style={{

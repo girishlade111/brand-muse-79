@@ -14,19 +14,28 @@ type FontRecord = {
 };
 
 function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function formatFromUrl(url: string, fallback?: string): string {
   const m = /\.(woff2|woff|ttf|otf|eot)(?:\?|#|$)/i.exec(url);
   const ext = (m?.[1] || fallback || "").toLowerCase();
   switch (ext) {
-    case "woff2": return "woff2";
-    case "woff": return "woff";
-    case "ttf": return "truetype";
-    case "otf": return "opentype";
-    case "eot": return "embedded-opentype";
-    default: return "woff2";
+    case "woff2":
+      return "woff2";
+    case "woff":
+      return "woff";
+    case "ttf":
+      return "truetype";
+    case "otf":
+      return "opentype";
+    case "eot":
+      return "embedded-opentype";
+    default:
+      return "woff2";
   }
 }
 
@@ -48,9 +57,11 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       if (!f?.google_font || !f?.family) return;
       const id = `branddna-gf-${slugify(String(f.family))}`;
       if (document.getElementById(id)) return;
-      const weights = (Array.isArray(f.weights) && f.weights.length
-        ? f.weights
-        : ["300", "400", "500", "600", "700"])
+      const weights = (
+        Array.isArray(f.weights) && f.weights.length
+          ? f.weights
+          : ["300", "400", "500", "600", "700"]
+      )
         .map((w) => String(w).replace(/[^0-9]/g, ""))
         .filter(Boolean);
       const familyParam = encodeURIComponent(String(f.family)).replace(/%20/g, "+");
@@ -71,7 +82,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       f.file_urls!.slice(0, 24).forEach((file) => {
         if (!file?.url) return;
         const fmt = formatFromUrl(file.url, file.format);
-        const weight = (file.weight && /\d/.test(String(file.weight))) ? file.weight : "400";
+        const weight = file.weight && /\d/.test(String(file.weight)) ? file.weight : "400";
         const style = file.style && /italic|oblique/i.test(file.style) ? "italic" : "normal";
         faceRules.push(
           `@font-face{font-family:"${family}";src:url("${file.url}") format("${fmt}");font-weight:${weight};font-style:${style};font-display:swap;}`,

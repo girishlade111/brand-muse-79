@@ -43,9 +43,7 @@ export function ExtractionProgress({
 
   if (variant === "inline") {
     return (
-      <span className="font-mono text-[12px] tracking-[0.18em] uppercase">
-        [ {stage.label}… ]
-      </span>
+      <span className="font-mono text-[12px] tracking-[0.18em] uppercase">[ {stage.label}… ]</span>
     );
   }
 

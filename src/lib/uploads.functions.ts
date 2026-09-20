@@ -57,7 +57,8 @@ export const uploadBrandSource = createServerFn({ method: "POST" })
     if (files.length > MAX_FILES) throw new Error(`Too many files (max ${MAX_FILES})`);
     for (const f of files) {
       if (f.size > MAX_BYTES) throw new Error(`"${f.name}" exceeds 20 MB`);
-      if (!ALLOWED.has(f.type)) throw new Error(`"${f.name}" type ${f.type || "unknown"} not supported`);
+      if (!ALLOWED.has(f.type))
+        throw new Error(`"${f.name}" type ${f.type || "unknown"} not supported`);
     }
     return { kitId, ownerToken, files };
   })

@@ -5,7 +5,7 @@ description: Add a brand-matched "Start Here" button + guide page to a Lovable t
 
 # Start Here Guide
 
-Adds a single discoverable entry point — a "Start Here" pill button in the project's primary navigation — that opens a calmly designed guide page tailored to *this* template. The guide tells someone who just remixed the project: what it does, how to use it, any connectors it needs (and what they cost), and gives them a one-paste prompt to remove the button and page when they're done.
+Adds a single discoverable entry point — a "Start Here" pill button in the project's primary navigation — that opens a calmly designed guide page tailored to _this_ template. The guide tells someone who just remixed the project: what it does, how to use it, any connectors it needs (and what they cost), and gives them a one-paste prompt to remove the button and page when they're done.
 
 This skill is for official Lovable templates. The goal: a remixer goes from "what is this?" to "I'm building" in under a minute.
 
@@ -28,7 +28,7 @@ Do NOT use for in-product feature tours, multi-step product tutorials, or market
 
 2. **Detect connectors and their cost:**
    - Grep server code for known connector env var patterns: `FIRECRAWL_API_KEY`, `RESEND_API_KEY`, `STRIPE_SECRET_KEY`, `OPENAI_API_KEY`, `LOVABLE_API_KEY` (always-on, skip), `SLACK_API_KEY`, `GOOGLE_*_API_KEY`, `TWILIO_*`, etc. Also grep for `connector-gateway.lovable.dev/{id}/` paths.
-   - For each detected connector, look up current pricing from the provider's public pricing page (use websearch if unsure). Report: free tier (credits / requests / sends), paid plan entry price, and a realistic estimate of whether typical use of *this* template stays free.
+   - For each detected connector, look up current pricing from the provider's public pricing page (use websearch if unsure). Report: free tier (credits / requests / sends), paid plan entry price, and a realistic estimate of whether typical use of _this_ template stays free.
    - Skip `LOVABLE_API_KEY` — it ships with every project.
    - If no third-party connector is used, omit the connector section entirely. Do not invent one.
 

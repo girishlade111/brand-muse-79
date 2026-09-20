@@ -39,7 +39,8 @@ export const Route = createRootRoute({
       },
       {
         name: "keywords",
-        content: "brand kit, design system, color extraction, typography, brand voice, design tokens",
+        content:
+          "brand kit, design system, color extraction, typography, brand voice, design tokens",
       },
       { property: "og:title", content: "Brand Kit" },
       {
@@ -49,11 +50,31 @@ export const Route = createRootRoute({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Brand Kit" },
-      { name: "description", content: "Get any site's full brand guide with logos, typography and voice just by entering a URL." },
-      { property: "og:description", content: "Get any site's full brand guide with logos, typography and voice just by entering a URL." },
-      { name: "twitter:description", content: "Get any site's full brand guide with logos, typography and voice just by entering a URL." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8fc70cb-7407-42ec-9f6b-76fa2169acf7/id-preview-820a7c05--51ec8462-5cd2-41c8-8fbc-3bd742256758.lovable.app-1778711854484.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8fc70cb-7407-42ec-9f6b-76fa2169acf7/id-preview-820a7c05--51ec8462-5cd2-41c8-8fbc-3bd742256758.lovable.app-1778711854484.png" },
+      {
+        name: "description",
+        content:
+          "Get any site's full brand guide with logos, typography and voice just by entering a URL.",
+      },
+      {
+        property: "og:description",
+        content:
+          "Get any site's full brand guide with logos, typography and voice just by entering a URL.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Get any site's full brand guide with logos, typography and voice just by entering a URL.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8fc70cb-7407-42ec-9f6b-76fa2169acf7/id-preview-820a7c05--51ec8462-5cd2-41c8-8fbc-3bd742256758.lovable.app-1778711854484.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b8fc70cb-7407-42ec-9f6b-76fa2169acf7/id-preview-820a7c05--51ec8462-5cd2-41c8-8fbc-3bd742256758.lovable.app-1778711854484.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
