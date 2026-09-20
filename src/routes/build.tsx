@@ -44,6 +44,10 @@ const ACCEPT = ".pdf,.png,.jpg,.jpeg,.webp,.svg,image/*,application/pdf";
 
 const labelClass = "font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground";
 const sectionTitleClass = "font-mono text-[12px] uppercase tracking-[0.18em] text-foreground";
+function isPdfFile(f: File): boolean {
+  return f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+}
+
 const ghostBtn =
   "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-foreground transition-colors hover:bg-muted disabled:opacity-40";
 const solidBtn =
@@ -75,6 +79,9 @@ function BuildPage() {
 
   const kitIdRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const filesRef = useRef<File[]>([]);
+  const buildingRef = useRef(false);
+  const autoBuildRef = useRef<((filesOverride?: File[]) => Promise<void>) | null>(null);
 
   const [name, setName] = useState("Untitled brand kit");
   const [urls, setUrls] = useState<string[]>([""]);
@@ -119,7 +126,17 @@ function BuildPage() {
       }
       next.push(f);
     }
-    setFiles((prev) => [...prev, ...next].slice(0, MAX_FILES));
+    if (!next.length) return;
+    const merged = [...filesRef.current, ...next].slice(0, MAX_FILES);
+    if (filesRef.current.length + next.length > MAX_FILES) {
+      toast.error(`Max ${MAX_FILES} files — keeping the first ${MAX_FILES}`);
+    }
+    filesRef.current = merged;
+    setFiles(merged);
+    if (next.some(isPdfFile) && !buildingRef.current) {
+      toast.message("PDF uploaded — running the scrape and saving the kit");
+      void autoBuildRef.current?.(merged);
+    }
   }
 
   async function readSources() {
@@ -170,14 +187,16 @@ function BuildPage() {
     }
   }
 
-  async function autoBuildKit() {
+  async function autoBuildKit(filesOverride?: File[]) {
     if (building) return;
+    const activeFiles = filesOverride ?? files;
     const cleanUrls = urls.map(normalizeUrl).filter((u): u is string => !!u);
-    if (!cleanUrls.length && !files.length) {
+    if (!cleanUrls.length && !activeFiles.length) {
       toast.error("Add a link or a file first");
       return;
     }
     setBuilding(true);
+    buildingRef.current = true;
     try {
       const kitId = await ensureKit();
       let imageUrls: string[] | undefined;
@@ -185,11 +204,11 @@ function BuildPage() {
       const chunks: string[] = [];
 
       // Upload PDFs / images (same pipeline as the homepage ingestion).
-      if (files.length) {
+      if (activeFiles.length) {
         const fd = new FormData();
         fd.append("kitId", kitId);
         fd.append("ownerToken", ownerToken);
-        for (const f of files) fd.append("file", f);
+        for (const f of activeFiles) fd.append("file", f);
         const res = await upload({ data: fd });
         imageUrls = res.imageUrls.length ? res.imageUrls : undefined;
         pdfTexts = res.pdfTexts.length ? res.pdfTexts : undefined;
@@ -288,8 +307,11 @@ function BuildPage() {
       toast.error(e?.message ?? "Auto-build failed");
     } finally {
       setBuilding(false);
+      buildingRef.current = false;
     }
   }
+
+  autoBuildRef.current = autoBuildKit;
 
   async function handleSave() {
     if (saving) return;
@@ -457,7 +479,7 @@ function BuildPage() {
             <button
               type="button"
               className={ghostBtn}
-              onClick={autoBuildKit}
+              onClick={() => void autoBuildKit()}
               disabled={reading || building}
             >
               {building ? (
@@ -470,7 +492,7 @@ function BuildPage() {
             <span className="text-xs text-muted-foreground">
               {building
                 ? "Scraping your sources, extracting the brand and saving it to your library — the fields below will fill in when it's done."
-                : "Read sources pulls the text without changing your choices. Auto-build runs the full extraction, saves it to your library, and fills the fields below for you to tweak."}
+                : "Uploading a PDF starts the full scrape and save automatically. Auto-build runs the full extraction, saves it to your library, and fills the fields below for you to tweak."}
             </span>
           </div>
 
