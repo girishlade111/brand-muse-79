@@ -282,12 +282,8 @@ function BuildPage() {
       }
       if (full.kit?.source_text) setSourceText(full.kit.source_text);
 
-      toast.success("Kit built and saved to your library", {
-        action: {
-          label: "Open kit",
-          onClick: () => navigate({ to: "/kit/$kitId", params: { kitId } }),
-        },
-      });
+      toast.success("Kit built and saved to your library");
+      navigate({ to: "/kit/$kitId", params: { kitId } });
     } catch (e: any) {
       toast.error(e?.message ?? "Auto-build failed");
     } finally {
