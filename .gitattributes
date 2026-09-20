@@ -1,0 +1,27 @@
+# Normalize line endings in the repository to LF.
+#
+# Why: this repo is developed on Windows (core.autocrlf=true) but the lint gate
+# runs Prettier, which defaults to LF. Without this file, every checked-in file
+# was stored as CRLF and `npm run lint` reported ~14k "Delete `␍`" errors that
+# had nothing to do with real code problems. With `eol=lf` the working tree,
+# the index and Prettier all agree on LF.
+* text=auto eol=lf
+
+# Keep Windows-only scripts usable if any are added later.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.wasm binary

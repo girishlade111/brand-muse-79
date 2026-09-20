@@ -22,7 +22,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "bun run dev",
+    // `npm run dev` — the repo ships package-lock.json and npm is the installed
+    // package manager. The previous `bun run dev` could never start here (bun is
+    // not installed), so every e2e run failed at the webServer step before a
+    // single test executed. The app's Vite config pins the dev server to port
+    // 8080, which matches `use.baseURL` above.
+    command: "npm run dev",
     url: "http://localhost:8080",
     reuseExistingServer: true,
     timeout: 120_000,
