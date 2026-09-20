@@ -1,0 +1,1 @@
+ALTER TABLE public.brand_kits ADD COLUMN IF NOT EXISTS source_text text;
