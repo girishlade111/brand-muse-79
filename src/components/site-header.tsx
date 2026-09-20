@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, PenLine } from "lucide-react";
+import { ArrowLeftRight, BookOpen, PenLine } from "lucide-react";
 import { StartHereButton } from "@/components/start-here-button";
 
 const navLinkClass =
@@ -32,6 +32,10 @@ export function SiteHeader() {
           <Link to="/library" className={navLinkClass}>
             <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
             Library
+          </Link>
+          <Link to="/compare" className={`${navLinkClass} hidden sm:inline-flex`}>
+            <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+            Compare
           </Link>
           <Link to="/" className={`${ctaClass} whitespace-nowrap`}>
             New kit

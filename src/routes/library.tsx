@@ -38,8 +38,7 @@ type Kit = {
   logoUrl?: string | null;
 };
 
-const eyebrow =
-  "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground";
+const eyebrow = "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground";
 const mono = "font-mono text-[11px] uppercase tracking-[0.16em]";
 
 function LibraryPage() {
@@ -117,9 +116,7 @@ function LibraryPage() {
   }
 
   function toggleAll() {
-    setSelected((s) =>
-      s.size === kits.length ? new Set() : new Set(kits.map((k) => k.id)),
-    );
+    setSelected((s) => (s.size === kits.length ? new Set() : new Set(kits.map((k) => k.id))));
   }
 
   async function commitRename(k: Kit) {
@@ -159,7 +156,9 @@ function LibraryPage() {
 
   async function onBulkDelete() {
     if (selected.size === 0) return;
-    if (!confirm(`Delete ${selected.size} kit${selected.size > 1 ? "s" : ""}? This cannot be undone.`))
+    if (
+      !confirm(`Delete ${selected.size} kit${selected.size > 1 ? "s" : ""}? This cannot be undone.`)
+    )
       return;
     const ids = Array.from(selected);
     try {
@@ -225,6 +224,29 @@ function LibraryPage() {
                 {kits.length} {kits.length === 1 ? "kit" : "kits"}
                 {selectMode && selected.size > 0 ? ` · ${selected.size} selected` : ""}
               </span>
+              {kits.length >= 2 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ids =
+                      selectMode && selected.size === 2
+                        ? Array.from(selected)
+                        : kits.slice(0, 2).map((k) => k.id);
+                    navigate({
+                      to: "/compare",
+                      search: { a: ids[0], b: ids[1] },
+                    });
+                  }}
+                  className={`${mono} text-muted-foreground hover:text-foreground transition-colors`}
+                  title={
+                    selectMode && selected.size === 2
+                      ? "Compare the two selected kits"
+                      : "Compare your first two kits — pick any two on the compare page"
+                  }
+                >
+                  [ Compare{selectMode && selected.size === 2 ? " selected" : ""} ]
+                </button>
+              )}
             </div>
             {selectMode && selected.size > 0 && (
               <button
@@ -400,9 +422,7 @@ function LibraryPage() {
                           {k.name}
                         </Link>
                       )}
-                      <span className={`${mono} text-muted-foreground shrink-0`}>
-                        {k.status}
-                      </span>
+                      <span className={`${mono} text-muted-foreground shrink-0`}>{k.status}</span>
                     </div>
                     <div className="mt-2 flex items-center gap-4">
                       {/* Palette swatches */}
@@ -428,9 +448,7 @@ function LibraryPage() {
                         </span>
                       )}
                       {k.displayFont?.family && (
-                        <span
-                          className={`${mono} shrink-0 text-muted-foreground hidden md:inline`}
-                        >
+                        <span className={`${mono} shrink-0 text-muted-foreground hidden md:inline`}>
                           — {k.displayFont.family}
                         </span>
                       )}
