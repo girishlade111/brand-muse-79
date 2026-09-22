@@ -4,11 +4,28 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowLeftRight, Check, Loader2, Minus, Trophy } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
+import {
+  HueStrip,
+  RadarChart,
+  TypeDnaBar,
+  VoiceSpectrumRow,
+  WarmCoolBar,
+} from "@/components/intelligence-charts";
 import { getAnonToken, getAnonTokenHistory } from "@/lib/anon";
 import { readKitsCache, writeKitsCache } from "@/lib/kits-cache";
 import { useAutoImportFonts, renderFamilyFor } from "@/lib/font-loader";
 import { getKit, listKitsByOwner } from "@/lib/kits.functions";
+import { analyzeMarketNiche } from "@/lib/intelligence.functions";
 import { contrastRatio, isValidHex, normalizeHex, relativeLuminance } from "@/lib/color";
+import {
+  SERIES_INK,
+  analyzeKitColors,
+  analyzeKitType,
+  analyzeKitVoice,
+  buildComparisonMatrix,
+  type ComparedKit,
+} from "@/lib/intelligence";
+import type { MarketNiche } from "@/server/ai.server";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
