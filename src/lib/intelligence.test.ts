@@ -84,7 +84,8 @@ describe("color psychology", () => {
       { hex: "#F4EFE6" },
     ]);
     expect(p.count).toBe(4);
-    expect(p.warmRatio).toBeCloseTo(0.5, 5);
+    // Washi paper (#F4EFE6) is warm-tinted, so 3 of 4 read warm.
+    expect(p.warmRatio).toBeCloseTo(0.75, 5);
     expect(p.temperature).toBe("warm");
     expect(p.vibrancy).toBeGreaterThanOrEqual(0);
     expect(p.vibrancy).toBeLessThanOrEqual(100);
