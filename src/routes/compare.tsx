@@ -698,6 +698,8 @@ function ComparePage() {
                     }`}
               </p>
             )}
+              </>
+            )}
           </>
         )}
       </main>
