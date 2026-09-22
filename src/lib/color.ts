@@ -1,12 +1,13 @@
 // Color helpers — hex → RGB, contrast ratio, WCAG checks.
 
 export function hexToRgb(hex: string): [number, number, number] {
-  let h = hex.replace("#", "").trim();
+  let h = hex.replace(/^#+/, "").trim();
   if (h.length === 3)
     h = h
       .split("")
       .map((c) => c + c)
       .join("");
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return [0, 0, 0];
   const num = parseInt(h, 16);
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }

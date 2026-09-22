@@ -25,13 +25,18 @@ export function getAnonToken(): string {
   // Always make sure the active token is recorded in history.
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
-    const arr: string[] = raw ? JSON.parse(raw) : [];
-    if (!arr.includes(t)) {
-      arr.push(t);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(-20)));
+    const arr: unknown = raw ? JSON.parse(raw) : [];
+    const list = Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
+    if (!list.includes(t)) {
+      list.push(t);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(-20)));
     }
   } catch {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify([t]));
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify([t]));
+    } catch {
+      // Ignore persistence failures.
+    }
   }
   return t;
 }
@@ -44,10 +49,11 @@ export function getAnonTokenHistory(): string[] {
   const active = getAnonToken();
   try {
     const raw = localStorage.getItem(HISTORY_KEY);
-    const arr: string[] = raw ? JSON.parse(raw) : [];
-    if (!arr.includes(active)) arr.push(active);
-    return Array.from(new Set(arr));
+    const arr: unknown = raw ? JSON.parse(raw) : [];
+    const list = Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
+    if (active && !list.includes(active)) list.push(active);
+    return Array.from(new Set(list));
   } catch {
-    return [active];
+    return active ? [active] : [];
   }
 }
