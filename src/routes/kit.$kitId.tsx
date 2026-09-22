@@ -1027,9 +1027,7 @@ function ColorsSection({
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [fixingId, setFixingId] = useState<string | null>(null);
   if (!colors.length && !canEdit) return <Empty label="No colors extracted" />;
-  const effectiveColors = colors.map((c) =>
-    overrides[c.id] ? { ...c, hex: overrides[c.id] } : c,
-  );
+  const effectiveColors = colors.map((c) => (overrides[c.id] ? { ...c, hex: overrides[c.id] } : c));
   // Pick light + dark mode pairs from extracted colors so we can show pairings
   // for both surfaces. Fall back to pure white/black if extraction didn't yield
   // a sufficiently light or dark neutral.
