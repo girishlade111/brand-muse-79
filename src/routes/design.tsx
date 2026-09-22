@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/site-header";
@@ -52,20 +52,25 @@ function DesignPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const { versions: v } = await list();
+        if (cancelled) return;
         setVersions(v);
         if (v.length > 0) {
           const head = await get({ data: { id: v[0].id } });
-          setMarkdown(head.markdown);
-        } else {
+          if (!cancelled) setMarkdown(head.markdown);
+        } else if (!cancelled) {
           setMarkdown(SEED_FALLBACK);
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load");
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [list, get]);
 
   async function onSave() {

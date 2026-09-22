@@ -70,6 +70,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
   // The effect body reads `records` (built from `fonts`) but is keyed on the
   // serialized `key` above, which changes exactly when the font set changes,
   // keeping the DOM injections idempotent. deps are intentionally [key].
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typeof document === "undefined" || !key) return;
 

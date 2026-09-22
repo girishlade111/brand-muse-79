@@ -11,6 +11,13 @@ export default tseslint.config(
       "dist",
       ".output",
       ".vinxi",
+      ".kilo",
+      ".agents",
+      ".tanstack",
+      ".nitro",
+      ".wrangler",
+      "test-results",
+      "e2e",
       // Supabase-generated file uses newer TS syntax (parenthesized `keyof`
       // unions) that the pinned Prettier 3.9.8 cannot print. Excluded so the
       // lint gate stays green; the file is untouched by `npm run format`.
