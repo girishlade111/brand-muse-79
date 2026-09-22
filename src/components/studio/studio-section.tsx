@@ -117,7 +117,19 @@ export function StudioSection({
         fonts,
         logoUrl,
       }),
-    [assetType, template, colorScheme, logoPlacement, headline, body, cta, kitName, colors, fonts, logoUrl],
+    [
+      assetType,
+      template,
+      colorScheme,
+      logoPlacement,
+      headline,
+      body,
+      cta,
+      kitName,
+      colors,
+      fonts,
+      logoUrl,
+    ],
   );
 
   async function regenerate() {

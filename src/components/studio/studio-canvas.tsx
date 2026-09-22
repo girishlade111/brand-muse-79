@@ -15,9 +15,7 @@ export function StudioCanvas({ svg, assetType, zoom }: StudioCanvasProps) {
   return (
     <div className="min-w-0">
       <div className="mb-2 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-        <span>
-          // preview — {meta.label}
-        </span>
+        <span>// preview — {meta.label}</span>
         <span>
           {meta.width} × {meta.height} · {Math.round(zoom * 100)}%
         </span>

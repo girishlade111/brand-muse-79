@@ -25,7 +25,12 @@ export const STUDIO_COLOR_SCHEMES = ["light", "dark", "hanko-accent"] as const;
 
 export type StudioColorScheme = (typeof STUDIO_COLOR_SCHEMES)[number];
 
-export const STUDIO_LOGO_PLACEMENTS = ["top-left", "centered", "watermark", "bottom-right"] as const;
+export const STUDIO_LOGO_PLACEMENTS = [
+  "top-left",
+  "centered",
+  "watermark",
+  "bottom-right",
+] as const;
 
 export type StudioLogoPlacement = (typeof STUDIO_LOGO_PLACEMENTS)[number];
 
@@ -140,13 +145,17 @@ export function resolveStudioPalette(
   const darkest = sorted[sorted.length - 1]?.hex ?? "#0A0A0A";
 
   const primary =
-    byRole(["primary"])?.hex ?? valid.find((c) => !/background|surface|muted|text/i.test(roleOf(c)))?.hex ?? valid[0]?.hex ?? "#0A0A0A";
+    byRole(["primary"])?.hex ??
+    valid.find((c) => !/background|surface|muted|text/i.test(roleOf(c)))?.hex ??
+    valid[0]?.hex ??
+    "#0A0A0A";
   const secondary =
     byRole(["secondary", "accent", "accent-2", "cta"])?.hex ??
     valid.find((c) => c.hex !== primary)?.hex ??
     "#5F5A52";
   const extractedAccent =
-    byRole(["accent", "cta", "accent-2"])?.hex ?? (luminance(secondary) < 0.25 ? secondary : "#8B1A1A");
+    byRole(["accent", "cta", "accent-2"])?.hex ??
+    (luminance(secondary) < 0.25 ? secondary : "#8B1A1A");
 
   if (scheme === "dark") {
     const background = luminance(darkest) < 0.08 ? darkest : "#0A0A0A";
@@ -234,7 +243,11 @@ export function resolveStudioFonts(fonts: StudioKitFont[]): { display: string; b
   const fam = (f: StudioKitFont): string => {
     const hasFiles = Array.isArray(f.file_urls) && f.file_urls.length > 0;
     const raw = (hasFiles && f.source_family ? f.source_family : f.family) ?? "";
-    return String(raw).trim().replace(/^["']|["']$/g, "") || "";
+    return (
+      String(raw)
+        .trim()
+        .replace(/^["']|["']$/g, "") || ""
+    );
   };
   const byRole = (roles: string[]) =>
     usable.find((f) => roles.includes(String(f.role ?? "").toLowerCase()));
@@ -294,7 +307,11 @@ function fontStack(primary: string, kind: "display" | "body"): string {
     : `"${safe}", "Courier Prime", "JetBrains Mono", monospace`;
 }
 
-export function studioFilename(kitName: string, assetType: StudioAssetType, ext: "svg" | "png"): string {
+export function studioFilename(
+  kitName: string,
+  assetType: StudioAssetType,
+  ext: "svg" | "png",
+): string {
   const base = String(kitName || "kit")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -322,7 +339,10 @@ export function buildStudioSVG(opts: StudioRenderOpts): string {
   const headLines = wrapText(headline, headChars, isSquare ? 4 : 3);
   const bodyLines = wrapText(body, isWide ? 52 : 40, 3);
   const headSize = Math.round(
-    Math.min(w * (isWide ? 0.052 : 0.062), (h * 0.62) / Math.max(1, headLines.length + bodyLines.length * 0.42)),
+    Math.min(
+      w * (isWide ? 0.052 : 0.062),
+      (h * 0.62) / Math.max(1, headLines.length + bodyLines.length * 0.42),
+    ),
   );
   const bodySize = Math.round(Math.max(11, Math.min(w * 0.016, h * 0.045)));
   const eyebrowSize = Math.round(Math.max(10, Math.min(w * 0.013, h * 0.04)));
@@ -360,7 +380,10 @@ export function buildStudioSVG(opts: StudioRenderOpts): string {
   // Headline lines
   headLines.forEach((line, i) => {
     const weight = opts.template === "minimalist" ? 500 : 700;
-    const style = opts.template === "editorial" && i === headLines.length - 1 ? ' font-style="italic" font-weight="400"' : "";
+    const style =
+      opts.template === "editorial" && i === headLines.length - 1
+        ? ' font-style="italic" font-weight="400"'
+        : "";
     parts.push(
       `<text x="${tx}" y="${ty + i * Math.round(headSize * 1.04)}" font-family=${quoteAttr(displayStack)} font-size="${headSize}" font-weight="${weight}"${style} fill="${textFill}">${escapeXml(headText(line))}</text>`,
     );
@@ -388,10 +411,7 @@ export function buildStudioSVG(opts: StudioRenderOpts): string {
 
   // CTA
   if (cta) {
-    const ctaW = Math.min(
-      Math.round(w * 0.4),
-      Math.round(cta.length * ctaSize * 0.72 + 48),
-    );
+    const ctaW = Math.min(Math.round(w * 0.4), Math.round(cta.length * ctaSize * 0.72 + 48));
     const ctaH = Math.round(ctaSize * 2.6);
     // Keep CTA inside canvas.
     if (ty + ctaH < h - pad * 0.6) {

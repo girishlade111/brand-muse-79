@@ -393,7 +393,10 @@ function normalizeBrandCopy(raw: unknown, brandName: string, topic: string): Bra
   const r = raw as Record<string, unknown>;
   const pick = (v: unknown, n: number, fb: string[]): string[] => {
     const list = Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
-    const cleaned = list.map((s) => s.trim()).filter(Boolean).slice(0, n);
+    const cleaned = list
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, n);
     while (cleaned.length < n) cleaned.push(fb[cleaned.length] ?? fb[0]);
     return cleaned;
   };
