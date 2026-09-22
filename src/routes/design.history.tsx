@@ -133,6 +133,7 @@ function HistoryPage() {
         </div>
 
         {/* Timeline */}
+        {error ? <p className={eyebrow + " mt-6"}>— {error}</p> : null}
         <ul className="mt-12" style={{ borderTop: "1px solid rgba(10,10,10,0.25)" }}>
           {busy ? (
             <li className="py-8">
