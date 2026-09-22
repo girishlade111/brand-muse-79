@@ -239,7 +239,7 @@ function KitPage() {
               <h1 className="break-words text-4xl tracking-tight [font-family:'Cormorant_Garamond',serif] sm:text-6xl">
                 {kit.name}
               </h1>
-              {kit.source_url && (
+              {kit.source_url && isHttpUrl(kit.source_url) && (
                 <a
                   href={kit.source_url}
                   target="_blank"
@@ -248,6 +248,11 @@ function KitPage() {
                 >
                   {kit.source_url}
                 </a>
+              )}
+              {kit.source_url && !isHttpUrl(kit.source_url) && (
+                <span className="mt-3 inline-block break-all font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:text-xs">
+                  {kit.source_url}
+                </span>
               )}
             </div>
             <span
