@@ -423,15 +423,58 @@ function ComparePage() {
     });
   }, [aId, bId, cId, dId, navigate, search.a, search.b, search.c, search.d]);
 
-  // Import real fonts for both kits so specimens render in the actual faces.
+  // Import real fonts for all compared kits so specimens render in the actual faces.
   useAutoImportFonts(
-    [...(aKit?.fonts ?? []), ...(bKit?.fonts ?? [])].map((f) => ({
+    [slotA.kit, slotB.kit, slotC.kit, slotD.kit].flatMap((k) => k?.fonts ?? []).map((f) => ({
       family: f.family,
       source_family: f.source_family,
       google_font: f.google_font,
       weights: f.weights,
       file_urls: f.file_urls,
     })),
+  );
+
+  // Active kits: loaded, distinct, capped at four.
+  const activeKits: FullKit[] = useMemo(() => {
+    const out: FullKit[] = [];
+    for (const k of [slotA.kit, slotB.kit, slotC.kit, slotD.kit]) {
+      if (k && !out.some((o) => o.kit.id === k.kit.id)) out.push(k);
+    }
+    return out.slice(0, 4);
+  }, [slotA.kit, slotB.kit, slotC.kit, slotD.kit]);
+
+  const activeIds = useMemo(() => activeKits.map((k) => k.kit.id), [activeKits]);
+
+  // Reset the white-space report whenever the cohort changes.
+  useEffect(() => {
+    setNiche(null);
+  }, [activeIds.join("|")]);
+
+  const compared: ComparedKit[] = useMemo(
+    () =>
+      activeKits.map((k) => ({
+        id: k.kit.id,
+        name: k.kit.name,
+        colors: k.colors,
+        fonts: k.fonts,
+        voice: k.voice,
+      })),
+    [activeKits],
+  );
+
+  const matrix = useMemo(() => buildComparisonMatrix(compared), [compared]);
+
+  const colorProfiles = useMemo(
+    () => activeKits.map((k) => ({ kit: k, profile: analyzeKitColors(k.colors) })),
+    [activeKits],
+  );
+  const typeProfiles = useMemo(
+    () => activeKits.map((k) => ({ kit: k, profile: analyzeKitType(k.fonts) })),
+    [activeKits],
+  );
+  const voiceProfiles = useMemo(
+    () => activeKits.map((k) => ({ kit: k, profile: analyzeKitVoice(k.voice) })),
+    [activeKits],
   );
 
   const analysis: Analysis | null = useMemo(() => {
@@ -457,7 +500,22 @@ function ComparePage() {
     setBId(a);
   }
 
-  const comparing = !!(aKit && bKit && aId !== bId);
+  async function runWhiteSpace() {
+    if (nicheBusy || activeIds.length < 2) return;
+    setNicheBusy(true);
+    try {
+      const res = await runNiche({ data: { kitIds: activeIds.slice(0, 4) } });
+      setNiche(res);
+      toast.success("White-space analysis complete");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "White-space analysis failed");
+    } finally {
+      setNicheBusy(false);
+    }
+  }
+
+  const comparing = activeKits.length >= 2;
+  const pairwise = !!(aKit && bKit && aId !== bId);
 
   return (
     <div className="min-h-screen bg-background">
