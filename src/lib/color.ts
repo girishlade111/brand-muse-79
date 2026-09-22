@@ -186,7 +186,8 @@ export function autoFixContrast(
     for (let i = 0; i < 24; i++) {
       const mid = (lo + hi) / 2;
       const candidate = hslToHex(base.h, base.s, base.l + dir * mid);
-      const ratio = adjust === "foreground" ? contrastRatio(candidate, fixed) : contrastRatio(fixed, candidate);
+      const ratio =
+        adjust === "foreground" ? contrastRatio(candidate, fixed) : contrastRatio(fixed, candidate);
       if (ratio >= target) {
         best = { l: base.l + dir * mid, ratio };
         hi = mid;
@@ -199,9 +200,10 @@ export function autoFixContrast(
 
   const down = search(-1);
   const up = search(1);
-  const candidates = [down ? { ...down, dir: "darken" as const } : null, up ? { ...up, dir: "lighten" as const } : null].filter(
-    (c): c is { l: number; ratio: number; dir: "darken" | "lighten" } => c !== null,
-  );
+  const candidates = [
+    down ? { ...down, dir: "darken" as const } : null,
+    up ? { ...up, dir: "lighten" as const } : null,
+  ].filter((c): c is { l: number; ratio: number; dir: "darken" | "lighten" } => c !== null);
   if (!candidates.length) return null;
   candidates.sort((a, b) => Math.abs(a.l - base.l) - Math.abs(b.l - base.l));
   const win = candidates[0];

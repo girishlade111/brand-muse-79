@@ -511,8 +511,15 @@ export async function analyzeMarketNicheServerFn(input: {
   const [{ data: kits }, { data: colors }, { data: fonts }, { data: voices }] = await Promise.all([
     admin.from("brand_kits").select("id, name, brand_positioning").in("id", ids),
     admin.from("kit_colors").select("kit_id, hex, role, name").in("kit_id", ids).order("position"),
-    admin.from("kit_fonts").select("kit_id, family, role, weights").in("kit_id", ids).order("position"),
-    admin.from("kit_voice").select("kit_id, tone, vocabulary, dos, donts, samples, summary").in("kit_id", ids),
+    admin
+      .from("kit_fonts")
+      .select("kit_id, family, role, weights")
+      .in("kit_id", ids)
+      .order("position"),
+    admin
+      .from("kit_voice")
+      .select("kit_id, tone, vocabulary, dos, donts, samples, summary")
+      .in("kit_id", ids),
   ]);
   if (!kits || kits.length < 2) throw new Error("Could not load the selected kits.");
 
@@ -534,7 +541,12 @@ export async function analyzeMarketNicheServerFn(input: {
       id: k.id,
       name: String(k.name ?? "Untitled"),
       colors: ((colorMap.get(k.id) ?? []) as Array<{ hex: string; role?: string | null }>) ?? [],
-      fonts: ((fontMap.get(k.id) ?? []) as Array<{ family?: string | null; role?: string | null; weights?: unknown }>) ?? [],
+      fonts:
+        ((fontMap.get(k.id) ?? []) as Array<{
+          family?: string | null;
+          role?: string | null;
+          weights?: unknown;
+        }>) ?? [],
       voice: (voiceMap.get(k.id) as never) ?? null,
       positioning: k.brand_positioning ?? null,
     }),
@@ -606,13 +618,21 @@ export async function analyzeMarketNicheServerFn(input: {
     if (!raw || typeof raw !== "object") return fallback;
     const r = raw as Record<string, unknown>;
     const strList = (v: unknown): string[] =>
-      Array.isArray(v) ? v.filter((s): s is string => typeof s === "string").map((s) => s.trim()).filter(Boolean) : [];
+      Array.isArray(v)
+        ? v
+            .filter((s): s is string => typeof s === "string")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
     const bands = Array.isArray(r.saturatedBands) ? r.saturatedBands : [];
     const open = Array.isArray(r.openTerritory) ? r.openTerritory : [];
     const out: MarketNiche = {
       saturatedBands: bands
         .filter((b): b is Record<string, unknown> => !!b && typeof b === "object")
-        .map((b) => ({ band: String(b.band ?? "").slice(0, 60), detail: String(b.detail ?? "").slice(0, 300) }))
+        .map((b) => ({
+          band: String(b.band ?? "").slice(0, 60),
+          detail: String(b.detail ?? "").slice(0, 300),
+        }))
         .filter((b) => b.band && b.detail)
         .slice(0, 6),
       openTerritory: open
@@ -630,7 +650,8 @@ export async function analyzeMarketNicheServerFn(input: {
           ? r.temperatureNote.trim().slice(0, 400)
           : fallback.temperatureNote,
     };
-    if (!out.saturatedBands.length && !out.openTerritory.length && !out.vectors.length) return fallback;
+    if (!out.saturatedBands.length && !out.openTerritory.length && !out.vectors.length)
+      return fallback;
     if (!out.saturatedBands.length) out.saturatedBands = fallback.saturatedBands;
     if (!out.openTerritory.length) out.openTerritory = fallback.openTerritory;
     if (!out.vectors.length) out.vectors = fallback.vectors;

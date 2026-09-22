@@ -4,12 +4,7 @@
 
 import { useId, useMemo, useState } from "react";
 import { normalizeHex } from "@/lib/color";
-import {
-  CVD_KINDS,
-  cvdBreakageReport,
-  cvdMatrixSvg,
-  type CvdKind,
-} from "@/lib/intelligence";
+import { CVD_KINDS, cvdBreakageReport, cvdMatrixSvg, type CvdKind } from "@/lib/intelligence";
 
 type CvdColor = { hex: string; role?: string | null; name?: string | null };
 
@@ -22,9 +17,13 @@ export function CvdSimulator({ colors }: { colors: CvdColor[] }) {
 
   const hexes = useMemo(
     () =>
-      [...new Set((colors ?? []).map((c) => normalizeHex(c.hex ?? "")).filter((h) => /^#[0-9a-f]{6}$/.test(h)))].map((h) =>
-        h.toUpperCase(),
-      ),
+      [
+        ...new Set(
+          (colors ?? [])
+            .map((c) => normalizeHex(c.hex ?? ""))
+            .filter((h) => /^#[0-9a-f]{6}$/.test(h)),
+        ),
+      ].map((h) => h.toUpperCase()),
     [colors],
   );
 
@@ -86,12 +85,7 @@ export function CvdSimulator({ colors }: { colors: CvdColor[] }) {
         }}
       >
         {hexes.map((h) => (
-          <span
-            key={h}
-            title={h}
-            className="h-14 flex-1"
-            style={{ background: h, minWidth: 32 }}
-          />
+          <span key={h} title={h} className="h-14 flex-1" style={{ background: h, minWidth: 32 }} />
         ))}
       </div>
       <p className={`${MONO} mt-2 text-muted-foreground`}>
@@ -114,8 +108,14 @@ export function CvdSimulator({ colors }: { colors: CvdColor[] }) {
               </p>
               {active.brokenPairs.slice(0, 8).map((b) => (
                 <div key={`${b.a}-${b.b}`} className="flex items-center gap-2">
-                  <span className="inline-block h-4 w-6 border" style={{ background: b.a, borderColor: HAIR }} />
-                  <span className="inline-block h-4 w-6 border" style={{ background: b.b, borderColor: HAIR }} />
+                  <span
+                    className="inline-block h-4 w-6 border"
+                    style={{ background: b.a, borderColor: HAIR }}
+                  />
+                  <span
+                    className="inline-block h-4 w-6 border"
+                    style={{ background: b.b, borderColor: HAIR }}
+                  />
                   <span className={`${MONO} text-muted-foreground`}>
                     {b.a} / {b.b} — {b.normalRatio.toFixed(1)}:1 → {b.simRatio.toFixed(1)}:1
                   </span>

@@ -303,7 +303,17 @@ const AXIS_LEXICONS: Record<string, { pos: string[]; neg: string[] }> = {
     ],
   },
   minimalExpressive: {
-    pos: ["minimal", "concise", "terse", "restrained", "quiet", "sparse", "direct", "short", "spare"],
+    pos: [
+      "minimal",
+      "concise",
+      "terse",
+      "restrained",
+      "quiet",
+      "sparse",
+      "direct",
+      "short",
+      "spare",
+    ],
     neg: [
       "expressive",
       "vivid",
@@ -368,7 +378,12 @@ function axisLabel(v: number, pos: string, neg: string): string {
 
 export function analyzeKitVoice(voice: KitVoiceLike | null | undefined): KitVoiceProfile {
   const { labels, body } = voiceCorpus(voice);
-  const formalCasual = scoreAxis(labels, body, AXIS_LEXICONS.formalCasual.pos, AXIS_LEXICONS.formalCasual.neg);
+  const formalCasual = scoreAxis(
+    labels,
+    body,
+    AXIS_LEXICONS.formalCasual.pos,
+    AXIS_LEXICONS.formalCasual.neg,
+  );
   const technicalConversational = scoreAxis(
     labels,
     body,
@@ -446,7 +461,12 @@ export function buildComparisonMatrix(kits: ComparedKit[]): {
 // ============================================================================
 
 export type WhiteSpaceReport = {
-  saturatedBands: Array<{ band: string; exemplar: string; kitShare: number; exampleHexes: string[] }>;
+  saturatedBands: Array<{
+    band: string;
+    exemplar: string;
+    kitShare: number;
+    exampleHexes: string[];
+  }>;
   openTerritory: Array<{ band: string; exemplar: string; suggestion: string }>;
   vectors: string[];
   temperatureNote: string;
@@ -483,7 +503,10 @@ export function analyzeWhiteSpace(kits: ComparedKit[]): WhiteSpaceReport {
       .flatMap((p) =>
         p.kit.colors
           .map((c) => normalizeHex(c.hex ?? ""))
-          .filter((h) => /^#[0-9a-f]{6}$/.test(h) && hexToHsl(h).s >= 0.14 && hueBucket(hexToHsl(h).h) === i),
+          .filter(
+            (h) =>
+              /^#[0-9a-f]{6}$/.test(h) && hexToHsl(h).s >= 0.14 && hueBucket(hexToHsl(h).h) === i,
+          ),
       )
       .slice(0, 3);
     if (share >= 0.5) {
@@ -512,32 +535,45 @@ export function analyzeWhiteSpace(kits: ComparedKit[]): WhiteSpaceReport {
   const coolLed = profiles.filter((p) => p.profile.temperature === "cool").length;
   let temperatureNote: string;
   if (coolLed >= total - 1 && total > 1) {
-    temperatureNote = "The cohort skews cold — nearly every palette is cool-led. A warm-led identity would stand apart on sight.";
+    temperatureNote =
+      "The cohort skews cold — nearly every palette is cool-led. A warm-led identity would stand apart on sight.";
     vectors.push("Go warm-led while rivals stay cold — instant shelf separation.");
   } else if (warmLed >= total - 1 && total > 1) {
-    temperatureNote = "The cohort skews warm — cool precision (slate, teal, deep blue) would read as the disciplined alternative.";
+    temperatureNote =
+      "The cohort skews warm — cool precision (slate, teal, deep blue) would read as the disciplined alternative.";
     vectors.push("Go cool and restrained while rivals run warm — own the calm corner.");
   } else {
-    temperatureNote = "Temperature is mixed across the cohort — differentiation must come from hue ownership, not warmth alone.";
+    temperatureNote =
+      "Temperature is mixed across the cohort — differentiation must come from hue ownership, not warmth alone.";
   }
   // Type gap.
   const dominants = profiles.map((p) => analyzeKitType(p.kit.fonts).dominant);
   if (dominants.length > 1 && dominants.every((d) => d === "sans-serif")) {
-    vectors.push("Every rival sets type in sans-serif — an editorial serif display face is uncontested.");
+    vectors.push(
+      "Every rival sets type in sans-serif — an editorial serif display face is uncontested.",
+    );
   }
   if (dominants.length > 1 && !dominants.includes("monospace")) {
-    vectors.push("Nobody uses monospace as a voice — technical precision in type is free to claim.");
+    vectors.push(
+      "Nobody uses monospace as a voice — technical precision in type is free to claim.",
+    );
   }
   // Voice gap.
   const voices = profiles.map((p) => analyzeKitVoice(p.kit.voice));
   const avgFormal = voices.reduce((s, v) => s + v.formalCasual, 0) / Math.max(1, voices.length);
   if (avgFormal > 0.3) {
-    vectors.push("The cohort speaks formally — a casual, direct voice would cut through the committee tone.");
+    vectors.push(
+      "The cohort speaks formally — a casual, direct voice would cut through the committee tone.",
+    );
   } else if (avgFormal < -0.3) {
-    vectors.push("Rivals all sound casual — a formal, precise register would read as the grown-up in the room.");
+    vectors.push(
+      "Rivals all sound casual — a formal, precise register would read as the grown-up in the room.",
+    );
   }
   if (!saturatedBands.length) {
-    vectors.push("No hue band is saturated — the field is fragmented, so pick one band and own it loudly.");
+    vectors.push(
+      "No hue band is saturated — the field is fragmented, so pick one band and own it loudly.",
+    );
   }
   return { saturatedBands, openTerritory, vectors, temperatureNote };
 }
@@ -583,7 +619,10 @@ function clamp255(v: number): number {
   return Math.max(0, Math.min(255, Math.round(v)));
 }
 
-export function simulateCvdRgb(rgb: [number, number, number], kind: CvdKind): [number, number, number] {
+export function simulateCvdRgb(
+  rgb: [number, number, number],
+  kind: CvdKind,
+): [number, number, number] {
   const m = CVD_MATRICES[kind].m;
   const [r, g, b] = rgb;
   return [
@@ -619,7 +658,11 @@ function contrastRgb(a: [number, number, number], b: [number, number, number]): 
 // A functional distinction "breaks" when two colors readable apart normally
 // (>= 3:1, the large-text/UI floor) collapse below it under simulation.
 export function cvdPairBreaks(colors: KitColorLike[], kind: CvdKind): CvdBreak[] {
-  const hexes = [...new Set((colors ?? []).map((c) => normalizeHex(c.hex ?? "")).filter((h) => /^#[0-9a-f]{6}$/.test(h)))];
+  const hexes = [
+    ...new Set(
+      (colors ?? []).map((c) => normalizeHex(c.hex ?? "")).filter((h) => /^#[0-9a-f]{6}$/.test(h)),
+    ),
+  ];
   const out: CvdBreak[] = [];
   for (let i = 0; i < hexes.length; i++) {
     for (let j = i + 1; j < hexes.length; j++) {
@@ -628,7 +671,8 @@ export function cvdPairBreaks(colors: KitColorLike[], kind: CvdKind): CvdBreak[]
       const normalRatio = contrastRgb(a, b);
       if (normalRatio < 3) continue;
       const simRatio = contrastRgb(simulateCvdRgb(a, kind), simulateCvdRgb(b, kind));
-      if (simRatio < 3) out.push({ a: hexes[i].toUpperCase(), b: hexes[j].toUpperCase(), normalRatio, simRatio });
+      if (simRatio < 3)
+        out.push({ a: hexes[i].toUpperCase(), b: hexes[j].toUpperCase(), normalRatio, simRatio });
     }
   }
   return out.sort((x, y) => y.normalRatio - x.normalRatio);
@@ -644,7 +688,11 @@ export type CvdReport = {
 };
 
 export function cvdBreakageReport(colors: KitColorLike[]): CvdReport[] {
-  const hexes = [...new Set((colors ?? []).map((c) => normalizeHex(c.hex ?? "")).filter((h) => /^#[0-9a-f]{6}$/.test(h)))];
+  const hexes = [
+    ...new Set(
+      (colors ?? []).map((c) => normalizeHex(c.hex ?? "")).filter((h) => /^#[0-9a-f]{6}$/.test(h)),
+    ),
+  ];
   const checked = (hexes.length * (hexes.length - 1)) / 2;
   return CVD_KINDS.map((k) => {
     const brokenPairs = cvdPairBreaks(colors, k.id);

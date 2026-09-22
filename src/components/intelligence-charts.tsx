@@ -29,10 +29,7 @@ export function RadarChart({
     const r = R * Math.max(0, Math.min(1, v));
     return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
   };
-  const poly = (values: number[]) =>
-    values
-      .map((v, i) => pt(i, v).join(","))
-      .join(" ");
+  const poly = (values: number[]) => values.map((v, i) => pt(i, v).join(",")).join(" ");
   return (
     <div>
       <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto block w-full max-w-85" role="img">
@@ -71,7 +68,12 @@ export function RadarChart({
           return (
             <g key={s.id}>
               <polygon points={poly(s.values)} fill={color} opacity={si === 0 ? 0.1 : 0.07} />
-              <polygon points={poly(s.values)} fill="none" stroke={color} strokeWidth={si === 0 ? 2 : 1.5} />
+              <polygon
+                points={poly(s.values)}
+                fill="none"
+                stroke={color}
+                strokeWidth={si === 0 ? 2 : 1.5}
+              />
               {s.values.map((v, i) => {
                 const [x, y] = pt(i, v);
                 return <circle key={i} cx={x} cy={y} r={2.5} fill={color} />;
@@ -82,7 +84,10 @@ export function RadarChart({
       </svg>
       <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1">
         {series.map((s, si) => (
-          <span key={s.id} className={`${MONO} inline-flex items-center gap-2 text-muted-foreground`}>
+          <span
+            key={s.id}
+            className={`${MONO} inline-flex items-center gap-2 text-muted-foreground`}
+          >
             <span
               className="inline-block h-2 w-4"
               style={{ background: SERIES_INK[si % SERIES_INK.length] }}
@@ -160,11 +165,19 @@ export function WarmCoolBar({
         </span>
       </div>
       <div className="flex h-4 w-full overflow-hidden border" style={{ borderColor: HAIR }}>
-        {warm > 0 && <span style={{ width: pct(warm), background: ACCENT }} title={`Warm ${pct(warm)}`} />}
-        {cool > 0 && <span style={{ width: pct(cool), background: INK }} title={`Cool ${pct(cool)}`} />}
+        {warm > 0 && (
+          <span style={{ width: pct(warm), background: ACCENT }} title={`Warm ${pct(warm)}`} />
+        )}
+        {cool > 0 && (
+          <span style={{ width: pct(cool), background: INK }} title={`Cool ${pct(cool)}`} />
+        )}
         {neutral > 0 && (
           <span
-            style={{ width: pct(neutral), background: "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(10,10,10,0.12) 3px, rgba(10,10,10,0.12) 4px)" }}
+            style={{
+              width: pct(neutral),
+              background:
+                "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(10,10,10,0.12) 3px, rgba(10,10,10,0.12) 4px)",
+            }}
             title={`Neutral ${pct(neutral)}`}
           />
         )}
@@ -200,11 +213,15 @@ export function TypeDnaBar({
         </span>
       </div>
       <div className="flex h-4 w-full overflow-hidden border" style={{ borderColor: HAIR }}>
-        {serif > 0 && <span style={{ width: pct(serif), background: INK }} title={`Serif ${pct(serif)}`} />}
+        {serif > 0 && (
+          <span style={{ width: pct(serif), background: INK }} title={`Serif ${pct(serif)}`} />
+        )}
         {sans > 0 && (
           <span style={{ width: pct(sans), background: "#A39E93" }} title={`Sans ${pct(sans)}`} />
         )}
-        {mono > 0 && <span style={{ width: pct(mono), background: ACCENT }} title={`Mono ${pct(mono)}`} />}
+        {mono > 0 && (
+          <span style={{ width: pct(mono), background: ACCENT }} title={`Mono ${pct(mono)}`} />
+        )}
       </div>
       <div className="mt-2 flex items-center gap-4">
         <span className={`${MONO} inline-flex items-center gap-1.5 text-muted-foreground`}>

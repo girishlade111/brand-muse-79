@@ -29,7 +29,9 @@ import type { MarketNiche } from "@/server/ai.server";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
-  validateSearch: (search: Record<string, unknown>): { a?: string; b?: string; c?: string; d?: string } => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { a?: string; b?: string; c?: string; d?: string } => {
     const out: { a?: string; b?: string; c?: string; d?: string } = {};
     if (typeof search.a === "string" && search.a) out.a = search.a;
     if (typeof search.b === "string" && search.b) out.b = search.b;
@@ -418,20 +420,27 @@ function ComparePage() {
       return;
     navigate({
       to: "/compare",
-      search: { a: aId || undefined, b: bId || undefined, c: cId || undefined, d: dId || undefined },
+      search: {
+        a: aId || undefined,
+        b: bId || undefined,
+        c: cId || undefined,
+        d: dId || undefined,
+      },
       replace: true,
     });
   }, [aId, bId, cId, dId, navigate, search.a, search.b, search.c, search.d]);
 
   // Import real fonts for all compared kits so specimens render in the actual faces.
   useAutoImportFonts(
-    [slotA.kit, slotB.kit, slotC.kit, slotD.kit].flatMap((k) => k?.fonts ?? []).map((f) => ({
-      family: f.family,
-      source_family: f.source_family,
-      google_font: f.google_font,
-      weights: f.weights,
-      file_urls: f.file_urls,
-    })),
+    [slotA.kit, slotB.kit, slotC.kit, slotD.kit]
+      .flatMap((k) => k?.fonts ?? [])
+      .map((f) => ({
+        family: f.family,
+        source_family: f.source_family,
+        google_font: f.google_font,
+        weights: f.weights,
+        file_urls: f.file_urls,
+      })),
   );
 
   // Active kits: loaded, distinct, capped at four.
@@ -643,61 +652,61 @@ function ComparePage() {
                   <PalettePanel kit={aKit} score={analysis?.palette.a} other={bKit} />
                   <PalettePanel kit={bKit} score={analysis?.palette.b} other={aKit} />
                 </div>
-            {analysis && (
-              <p className={`${mono} mt-3 text-muted-foreground`}>
-                {analysis.palette.winner === "tie"
-                  ? "Both palettes are equally strong."
-                  : `${analysis.palette.winner === "a" ? aKit.kit.name : bKit.kit.name} wins the palette — ${
-                      analysis.palette.winner === "a"
-                        ? paletteReason(analysis.palette.a, analysis.palette.b)
-                        : paletteReason(analysis.palette.b, analysis.palette.a)
-                    }`}
-              </p>
-            )}
+                {analysis && (
+                  <p className={`${mono} mt-3 text-muted-foreground`}>
+                    {analysis.palette.winner === "tie"
+                      ? "Both palettes are equally strong."
+                      : `${analysis.palette.winner === "a" ? aKit.kit.name : bKit.kit.name} wins the palette — ${
+                          analysis.palette.winner === "a"
+                            ? paletteReason(analysis.palette.a, analysis.palette.b)
+                            : paletteReason(analysis.palette.b, analysis.palette.a)
+                        }`}
+                  </p>
+                )}
 
-            <SectionHeader
-              title="Typography detail"
-              winner={analysis?.type.winner ?? "na"}
-              aName={aKit.kit.name}
-              bName={bKit.kit.name}
-            />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <TypePanel kit={aKit} score={analysis?.type.a} />
-              <TypePanel kit={bKit} score={analysis?.type.b} />
-            </div>
-            {analysis && (
-              <p className={`${mono} mt-3 text-muted-foreground`}>
-                {analysis.type.winner === "tie"
-                  ? "Typography is evenly matched."
-                  : `${analysis.type.winner === "a" ? aKit.kit.name : bKit.kit.name} wins on typography — ${
-                      analysis.type.winner === "a"
-                        ? typeReason(analysis.type.a, analysis.type.b)
-                        : typeReason(analysis.type.b, analysis.type.a)
-                    }`}
-              </p>
-            )}
+                <SectionHeader
+                  title="Typography detail"
+                  winner={analysis?.type.winner ?? "na"}
+                  aName={aKit.kit.name}
+                  bName={bKit.kit.name}
+                />
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <TypePanel kit={aKit} score={analysis?.type.a} />
+                  <TypePanel kit={bKit} score={analysis?.type.b} />
+                </div>
+                {analysis && (
+                  <p className={`${mono} mt-3 text-muted-foreground`}>
+                    {analysis.type.winner === "tie"
+                      ? "Typography is evenly matched."
+                      : `${analysis.type.winner === "a" ? aKit.kit.name : bKit.kit.name} wins on typography — ${
+                          analysis.type.winner === "a"
+                            ? typeReason(analysis.type.a, analysis.type.b)
+                            : typeReason(analysis.type.b, analysis.type.a)
+                        }`}
+                  </p>
+                )}
 
-            <SectionHeader
-              title="Token detail"
-              winner={analysis?.token.winner ?? "na"}
-              aName={aKit.kit.name}
-              bName={bKit.kit.name}
-            />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <TokenPanel kit={aKit} score={analysis?.token.a} />
-              <TokenPanel kit={bKit} score={analysis?.token.b} />
-            </div>
-            {analysis && (
-              <p className={`${mono} mt-3 text-muted-foreground`}>
-                {analysis.token.winner === "tie"
-                  ? "Token systems are equally developed."
-                  : `${analysis.token.winner === "a" ? aKit.kit.name : bKit.kit.name} wins on tokens — ${
-                      analysis.token.winner === "a"
-                        ? tokenReason(analysis.token.a, analysis.token.b)
-                        : tokenReason(analysis.token.b, analysis.token.a)
-                    }`}
-              </p>
-            )}
+                <SectionHeader
+                  title="Token detail"
+                  winner={analysis?.token.winner ?? "na"}
+                  aName={aKit.kit.name}
+                  bName={bKit.kit.name}
+                />
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <TokenPanel kit={aKit} score={analysis?.token.a} />
+                  <TokenPanel kit={bKit} score={analysis?.token.b} />
+                </div>
+                {analysis && (
+                  <p className={`${mono} mt-3 text-muted-foreground`}>
+                    {analysis.token.winner === "tie"
+                      ? "Token systems are equally developed."
+                      : `${analysis.token.winner === "a" ? aKit.kit.name : bKit.kit.name} wins on tokens — ${
+                          analysis.token.winner === "a"
+                            ? tokenReason(analysis.token.a, analysis.token.b)
+                            : tokenReason(analysis.token.b, analysis.token.a)
+                        }`}
+                  </p>
+                )}
               </>
             )}
           </>
@@ -1306,7 +1315,11 @@ function VerdictMatrix({ kits }: { kits: FullKit[] }) {
   const bestType = best((r) => r.type);
   const bestTokens = best((r) => r.tokens);
   const bestOverall = best((r) => r.overall);
-  const lines: Array<{ label: string; pick: (r: (typeof scored)[number]) => number; best: number }> = [
+  const lines: Array<{
+    label: string;
+    pick: (r: (typeof scored)[number]) => number;
+    best: number;
+  }> = [
     { label: "Palette", pick: (r) => r.palette, best: bestPalette },
     { label: "Typography", pick: (r) => r.type, best: bestType },
     { label: "Tokens", pick: (r) => r.tokens, best: bestTokens },
@@ -1326,7 +1339,9 @@ function VerdictMatrix({ kits }: { kits: FullKit[] }) {
       <table className="w-full min-w-130 border-collapse">
         <thead>
           <tr className="border-b" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
-            <th className={`${mono} px-5 py-2 text-left font-normal text-muted-foreground`}>Area</th>
+            <th className={`${mono} px-5 py-2 text-left font-normal text-muted-foreground`}>
+              Area
+            </th>
             {scored.map((r, i) => (
               <th
                 key={r.kit.kit.id}
@@ -1340,7 +1355,11 @@ function VerdictMatrix({ kits }: { kits: FullKit[] }) {
         </thead>
         <tbody>
           {lines.map((ln) => (
-            <tr key={ln.label} className="border-b last:border-0" style={{ borderColor: "rgba(10,10,10,0.10)" }}>
+            <tr
+              key={ln.label}
+              className="border-b last:border-0"
+              style={{ borderColor: "rgba(10,10,10,0.10)" }}
+            >
               <td className={`${mono} px-5 py-2 text-muted-foreground`}>{ln.label}</td>
               {scored.map((r, i) => (
                 <td key={r.kit.kit.id} className="px-3 py-2 font-mono text-[11px]">
@@ -1469,9 +1488,24 @@ function IntelligenceSections({
         <div className="grid gap-6 md:grid-cols-3">
           {(
             [
-              { key: "formalCasual", left: "Casual", right: "Formal", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.formalLabel },
-              { key: "technicalConversational", left: "Conversational", right: "Technical", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.technicalLabel },
-              { key: "minimalExpressive", left: "Expressive", right: "Minimal", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.minimalLabel },
+              {
+                key: "formalCasual",
+                left: "Casual",
+                right: "Formal",
+                label: (p: (typeof voiceProfiles)[number]["profile"]) => p.formalLabel,
+              },
+              {
+                key: "technicalConversational",
+                left: "Conversational",
+                right: "Technical",
+                label: (p: (typeof voiceProfiles)[number]["profile"]) => p.technicalLabel,
+              },
+              {
+                key: "minimalExpressive",
+                left: "Expressive",
+                right: "Minimal",
+                label: (p: (typeof voiceProfiles)[number]["profile"]) => p.minimalLabel,
+              },
             ] as const
           ).map((axis) => (
             <div key={axis.key} className="space-y-4">
@@ -1525,10 +1559,16 @@ function IntelligenceSections({
               <p className={`${mono} mb-2 text-foreground`}>Saturated — crowded bands</p>
               <div className="space-y-2">
                 {niche.saturatedBands.length === 0 && (
-                  <p className={`${mono} text-muted-foreground`}>No band is saturated. Fragmented field.</p>
+                  <p className={`${mono} text-muted-foreground`}>
+                    No band is saturated. Fragmented field.
+                  </p>
                 )}
                 {niche.saturatedBands.map((b) => (
-                  <div key={b.band} className="border p-3" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
+                  <div
+                    key={b.band}
+                    className="border p-3"
+                    style={{ borderColor: "rgba(10,10,10,0.15)" }}
+                  >
                     <p className={`${mono} text-foreground`}>[ CROWDED ] {b.band}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{b.detail}</p>
                   </div>
@@ -1539,9 +1579,16 @@ function IntelligenceSections({
               <p className={`${mono} mb-2 text-foreground`}>Open — unoccupied territory</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {niche.openTerritory.map((t) => (
-                  <div key={t.band} className="border p-3" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
+                  <div
+                    key={t.band}
+                    className="border p-3"
+                    style={{ borderColor: "rgba(10,10,10,0.15)" }}
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="inline-block h-5 w-5 border" style={{ background: t.exemplar, borderColor: "rgba(10,10,10,0.25)" }} />
+                      <span
+                        className="inline-block h-5 w-5 border"
+                        style={{ background: t.exemplar, borderColor: "rgba(10,10,10,0.25)" }}
+                      />
                       <p className={`${mono} text-foreground`}>
                         [ OPEN ] {t.band} · {t.exemplar}
                       </p>
@@ -1556,7 +1603,9 @@ function IntelligenceSections({
               <ul className="space-y-1.5">
                 {niche.vectors.map((v, i) => (
                   <li key={i} className="text-sm text-foreground">
-                    <span className={`${mono} text-muted-foreground`}>{String(i + 1).padStart(2, "0")}. </span>
+                    <span className={`${mono} text-muted-foreground`}>
+                      {String(i + 1).padStart(2, "0")}.{" "}
+                    </span>
                     {v}
                   </li>
                 ))}

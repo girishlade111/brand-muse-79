@@ -121,7 +121,11 @@ describe("voice spectrum", () => {
     expect(casual.formalCasual).toBeLessThan(-0.4);
     expect(casual.formalLabel).toBe("Casual");
     const empty = analyzeKitVoice(null);
-    expect(empty).toMatchObject({ formalCasual: 0, technicalConversational: 0, minimalExpressive: 0 });
+    expect(empty).toMatchObject({
+      formalCasual: 0,
+      technicalConversational: 0,
+      minimalExpressive: 0,
+    });
   });
 });
 
@@ -146,9 +150,27 @@ describe("comparison matrix", () => {
 
 describe("white-space discovery", () => {
   const blueCohort = [
-    { id: "a", name: "A", colors: [{ hex: "#1E3A8A" }, { hex: "#F4EFE6" }], fonts: [], voice: null },
-    { id: "b", name: "B", colors: [{ hex: "#2563EB" }, { hex: "#0A0A0A" }], fonts: [], voice: null },
-    { id: "c", name: "C", colors: [{ hex: "#1D4ED8" }, { hex: "#FFFFFF" }], fonts: [], voice: null },
+    {
+      id: "a",
+      name: "A",
+      colors: [{ hex: "#1E3A8A" }, { hex: "#F4EFE6" }],
+      fonts: [],
+      voice: null,
+    },
+    {
+      id: "b",
+      name: "B",
+      colors: [{ hex: "#2563EB" }, { hex: "#0A0A0A" }],
+      fonts: [],
+      voice: null,
+    },
+    {
+      id: "c",
+      name: "C",
+      colors: [{ hex: "#1D4ED8" }, { hex: "#FFFFFF" }],
+      fonts: [],
+      voice: null,
+    },
   ];
   it("flags saturated bands and open territory", () => {
     const r = analyzeWhiteSpace(blueCohort);
