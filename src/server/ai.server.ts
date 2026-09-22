@@ -484,3 +484,159 @@ export async function generateBrandCopyServerFn(input: {
     return fallbackBrandCopy(brandName, topic);
   }
 }
+
+// ============================================================================
+// Competitive Intelligence — Market White-Space Discovery.
+// Compares 2-4 kits and identifies saturated color bands, unoccupied aesthetic
+// territory, and GTM differentiation vectors.
+// ============================================================================
+
+export type MarketNiche = {
+  saturatedBands: Array<{ band: string; detail: string }>;
+  openTerritory: Array<{ band: string; exemplar: string; rationale: string }>;
+  vectors: string[];
+  temperatureNote: string;
+};
+
+export async function analyzeMarketNicheServerFn(input: {
+  kitIds: string[];
+}): Promise<MarketNiche> {
+  const ids = [...new Set((input.kitIds ?? []).map((s) => String(s)).filter(Boolean))].slice(0, 4);
+  if (ids.length < 2) throw new Error("Select at least two kits to analyze the market.");
+
+  const { getAdmin } = await import("./supabase-admin.server");
+  const { analyzeWhiteSpace } = await import("../lib/intelligence");
+  const admin = getAdmin();
+
+  const [{ data: kits }, { data: colors }, { data: fonts }, { data: voices }] = await Promise.all([
+    admin.from("brand_kits").select("id, name, brand_positioning").in("id", ids),
+    admin.from("kit_colors").select("kit_id, hex, role, name").in("kit_id", ids).order("position"),
+    admin.from("kit_fonts").select("kit_id, family, role, weights").in("kit_id", ids).order("position"),
+    admin.from("kit_voice").select("kit_id, tone, vocabulary, dos, donts, samples, summary").in("kit_id", ids),
+  ]);
+  if (!kits || kits.length < 2) throw new Error("Could not load the selected kits.");
+
+  const byKit = (rows: Array<{ kit_id: string }> | null) => {
+    const map = new Map<string, Array<Record<string, unknown>>>();
+    for (const r of rows ?? []) {
+      const list = map.get(r.kit_id) ?? [];
+      list.push(r as Record<string, unknown>);
+      map.set(r.kit_id, list);
+    }
+    return map;
+  };
+  const colorMap = byKit(colors as Array<{ kit_id: string }> | null);
+  const fontMap = byKit(fonts as Array<{ kit_id: string }> | null);
+  const voiceMap = new Map((voices ?? []).map((v: { kit_id: string }) => [v.kit_id, v]));
+
+  const compared = (kits as Array<{ id: string; name: string; brand_positioning?: unknown }>).map(
+    (k) => ({
+      id: k.id,
+      name: String(k.name ?? "Untitled"),
+      colors: ((colorMap.get(k.id) ?? []) as Array<{ hex: string; role?: string | null }>) ?? [],
+      fonts: ((fontMap.get(k.id) ?? []) as Array<{ family?: string | null; role?: string | null; weights?: unknown }>) ?? [],
+      voice: (voiceMap.get(k.id) as never) ?? null,
+      positioning: k.brand_positioning ?? null,
+    }),
+  );
+
+  const deterministic = analyzeWhiteSpace(compared);
+  const fallback: MarketNiche = {
+    saturatedBands: deterministic.saturatedBands.map((b) => ({
+      band: b.band,
+      detail: `${Math.round(b.kitShare * 100)}% of this cohort uses ${b.band} (${b.exemplar})${b.exampleHexes.length ? ` — e.g. ${b.exampleHexes.join(", ")}` : ""}.`,
+    })),
+    openTerritory: deterministic.openTerritory.map((t) => ({
+      band: t.band,
+      exemplar: t.exemplar,
+      rationale: t.suggestion,
+    })),
+    vectors: deterministic.vectors,
+    temperatureNote: deterministic.temperatureNote,
+  };
+
+  const brief = compared
+    .map((k) => {
+      const hexes = k.colors.map((c) => c.hex).join(", ");
+      const fams = k.fonts.map((f) => f.family).join(", ");
+      return `- ${k.name}: colors [${hexes || "none"}]; fonts [${fams || "none"}]; positioning ${JSON.stringify(k.positioning)}`;
+    })
+    .join("\n");
+
+  try {
+    const raw = await callAIStructured<unknown>({
+      system: [
+        "You are a senior brand strategist. Compare the competing brands below.",
+        "Identify (1) saturated color bands every rival crowds into, (2) unoccupied aesthetic territory with concrete exemplar hexes, (3) 3-5 GTM differentiation vectors.",
+        "Be specific: name real hue bands (Royal Blue, Slate, Ochre, Forest Green). No hype words. Short sentences.",
+        `Deterministic signals: ${JSON.stringify({ saturated: deterministic.saturatedBands.map((b) => b.band), open: deterministic.openTerritory.slice(0, 6).map((t) => t.band), note: deterministic.temperatureNote })}`,
+      ].join("\n"),
+      user: `Cohort:\n${brief}`,
+      toolName: "save_market_niche",
+      toolDescription: "Save saturated bands, open territory, and differentiation vectors.",
+      parameters: {
+        type: "object",
+        properties: {
+          saturatedBands: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { band: { type: "string" }, detail: { type: "string" } },
+              required: ["band", "detail"],
+            },
+          },
+          openTerritory: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                band: { type: "string" },
+                exemplar: { type: "string" },
+                rationale: { type: "string" },
+              },
+              required: ["band", "exemplar", "rationale"],
+            },
+          },
+          vectors: { type: "array", items: { type: "string" } },
+          temperatureNote: { type: "string" },
+        },
+        required: ["saturatedBands", "openTerritory", "vectors", "temperatureNote"],
+      },
+    });
+    if (!raw || typeof raw !== "object") return fallback;
+    const r = raw as Record<string, unknown>;
+    const strList = (v: unknown): string[] =>
+      Array.isArray(v) ? v.filter((s): s is string => typeof s === "string").map((s) => s.trim()).filter(Boolean) : [];
+    const bands = Array.isArray(r.saturatedBands) ? r.saturatedBands : [];
+    const open = Array.isArray(r.openTerritory) ? r.openTerritory : [];
+    const out: MarketNiche = {
+      saturatedBands: bands
+        .filter((b): b is Record<string, unknown> => !!b && typeof b === "object")
+        .map((b) => ({ band: String(b.band ?? "").slice(0, 60), detail: String(b.detail ?? "").slice(0, 300) }))
+        .filter((b) => b.band && b.detail)
+        .slice(0, 6),
+      openTerritory: open
+        .filter((b): b is Record<string, unknown> => !!b && typeof b === "object")
+        .map((b) => ({
+          band: String(b.band ?? "").slice(0, 60),
+          exemplar: String(b.exemplar ?? "").slice(0, 12),
+          rationale: String(b.rationale ?? "").slice(0, 300),
+        }))
+        .filter((b) => b.band && b.rationale)
+        .slice(0, 6),
+      vectors: strList(r.vectors).slice(0, 6),
+      temperatureNote:
+        typeof r.temperatureNote === "string" && r.temperatureNote.trim()
+          ? r.temperatureNote.trim().slice(0, 400)
+          : fallback.temperatureNote,
+    };
+    if (!out.saturatedBands.length && !out.openTerritory.length && !out.vectors.length) return fallback;
+    if (!out.saturatedBands.length) out.saturatedBands = fallback.saturatedBands;
+    if (!out.openTerritory.length) out.openTerritory = fallback.openTerritory;
+    if (!out.vectors.length) out.vectors = fallback.vectors;
+    return out;
+  } catch (e) {
+    console.warn("[analyzeMarketNicheServerFn] AI failed, using deterministic report", e);
+    return fallback;
+  }
+}
