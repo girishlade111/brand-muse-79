@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";
 import { getAnonToken } from "@/lib/anon";
+import { isHttpUrl } from "@/lib/utils";
 import { getKit } from "@/lib/kits.functions";
 import { setKitShare } from "@/lib/share.functions";
 import { extractKit, generateSampleCopy, harvestMoreAssets } from "@/lib/extraction.functions";
