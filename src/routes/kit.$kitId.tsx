@@ -46,6 +46,12 @@ import {
   buildVoiceMarkdown,
   buildBrandPDF,
   buildKitZip,
+  buildShadcnGlobalsCss,
+  buildTailwindConfig,
+  buildFlutterTheme,
+  buildReactNativeTheme,
+  buildSwiftColors,
+  buildDtcgTokens,
   downloadBlob,
   slug,
   buildDesignInstructionsMarkdown,
@@ -71,6 +77,7 @@ import { QuietLoader } from "@/components/quiet-loader";
 import { smoothScrollTo } from "@/components/smooth-scroll";
 import { StudioSection } from "@/components/studio/studio-section";
 import { CvdSimulator } from "@/components/cvd-simulator";
+import { ComponentSandbox } from "@/components/component-sandbox";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -397,6 +404,14 @@ function KitPage() {
                   defaultCta={data.voice?.samples?.cta}
                 />
               </SectionAnchor>
+              <SectionAnchor id="sandbox" label="// 08. SANDBOX">
+                <SandboxSection
+                  kitName={kit.name}
+                  colors={data.colors}
+                  fonts={data.fonts}
+                  assets={data.assets}
+                />
+              </SectionAnchor>
               {typeof kit.source_text === "string" && kit.source_text.trim() && (
                 <SectionAnchor id="text" label="Source Text">
                   <SourceTextSection text={kit.source_text} />
@@ -440,6 +455,7 @@ const KIT_SECTIONS = [
   { id: "tokens", label: "Tokens" },
   { id: "voice", label: "Voice" },
   { id: "studio", label: "Studio" },
+  { id: "sandbox", label: "Sandbox" },
   { id: "text", label: "Source Text" },
   { id: "export", label: "Export" },
 ] as const;
@@ -2806,6 +2822,30 @@ function SampleCopyGenerator({ kitId }: { kitId: string }) {
   );
 }
 
+function SandboxSection({
+  kitName,
+  colors,
+  fonts,
+  assets,
+}: {
+  kitName: string;
+  colors: any[];
+  fonts: any[];
+  assets: any[];
+}) {
+  const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+  const publicFor = (path: string | null | undefined) =>
+    path && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}` : null;
+  const priority = ["logo", "wordmark", "logo-mark", "logomark", "logo-on-light", "icon"];
+  const logo =
+    [...assets]
+      .filter((a) => priority.includes(a.kind))
+      .sort((a, b) => priority.indexOf(a.kind) - priority.indexOf(b.kind))[0] ?? null;
+  const logoUrl = logo ? (publicFor(logo.storage_path) ?? logo.url ?? null) : null;
+  if (!colors.length && !fonts.length) return <Empty label="No tokens to preview yet" />;
+  return <ComponentSandbox kitName={kitName} colors={colors} fonts={fonts} logoUrl={logoUrl} />;
+}
+
 function ExportSection(props: {
   kitId: string;
   kitName: string;
@@ -2824,6 +2864,16 @@ function ExportSection(props: {
   const tailwind = buildTailwindTheme(props);
   const studio = buildTokensStudioJSON(props);
   const voiceMd = buildVoiceMarkdown(props.kitName, props.voice);
+  const shadcn = buildShadcnGlobalsCss(props);
+  const tailwindConfig = buildTailwindConfig(props);
+  const flutter = buildFlutterTheme({
+    name: props.kitName,
+    colors: props.colors,
+    fonts: props.fonts,
+  });
+  const reactNative = buildReactNativeTheme(props);
+  const swift = buildSwiftColors({ name: props.kitName, colors: props.colors });
+  const dtcg = buildDtcgTokens(props);
   const base = slug(props.kitName);
   const setShare = useServerFn(setKitShare);
   const fetchFonts = useServerFn(fetchFontFiles);
@@ -2968,6 +3018,36 @@ function ExportSection(props: {
           filename={`${base}-tokens-studio.json`}
         />
         <ExportBlock title="Brand voice (.md)" content={voiceMd} filename={`${base}-voice.md`} />
+        <ExportBlock
+          title="Shadcn UI globals.css"
+          content={shadcn}
+          filename={`${base}-shadcn-globals.css`}
+        />
+        <ExportBlock
+          title="tailwind.config.js"
+          content={tailwindConfig}
+          filename={`${base}-tailwind.config.js`}
+        />
+        <ExportBlock
+          title="Flutter brand_theme.dart"
+          content={flutter}
+          filename={`${base}-brand-theme.dart`}
+        />
+        <ExportBlock
+          title="React Native theme.ts"
+          content={reactNative}
+          filename={`${base}-theme.ts`}
+        />
+        <ExportBlock
+          title="SwiftUI BrandColors.swift"
+          content={swift}
+          filename={`${base}-BrandColors.swift`}
+        />
+        <ExportBlock
+          title="DTCG tokens.json (Figma)"
+          content={dtcg}
+          filename={`${base}-tokens-dtcg.json`}
+        />
       </div>
     </div>
   );

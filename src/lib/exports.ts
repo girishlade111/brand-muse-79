@@ -1,7 +1,7 @@
 // Client-side export builders for the brand kit.
 import JSZip from "jszip";
 import { jsPDF } from "jspdf";
-import { contrastRatio } from "@/lib/color";
+import { contrastRatio, hexToHsl, relativeLuminance } from "@/lib/color";
 
 type Color = { id: string; hex: string; role?: string | null; name?: string | null };
 type Font = {
@@ -369,6 +369,474 @@ export function buildVoiceMarkdown(name: string, voice: Voice) {
     );
   }
   return lines.join("\n");
+}
+
+// ============================================================================
+// Multi-framework developer handoff exporters. All generators below are pure
+// functions of (colors, fonts, tokens): same input, same output, no I/O.
+// ============================================================================
+
+function cleanExportHex(hex: string, fallback = "#0A0A0A"): string {
+  const h = String(hex ?? "").trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(h)) return h.toUpperCase();
+  if (/^#[0-9a-fA-F]{3}$/.test(h)) {
+    return `#${h
+      .slice(1)
+      .split("")
+      .map((c) => c + c)
+      .join("")
+      .toUpperCase()}`;
+  }
+  return fallback;
+}
+
+function roleHex(colors: Color[], roles: string[], fallback: string): string {
+  const wanted = new Set(roles.map((r) => r.toLowerCase()));
+  const hit = colors.find((c) => wanted.has(String(c.role ?? "").toLowerCase()));
+  return cleanExportHex(hit?.hex ?? fallback, fallback);
+}
+
+function lightestHex(colors: Color[], fallback = "#F4EFE6"): string {
+  let best = fallback;
+  let bestLum = -1;
+  for (const c of colors) {
+    const hex = cleanExportHex(c.hex, "");
+    if (!/^#[0-9A-F]{6}$/.test(hex)) continue;
+    const lum = relativeLuminance(hex);
+    if (lum > bestLum) {
+      bestLum = lum;
+      best = hex;
+    }
+  }
+  return best;
+}
+
+function darkestHex(colors: Color[], fallback = "#0A0A0A"): string {
+  let best = fallback;
+  let bestLum = 2;
+  for (const c of colors) {
+    const hex = cleanExportHex(c.hex, "");
+    if (!/^#[0-9A-F]{6}$/.test(hex)) continue;
+    const lum = relativeLuminance(hex);
+    if (lum < bestLum) {
+      bestLum = lum;
+      best = hex;
+    }
+  }
+  return best;
+}
+
+function textOn(hex: string): string {
+  return contrastRatio(hex, "#FFFFFF") >= contrastRatio(hex, "#0A0A0A") ? "#FFFFFF" : "#0A0A0A";
+}
+
+function hslChannels(hex: string): string {
+  const { h, s, l } = hexToHsl(hex);
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+function dartLiteral(hex: string): string {
+  return `Color(0xFF${cleanExportHex(hex).slice(1)})`;
+}
+
+function swiftComponents(hex: string): string {
+  const h = cleanExportHex(hex).slice(1);
+  const r = (parseInt(h.slice(0, 2), 16) / 255).toFixed(3);
+  const g = (parseInt(h.slice(2, 4), 16) / 255).toFixed(3);
+  const b = (parseInt(h.slice(4, 6), 16) / 255).toFixed(3);
+  return `red: ${r}, green: ${g}, blue: ${b}`;
+}
+
+function identBase(raw: string): string {
+  const parts = String(raw || "token")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const base = (parts.length ? parts.join("_") : "token").slice(0, 48);
+  return /^[0-9]/.test(base) ? `c_${base}` : base;
+}
+
+const DART_RESERVED = new Set([
+  "class",
+  "import",
+  "export",
+  "return",
+  "final",
+  "const",
+  "var",
+  "if",
+  "else",
+  "for",
+  "while",
+  "switch",
+  "default",
+  "break",
+  "continue",
+  "new",
+  "null",
+  "true",
+  "false",
+  "this",
+  "super",
+  "static",
+  "void",
+  "int",
+  "double",
+  "bool",
+  "string",
+]);
+
+function dartField(raw: string): string {
+  const base = identBase(raw);
+  const camel = base.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
+  return DART_RESERVED.has(camel) ? `${camel}_` : camel;
+}
+
+function swiftName(raw: string): string {
+  const base = identBase(raw);
+  const pascal = base
+    .split("_")
+    .map((p) => (p ? p[0].toUpperCase() + p.slice(1) : p))
+    .join("");
+  return `brand${pascal || "Color"}`;
+}
+
+function displayFontFamily(fonts: Font[]): string {
+  const f =
+    fonts.find((x) => ["display", "heading"].includes(String(x.role ?? "").toLowerCase())) ??
+    fonts[0];
+  return String(f?.family ?? "System").replace(/["\\]/g, "");
+}
+
+function bodyFontFamily(fonts: Font[]): string {
+  const f =
+    fonts.find((x) => ["body", "text"].includes(String(x.role ?? "").toLowerCase())) ??
+    fonts[1] ??
+    fonts[0];
+  return String(f?.family ?? "System").replace(/["\\]/g, "");
+}
+
+export type SemanticPalette = {
+  background: string;
+  foreground: string;
+  primary: string;
+  primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
+  border: string;
+  ring: string;
+};
+
+export function resolveSemanticPalette(colors: Color[]): SemanticPalette {
+  const background = roleHex(colors, ["background", "surface"], lightestHex(colors));
+  const foreground = roleHex(colors, ["text", "ink", "foreground"], darkestHex(colors));
+  const primary = roleHex(colors, ["primary"], colors[0]?.hex ?? "#0A0A0A");
+  const secondary = roleHex(
+    colors,
+    ["secondary"],
+    colors.find((c) => cleanExportHex(c.hex) !== primary)?.hex ?? "#5F5A52",
+  );
+  const accent = roleHex(colors, ["accent", "cta", "accent-2"], primary);
+  const muted = roleHex(colors, ["muted"], "#5F5A52");
+  const border = roleHex(colors, ["border"], "#E2DDD2");
+  return {
+    background,
+    foreground,
+    primary,
+    primaryForeground: textOn(primary),
+    secondary,
+    secondaryForeground: textOn(secondary),
+    muted,
+    mutedForeground: textOn(muted),
+    accent,
+    accentForeground: textOn(accent),
+    border,
+    ring: accent,
+  };
+}
+
+// ---- Shadcn UI / Tailwind v4 globals.css ----
+
+export function buildShadcnGlobalsCss(p: { colors: Color[]; fonts: Font[] }): string {
+  const s = resolveSemanticPalette(p.colors);
+  const display = displayFontFamily(p.fonts);
+  const body = bodyFontFamily(p.fonts);
+  const L = [
+    `@import "tailwindcss";`,
+    ``,
+    `:root {`,
+    `  --background: ${hslChannels(s.background)};`,
+    `  --foreground: ${hslChannels(s.foreground)};`,
+    `  --primary: ${hslChannels(s.primary)};`,
+    `  --primary-foreground: ${hslChannels(s.primaryForeground)};`,
+    `  --secondary: ${hslChannels(s.secondary)};`,
+    `  --secondary-foreground: ${hslChannels(s.secondaryForeground)};`,
+    `  --muted: ${hslChannels(s.muted)};`,
+    `  --muted-foreground: ${hslChannels(s.mutedForeground)};`,
+    `  --accent: ${hslChannels(s.accent)};`,
+    `  --accent-foreground: ${hslChannels(s.accentForeground)};`,
+    `  --border: ${hslChannels(s.border)};`,
+    `  --ring: ${hslChannels(s.ring)};`,
+    `  --radius: 0rem;`,
+    `}`,
+    ``,
+    `@theme inline {`,
+    `  --color-background: hsl(var(--background));`,
+    `  --color-foreground: hsl(var(--foreground));`,
+    `  --color-primary: hsl(var(--primary));`,
+    `  --color-primary-foreground: hsl(var(--primary-foreground));`,
+    `  --color-secondary: hsl(var(--secondary));`,
+    `  --color-secondary-foreground: hsl(var(--secondary-foreground));`,
+    `  --color-muted: hsl(var(--muted));`,
+    `  --color-muted-foreground: hsl(var(--muted-foreground));`,
+    `  --color-accent: hsl(var(--accent));`,
+    `  --color-accent-foreground: hsl(var(--accent-foreground));`,
+    `  --color-border: hsl(var(--border));`,
+    `  --color-ring: hsl(var(--ring));`,
+    `  --font-display: "${display}", serif;`,
+    `  --font-sans: "${body}", sans-serif;`,
+    `}`,
+  ];
+  return L.join("\n");
+}
+
+// ---- tailwind.config.js (JS, CJS) ----
+
+export function buildTailwindConfig(p: {
+  colors: Color[];
+  fonts: Font[];
+  tokens: Token[];
+}): string {
+  const colorLines = p.colors.map((c) => {
+    const key = slug(c.role || c.name || c.hex);
+    return `      "${key}": "${cleanExportHex(c.hex)}",`;
+  });
+  const fontLines = p.fonts.map((f) => {
+    const key = slug(f.role || f.family);
+    const fallback = f.role === "mono" ? "monospace" : "sans-serif";
+    return `      "${key}": ["${String(f.family).replace(/["\\]/g, "")}", "${fallback}"],`;
+  });
+  const L = [
+    `/** Brand tokens — generated by Brand DNA. Do not edit by hand. */`,
+    `module.exports = {`,
+    `  theme: {`,
+    `    extend: {`,
+    `      colors: {`,
+    ...colorLines,
+    `      },`,
+    `      fontFamily: {`,
+    ...fontLines,
+    `      },`,
+    `    },`,
+    `  },`,
+    `  plugins: [],`,
+    `};`,
+  ];
+  return L.join("\n");
+}
+
+// ---- Flutter / Dart ----
+
+export function buildFlutterTheme(p: { name: string; colors: Color[]; fonts: Font[] }): string {
+  const s = resolveSemanticPalette(p.colors);
+  const display = displayFontFamily(p.fonts);
+  const body = bodyFontFamily(p.fonts);
+  const entries: Array<[string, string]> = [
+    ["background", s.background],
+    ["foreground", s.foreground],
+    ["primary", s.primary],
+    ["onPrimary", s.primaryForeground],
+    ["secondary", s.secondary],
+    ["onSecondary", s.secondaryForeground],
+    ["muted", s.muted],
+    ["onMuted", s.mutedForeground],
+    ["accent", s.accent],
+    ["onAccent", s.accentForeground],
+    ["border", s.border],
+  ];
+  const fields = entries
+    .map(([k, v]) => `  static const Color ${dartField(k)} = ${dartLiteral(v)};`)
+    .join("\n");
+  const esc = (x: string) => x.replace(/'/g, "\\'");
+  return [
+    `// ${p.name} brand theme — generated by Brand DNA.`,
+    `// Add your fonts to pubspec.yaml, or use google_fonts for '${esc(display)}'.`,
+    `import 'package:flutter/material.dart';`,
+    ``,
+    `class BrandColors {`,
+    `  const BrandColors._();`,
+    ``,
+    fields,
+    `}`,
+    ``,
+    `class BrandTextTheme {`,
+    `  const BrandTextTheme._();`,
+    ``,
+    `  static const String displayFont = '${esc(display)}';`,
+    `  static const String bodyFont = '${esc(body)}';`,
+    ``,
+    `  static TextTheme get light => const TextTheme(`,
+    `        displayLarge: TextStyle(fontFamily: displayFont, fontWeight: FontWeight.w700),`,
+    `        displayMedium: TextStyle(fontFamily: displayFont, fontWeight: FontWeight.w500),`,
+    `        bodyLarge: TextStyle(fontFamily: bodyFont, fontWeight: FontWeight.w400),`,
+    `        bodyMedium: TextStyle(fontFamily: bodyFont, fontWeight: FontWeight.w400),`,
+    `        labelLarge: TextStyle(fontFamily: bodyFont, fontWeight: FontWeight.w700),`,
+    `      );`,
+    `}`,
+  ].join("\n");
+}
+
+// ---- React Native / Expo theme.ts ----
+
+export function buildReactNativeTheme(p: {
+  colors: Color[];
+  fonts: Font[];
+  tokens: Token[];
+}): string {
+  const s = resolveSemanticPalette(p.colors);
+  const display = displayFontFamily(p.fonts);
+  const body = bodyFontFamily(p.fonts);
+  const radii = p.tokens
+    .filter((t) => t.category === "radius")
+    .map((t) => `    ${dartField(t.name)}: "${t.value}",`)
+    .join("\n");
+  const L = [
+    `// Brand theme — generated by Brand DNA. Works with StyleSheet.create or NativeWind.`,
+    `export const colors = {`,
+    `  background: "${s.background}",`,
+    `  foreground: "${s.foreground}",`,
+    `  primary: "${s.primary}",`,
+    `  primaryForeground: "${s.primaryForeground}",`,
+    `  secondary: "${s.secondary}",`,
+    `  secondaryForeground: "${s.secondaryForeground}",`,
+    `  muted: "${s.muted}",`,
+    `  mutedForeground: "${s.mutedForeground}",`,
+    `  accent: "${s.accent}",`,
+    `  accentForeground: "${s.accentForeground}",`,
+    `  border: "${s.border}",`,
+    `  ring: "${s.ring}",`,
+    `} as const;`,
+    ``,
+    `export type BrandColor = keyof typeof colors;`,
+    ``,
+    `export const typography = {`,
+    `  display: { fontFamily: "${display}", fontWeight: "700" as const },`,
+    `  heading: { fontFamily: "${display}", fontWeight: "500" as const },`,
+    `  body: { fontFamily: "${body}", fontWeight: "400" as const },`,
+    `  label: { fontFamily: "${body}", fontWeight: "700" as const },`,
+    `} as const;`,
+    ``,
+    `export type BrandTypeStyle = keyof typeof typography;`,
+  ];
+  if (radii) L.push(``, `export const radii = {`, radii, `} as const;`);
+  L.push(``);
+  return L.join("\n");
+}
+
+// ---- Swift / SwiftUI ----
+
+export function buildSwiftColors(p: { name: string; colors: Color[] }): string {
+  const s = resolveSemanticPalette(p.colors);
+  const rows: Array<[string, string]> = [
+    ["Background", s.background],
+    ["Foreground", s.foreground],
+    ["Primary", s.primary],
+    ["PrimaryForeground", s.primaryForeground],
+    ["Secondary", s.secondary],
+    ["SecondaryForeground", s.secondaryForeground],
+    ["Muted", s.muted],
+    ["Accent", s.accent],
+    ["AccentForeground", s.accentForeground],
+    ["Border", s.border],
+  ];
+  const statics = rows
+    .map(([k, v]) => `  static let ${swiftName(k)} = Color(${swiftComponents(v)})`)
+    .join("\n");
+  return [
+    `// ${p.name} brand colors — generated by Brand DNA.`,
+    `import SwiftUI`,
+    ``,
+    `extension Color {`,
+    `  init(hex: String) {`,
+    `    let clean = hex.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "#", with: "")`,
+    `    var value: UInt64 = 0`,
+    `    Scanner(string: clean).scanHexInt64(&value)`,
+    `    let r = Double((value >> 16) & 0xFF) / 255`,
+    `    let g = Double((value >> 8) & 0xFF) / 255`,
+    `    let b = Double(value & 0xFF) / 255`,
+    `    self.init(red: r, green: g, blue: b)`,
+    `  }`,
+    ``,
+    statics,
+    `}`,
+  ].join("\n");
+}
+
+// ---- W3C DTCG / Figma Tokens Studio tokens.json ----
+
+export function buildDtcgTokens(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }): string {
+  const seen = new Set<string>();
+  const uniqueKey = (base: string) => {
+    let key = base || "unnamed";
+    let i = 2;
+    while (seen.has(key)) key = `${base}-${i++}`;
+    seen.add(key);
+    return key;
+  };
+  const color: Record<string, unknown> = {};
+  for (const c of p.colors) {
+    const key = uniqueKey(slug(c.role || c.name || c.hex));
+    color[key] = {
+      $value: cleanExportHex(c.hex),
+      $type: "color",
+      $description: [c.role, c.name].filter(Boolean).join(" · ") || undefined,
+    };
+  }
+  const font: Record<string, unknown> = {};
+  for (const f of p.fonts) {
+    const key = uniqueKey(`font-${slug(f.role || f.family)}`);
+    font[key] = { $value: String(f.family).replace(/["\\]/g, ""), $type: "fontFamily" };
+    if (Array.isArray(f.weights) && f.weights.length) {
+      font[`${key}-weights`] = { $value: f.weights.join(" "), $type: "fontWeight" };
+    }
+  }
+  const dimension: Record<string, unknown> = {};
+  const other: Record<string, unknown> = {};
+  for (const t of p.tokens) {
+    const key = uniqueKey(`${slug(t.category)}-${slug(t.name)}`);
+    if (t.category === "spacing" || t.category === "radius") {
+      dimension[key] = { $value: t.value, $type: "dimension" };
+    } else {
+      other[key] = { $value: t.value, $type: "other" };
+    }
+  }
+  const out: Record<string, unknown> = { color };
+  if (Object.keys(font).length) out.font = font;
+  if (Object.keys(dimension).length) out.dimension = dimension;
+  if (Object.keys(other).length) out.other = other;
+  return JSON.stringify(out, null, 2);
+}
+
+// Manifest of framework files written into brand-kit.zip. Pure and tested.
+export function buildFrameworkFiles(args: {
+  name: string;
+  colors: Color[];
+  fonts: Font[];
+  tokens: Token[];
+}): Record<string, string> {
+  return {
+    "tokens/tokens.css": buildCSS(args),
+    "tokens/tailwind.config.js": buildTailwindConfig(args),
+    "tokens/shadcn-globals.css": buildShadcnGlobalsCss(args),
+    "tokens/tokens.json": buildDtcgTokens(args),
+    "mobile/brand_theme.dart": buildFlutterTheme(args),
+    "mobile/theme.ts": buildReactNativeTheme(args),
+    "mobile/BrandColors.swift": buildSwiftColors(args),
+  };
 }
 
 // PDF brand guide
@@ -1141,7 +1609,14 @@ export async function buildKitZip(args: {
   zip.file(`${base}-tokens-studio.json`, buildTokensStudioJSON(args));
   zip.file(`${base}-voice.md`, buildVoiceMarkdown(args.name, args.voice));
   zip.file(`${base}-DESIGN.md`, buildDesignMarkdown(args));
-  zip.file(`${base}-brand-guide.pdf`, await buildBrandPDF(args));
+
+  // Multi-framework handoff: tokens + mobile themes in fixed paths.
+  const frameworkFiles = buildFrameworkFiles(args);
+  for (const [path, content] of Object.entries(frameworkFiles)) {
+    zip.file(path, content);
+  }
+
+  zip.file(`guidelines/brand-guidelines.pdf`, await buildBrandPDF(args));
 
   // FONTS.md — always include if there are fonts; explains licensing.
   if (args.fonts.length) {
@@ -1171,31 +1646,50 @@ export async function buildKitZip(args: {
     }
   }
 
-  // Try to fetch assets (CORS-permitting); skip silently on failure.
-  const assetsFolder = zip.folder("assets");
-  if (assetsFolder) {
+  // Fetch assets once (CORS-permitting); skip silently on failure. The same
+  // blobs feed both /assets (existing layout) and /logos (SVG/PNG variants).
+  const fetched: Array<{ kind: string; ext: string; data: Uint8Array | Blob }> = [];
+  {
     const preFetched = new Map<string, AssetFileBlob>(
       (args.assetFiles ?? []).filter((a) => a.base64).map((a) => [a.url, a]),
     );
     await Promise.all(
-      args.assets.map(async (a, i) => {
+      args.assets.map(async (a) => {
         try {
           const pre = preFetched.get(a.url);
           if (pre?.base64) {
             const ext = guessAssetExt(pre.contentType, a.url);
-            assetsFolder.file(`${i + 1}-${slug(a.kind)}.${ext}`, base64ToUint8(pre.base64));
+            fetched.push({ kind: a.kind, ext, data: base64ToUint8(pre.base64) });
             return;
           }
           const res = await fetch(a.url);
           if (!res.ok) return;
           const blob = await res.blob();
           const ext = guessAssetExt(blob.type, a.url);
-          assetsFolder.file(`${i + 1}-${slug(a.kind)}.${ext}`, blob);
+          fetched.push({ kind: a.kind, ext, data: blob });
         } catch {
           // ignore CORS failures
         }
       }),
     );
+  }
+
+  const assetsFolder = zip.folder("assets");
+  if (assetsFolder) {
+    fetched.forEach((f, i) => {
+      assetsFolder.file(`${i + 1}-${slug(f.kind)}.${f.ext}`, f.data);
+    });
+  }
+
+  // /logos — image variants only (SVG + raster), same blobs, logo-first names.
+  const logosFolder = zip.folder("logos");
+  if (logosFolder) {
+    const IMAGE_EXT = new Set(["svg", "png", "jpg", "jpeg", "webp", "avif", "gif", "ico"]);
+    fetched
+      .filter((f) => IMAGE_EXT.has(f.ext))
+      .forEach((f, i) => {
+        logosFolder.file(`logo-${i + 1}-${slug(f.kind)}.${f.ext}`, f.data);
+      });
   }
 
   return zip.generateAsync({ type: "blob" });
