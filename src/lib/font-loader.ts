@@ -70,7 +70,6 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
   // The effect body reads `records` (built from `fonts`) but is keyed on the
   // serialized `key` above, which changes exactly when the font set changes,
   // keeping the DOM injections idempotent. deps are intentionally [key].
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typeof document === "undefined" || !key) return;
 
@@ -88,9 +87,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       )
         .map((w) => String(w).replace(/[^0-9]/g, ""))
         .filter(Boolean);
-      const weights = parsed.length
-        ? parsed
-        : ["300", "400", "500", "600", "700"];
+      const weights = parsed.length ? parsed : ["300", "400", "500", "600", "700"];
       const familyParam = encodeURIComponent(String(f.family)).replace(/%20/g, "+");
       const link = document.createElement("link");
       link.id = id;
@@ -132,6 +129,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       const next = faceRules.filter((r) => !existing.includes(r)).join("");
       if (next) style.textContent = existing + next;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 }
 

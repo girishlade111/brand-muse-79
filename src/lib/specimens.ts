@@ -111,7 +111,8 @@ function shortId(uuid: string | undefined, idx: number): string {
 function normalizeHex(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   let h = raw.replace(/^#+/, "").trim();
-  if (/^[0-9a-fA-F]{3}$/.test(h)) h = h
+  if (/^[0-9a-fA-F]{3}$/.test(h))
+    h = h
       .split("")
       .map((c) => c + c)
       .join("");

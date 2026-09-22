@@ -7,8 +7,14 @@
 // runner — which always failed. Unit tests live in `scripts/` and `src/`;
 // Playwright specs live in `e2e/` and run via `npm run test:e2e`.
 import { defineConfig } from "vitest/config";
+import path from "path";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
   test: {
     environment: "node",
     include: ["scripts/**/*.test.mjs", "src/**/*.test.ts", "src/**/*.test.tsx"],
