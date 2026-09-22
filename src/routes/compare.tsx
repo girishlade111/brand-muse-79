@@ -1287,3 +1287,290 @@ function ScoreRow({
     </>
   );
 }
+
+// ---------- verdict matrix (3-4 kits) ----------
+
+function VerdictMatrix({ kits }: { kits: FullKit[] }) {
+  const rows = kits.map((k) => {
+    const p = paletteScore(k.colors);
+    const t = typeScore(k.fonts);
+    const tok = tokenScore(k.tokens);
+    return { kit: k, palette: p.score, type: t.score, tokens: tok.score };
+  });
+  const scored = rows.map((r) => ({ ...r, overall: round((r.palette + r.type + r.tokens) / 3) }));
+  const best = (pick: (r: (typeof scored)[number]) => number) =>
+    scored.reduce((bi, r, i) => (pick(r) > pick(scored[bi]) ? i : bi), 0);
+  const bestPalette = best((r) => r.palette);
+  const bestType = best((r) => r.type);
+  const bestTokens = best((r) => r.tokens);
+  const bestOverall = best((r) => r.overall);
+  const lines: Array<{ label: string; pick: (r: (typeof scored)[number]) => number; best: number }> = [
+    { label: "Palette", pick: (r) => r.palette, best: bestPalette },
+    { label: "Typography", pick: (r) => r.type, best: bestType },
+    { label: "Tokens", pick: (r) => r.tokens, best: bestTokens },
+    { label: "Overall", pick: (r) => r.overall, best: bestOverall },
+  ];
+  return (
+    <div className="overflow-x-auto border" style={{ borderColor: "rgba(10,10,10,0.25)" }}>
+      <div
+        className="flex items-center justify-between gap-3 border-b px-5 py-3"
+        style={{ borderColor: "rgba(10,10,10,0.15)" }}
+      >
+        <span className={mono + " text-foreground"}>Verdict matrix</span>
+        <span className={`${mono} text-muted-foreground`}>
+          Overall edge → {scored[bestOverall].kit.kit.name}
+        </span>
+      </div>
+      <table className="w-full min-w-130 border-collapse">
+        <thead>
+          <tr className="border-b" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
+            <th className={`${mono} px-5 py-2 text-left font-normal text-muted-foreground`}>Area</th>
+            {scored.map((r, i) => (
+              <th
+                key={r.kit.kit.id}
+                className={`${mono} truncate px-3 py-2 text-left font-normal`}
+                style={{ color: SERIES_INK[i % SERIES_INK.length] }}
+              >
+                {r.kit.kit.name}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {lines.map((ln) => (
+            <tr key={ln.label} className="border-b last:border-0" style={{ borderColor: "rgba(10,10,10,0.10)" }}>
+              <td className={`${mono} px-5 py-2 text-muted-foreground`}>{ln.label}</td>
+              {scored.map((r, i) => (
+                <td key={r.kit.kit.id} className="px-3 py-2 font-mono text-[11px]">
+                  <span className="inline-flex items-center gap-1.5">
+                    {ln.pick(r)}
+                    {i === ln.best && <Trophy className="h-3 w-3" strokeWidth={1.5} />}
+                  </span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ---------- comparative intelligence matrix ----------
+
+function IntelligenceSections({
+  activeKits,
+  matrix,
+  colorProfiles,
+  typeProfiles,
+  voiceProfiles,
+  niche,
+  nicheBusy,
+  onRunWhiteSpace,
+}: {
+  activeKits: FullKit[];
+  matrix: ReturnType<typeof buildComparisonMatrix>;
+  colorProfiles: Array<{ kit: FullKit; profile: ReturnType<typeof analyzeKitColors> }>;
+  typeProfiles: Array<{ kit: FullKit; profile: ReturnType<typeof analyzeKitType> }>;
+  voiceProfiles: Array<{ kit: FullKit; profile: ReturnType<typeof analyzeKitVoice> }>;
+  niche: MarketNiche | null;
+  nicheBusy: boolean;
+  onRunWhiteSpace: () => void;
+}) {
+  return (
+    <>
+      <div
+        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+      >
+        <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
+          01 — Color temperature & vibrancy
+        </h2>
+        <span className={`${mono} text-muted-foreground`}>{activeKits.length} kits</span>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+          <p className={`${mono} mb-4 text-muted-foreground`}>Radar — hue psychology at a glance</p>
+          <RadarChart axes={matrix.axes} series={matrix.series} />
+        </section>
+        <section className="space-y-5 border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+          <div className="space-y-4">
+            <p className={`${mono} text-muted-foreground`}>Hue distribution — 16 bands</p>
+            {colorProfiles.map(({ kit, profile }, i) => (
+              <HueStrip
+                key={kit.kit.id}
+                name={kit.kit.name}
+                color={SERIES_INK[i % SERIES_INK.length]}
+                histogram={profile.hueHistogram}
+                total={profile.count}
+              />
+            ))}
+          </div>
+          <div className="space-y-4 border-t pt-4" style={{ borderColor: "rgba(10,10,10,0.12)" }}>
+            <p className={`${mono} text-muted-foreground`}>Warm vs. cool</p>
+            {colorProfiles.map(({ kit, profile }) => (
+              <WarmCoolBar
+                key={kit.kit.id}
+                name={`${kit.kit.name} — ${profile.temperature}`}
+                warm={profile.warmRatio}
+                cool={profile.coolRatio}
+                neutral={profile.neutralRatio}
+              />
+            ))}
+          </div>
+          <p className={`${mono} text-muted-foreground`}>
+            {colorProfiles
+              .map(
+                ({ kit, profile }) =>
+                  `${kit.kit.name}: ${profile.temperature} · vibrancy ${profile.vibrancy}`,
+              )
+              .join(" — ")}
+          </p>
+        </section>
+      </div>
+
+      <div
+        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+      >
+        <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
+          02 — Typography DNA
+        </h2>
+        <span className={`${mono} text-muted-foreground`}>serif / sans / mono</span>
+      </div>
+      <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+        <div className="grid gap-6 md:grid-cols-2">
+          {typeProfiles.map(({ kit, profile }) => (
+            <TypeDnaBar
+              key={kit.kit.id}
+              name={kit.kit.name}
+              serif={profile.serif}
+              sans={profile.sans}
+              mono={profile.mono}
+              dominant={profile.dominant}
+              weights={profile.weights}
+            />
+          ))}
+        </div>
+      </section>
+
+      <div
+        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+      >
+        <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
+          03 — Voice & sentiment spectrum
+        </h2>
+        <span className={`${mono} text-muted-foreground`}>-1 → +1 per axis</span>
+      </div>
+      <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+        <div className="grid gap-6 md:grid-cols-3">
+          {(
+            [
+              { key: "formalCasual", left: "Casual", right: "Formal", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.formalLabel },
+              { key: "technicalConversational", left: "Conversational", right: "Technical", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.technicalLabel },
+              { key: "minimalExpressive", left: "Expressive", right: "Minimal", label: (p: (typeof voiceProfiles)[number]["profile"]) => p.minimalLabel },
+            ] as const
+          ).map((axis) => (
+            <div key={axis.key} className="space-y-4">
+              <p className={`${mono} text-muted-foreground`}>
+                {axis.left} ↔ {axis.right}
+              </p>
+              {voiceProfiles.map(({ kit, profile }) => (
+                <VoiceSpectrumRow
+                  key={kit.kit.id}
+                  name={`${kit.kit.name} · ${axis.label(profile)}`}
+                  value={axis.key === "formalCasual" ? profile.formalCasual : axis.key === "technicalConversational" ? -profile.technicalConversational : -profile.minimalExpressive}
+                  leftLabel={axis.left}
+                  rightLabel={axis.right}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div
+        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+      >
+        <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
+          04 — Market white space
+        </h2>
+        <span className={`${mono} text-muted-foreground`}>AI-powered</span>
+      </div>
+      <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+        {!niche ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className={`${mono} text-muted-foreground`}>
+              Compare all {activeKits.length} kits to find saturated color bands, unoccupied
+              aesthetic territory, and GTM differentiation vectors.
+            </p>
+            <button
+              type="button"
+              onClick={onRunWhiteSpace}
+              disabled={nicheBusy}
+              className="border border-[#0A0A0A] bg-[#0A0A0A] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#F4EFE6] hover:opacity-90 disabled:opacity-50"
+              style={{ borderRadius: 0 }}
+            >
+              {nicheBusy ? "[ ANALYZING… ]" : "[ ANALYZE WHITE SPACE ]"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <p className={`${mono} text-muted-foreground`}>{niche.temperatureNote}</p>
+            <div>
+              <p className={`${mono} mb-2 text-foreground`}>Saturated — crowded bands</p>
+              <div className="space-y-2">
+                {niche.saturatedBands.length === 0 && (
+                  <p className={`${mono} text-muted-foreground`}>No band is saturated. Fragmented field.</p>
+                )}
+                {niche.saturatedBands.map((b) => (
+                  <div key={b.band} className="border p-3" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
+                    <p className={`${mono} text-foreground`}>[ CROWDED ] {b.band}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{b.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className={`${mono} mb-2 text-foreground`}>Open — unoccupied territory</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {niche.openTerritory.map((t) => (
+                  <div key={t.band} className="border p-3" style={{ borderColor: "rgba(10,10,10,0.15)" }}>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block h-5 w-5 border" style={{ background: t.exemplar, borderColor: "rgba(10,10,10,0.25)" }} />
+                      <p className={`${mono} text-foreground`}>
+                        [ OPEN ] {t.band} · {t.exemplar}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{t.rationale}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className={`${mono} mb-2 text-foreground`}>Differentiation vectors — GTM</p>
+              <ul className="space-y-1.5">
+                {niche.vectors.map((v, i) => (
+                  <li key={i} className="text-sm text-foreground">
+                    <span className={`${mono} text-muted-foreground`}>{String(i + 1).padStart(2, "0")}. </span>
+                    {v}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button
+              type="button"
+              onClick={onRunWhiteSpace}
+              disabled={nicheBusy}
+              className={ghostBtn}
+            >
+              {nicheBusy ? "Re-analyzing…" : "Re-analyze"}
+            </button>
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
