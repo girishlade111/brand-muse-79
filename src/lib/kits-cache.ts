@@ -20,14 +20,24 @@ export type CachedKit = {
   logoUrl?: string | null;
 };
 
+const MAX_CACHED_KITS = 100;
+
+function isValidCachedKit(k: unknown): k is CachedKit {
+  if (!k || typeof k !== "object") return false;
+  const r = k as Record<string, unknown>;
+  return typeof r.id === "string" && typeof r.name === "string";
+}
+
 export function readKitsCache(): CachedKit[] | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
-    return parsed as CachedKit[];
+    const valid = parsed.filter(isValidCachedKit);
+    if (!valid.length) return null;
+    return valid.slice(0, MAX_CACHED_KITS);
   } catch {
     return null;
   }
@@ -36,8 +46,12 @@ export function readKitsCache(): CachedKit[] | null {
 export function writeKitsCache(kits: CachedKit[]): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(kits));
+    localStorage.setItem(KEY, JSON.stringify(kits.slice(0, MAX_CACHED_KITS)));
   } catch {
-    /* quota or serialization — ignore */
+    try {
+      localStorage.setItem(KEY, JSON.stringify(kits.slice(0, 20)));
+    } catch {
+      /* quota — ignore */
+    }
   }
 }

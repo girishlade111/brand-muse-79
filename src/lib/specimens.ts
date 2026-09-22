@@ -79,9 +79,10 @@ export const demoSpecimens: Specimen[] = [
 const HEX_PAD = ["1A1A18", "2C2924", "84766B", "C8BFA8", "ECE7DC"];
 
 function parseHostname(url: string | null | undefined): { name: string; tld: string } | null {
-  if (!url) return null;
+  if (!url || !/:\/\//.test(url)) return null;
   try {
-    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const u = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
     const host = u.hostname.replace(/^www\./, "");
     const parts = host.split(".");
     if (parts.length < 2) return { name: titleCase(host), tld: "" };
@@ -95,18 +96,25 @@ function parseHostname(url: string | null | undefined): { name: string; tld: str
 
 function titleCase(s: string): string {
   if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s
+    .split(/([\s._-]+)/)
+    .map((part) => (/^[\s._-]+$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join("");
 }
 
 function shortId(uuid: string | undefined, idx: number): string {
-  if (!uuid) return `#00.${String(idx + 1).padStart(3, "0")}`;
+  if (!uuid) return `#00.${String((idx + 1) % 1000).padStart(3, "0")}`;
   const head = uuid.replace(/-/g, "").slice(0, 6).toUpperCase();
   return `#${head.slice(0, 2)}.${head.slice(2)}`;
 }
 
 function normalizeHex(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
-  const h = raw.replace(/^#/, "").trim();
+  let h = raw.replace(/^#+/, "").trim();
+  if (/^[0-9a-fA-F]{3}$/.test(h)) h = h
+      .split("")
+      .map((c) => c + c)
+      .join("");
   return /^[0-9a-fA-F]{6}$/.test(h) ? h.toUpperCase() : null;
 }
 
