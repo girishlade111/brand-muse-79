@@ -1656,6 +1656,9 @@ function FontCard({
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    } catch (e) {
+      const { toast } = await import("sonner");
+      toast.error(e instanceof Error ? e.message : "Download failed");
     } finally {
       setDownloading(false);
     }
@@ -1837,7 +1840,7 @@ function FontCard({
       {(f.license_note || f.provider_url) && (
         <div className="mt-4 border-t border-[color:var(--border-subtle)] pt-3 text-[12px] [font-family:'Libre_Baskerville',serif] text-muted-foreground">
           {f.license_note}
-          {f.provider_url && (
+          {f.provider_url && isHttpUrl(f.provider_url) && (
             <>
               {f.license_note ? " " : ""}
               <a
