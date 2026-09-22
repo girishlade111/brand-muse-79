@@ -1262,6 +1262,11 @@ function PairingTable({
         {colors.map((c) => {
           const r1 = wcag(c.hex, bg).ratio;
           const r2 = wcag(c.hex, text).ratio;
+          // Closest AA-compliant shade for each role, hue preserved. The fix
+          // always targets the palette color so it persists via updateColorServerFn.
+          const fixAsText = autoFixContrast(c.hex, bg, { adjust: "foreground", level: "AA" });
+          const fixAsFill = autoFixContrast(text, c.hex, { adjust: "background", level: "AA" });
+          const fixing = fixingId === c.id;
           return (
             <div
               key={c.id}
@@ -1275,13 +1280,39 @@ function PairingTable({
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">
                   As text
                 </span>
-                <PairingSample ratio={r1} fg={c.hex} bg={bg} />
+                <PairingSample
+                  ratio={r1}
+                  fg={c.hex}
+                  bg={bg}
+                  fix={
+                    canFix && onAutoFix && fixAsText
+                      ? {
+                          fixing,
+                          fixedHex: fixAsText.hex,
+                          onFix: () => onAutoFix(c.id, c.hex, fixAsText.hex),
+                        }
+                      : undefined
+                  }
+                />
               </div>
               <div className="flex items-center gap-2 sm:contents">
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:hidden">
                   As fill
                 </span>
-                <PairingSample ratio={r2} fg={text} bg={c.hex} />
+                <PairingSample
+                  ratio={r2}
+                  fg={text}
+                  bg={c.hex}
+                  fix={
+                    canFix && onAutoFix && fixAsFill
+                      ? {
+                          fixing,
+                          fixedHex: fixAsFill.hex,
+                          onFix: () => onAutoFix(c.id, c.hex, fixAsFill.hex),
+                        }
+                      : undefined
+                  }
+                />
               </div>
             </div>
           );
