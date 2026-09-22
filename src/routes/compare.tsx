@@ -656,7 +656,7 @@ function ComparePage() {
             )}
 
             <SectionHeader
-              title="02 — Typography"
+              title="Typography detail"
               winner={analysis?.type.winner ?? "na"}
               aName={aKit.kit.name}
               bName={bKit.kit.name}
@@ -678,7 +678,7 @@ function ComparePage() {
             )}
 
             <SectionHeader
-              title="03 — Tokens"
+              title="Token detail"
               winner={analysis?.token.winner ?? "na"}
               aName={aKit.kit.name}
               bName={bKit.kit.name}
