@@ -354,7 +354,7 @@ function ComparePage() {
   }, [aId, ownerToken, fetchKit]);
 
   useEffect(() => {
-    if (!bId) {
+    if (!bId || !ownerToken) {
       setBKit(null);
       return;
     }
