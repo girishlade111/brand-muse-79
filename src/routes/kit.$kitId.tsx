@@ -1322,8 +1322,20 @@ function PairingTable({
   );
 }
 
-function PairingSample({ ratio, fg, bg }: { ratio: number; fg: string; bg: string }) {
+function PairingSample({
+  ratio,
+  fg,
+  bg,
+  fix,
+}: {
+  ratio: number;
+  fg: string;
+  bg: string;
+  fix?: { fixedHex: string; fixing: boolean; onFix: () => void };
+}) {
   // WCAG: ≥4.5 passes for body text; 3–4.5 passes for large text only; <3 fails.
+  const tier = ratio >= 4.5 ? "do" : ratio >= 3 ? "large" : "dont";
+  const failsAA = ratio < 4.5;
   const tier = ratio >= 4.5 ? "do" : ratio >= 3 ? "large" : "dont";
   const ringClass =
     tier === "do"
