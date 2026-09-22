@@ -1516,7 +1516,7 @@ function IntelligenceSections({
                 <VoiceSpectrumRow
                   key={kit.kit.id}
                   name={`${kit.kit.name} · ${axis.label(profile)}`}
-                  value={axis.key === "formalCasual" ? profile.formalCasual : axis.key === "technicalConversational" ? -profile.technicalConversational : -profile.minimalExpressive}
+                  value={profile[axis.key]}
                   leftLabel={axis.left}
                   rightLabel={axis.right}
                 />
