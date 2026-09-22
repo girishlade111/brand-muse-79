@@ -70,6 +70,7 @@ import { ExtractionProgress } from "@/components/extraction-progress";
 import { QuietLoader } from "@/components/quiet-loader";
 import { smoothScrollTo } from "@/components/smooth-scroll";
 import { StudioSection } from "@/components/studio/studio-section";
+import { CvdSimulator } from "@/components/cvd-simulator";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
