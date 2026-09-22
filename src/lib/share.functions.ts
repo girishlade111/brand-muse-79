@@ -4,7 +4,7 @@ import { getAdmin } from "@/server/supabase-admin.server";
 
 // Toggle public sharing for a kit. Owner-only.
 export const setKitShare = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       ownerToken: z.string().min(1).max(200),
@@ -42,7 +42,7 @@ export const setKitShare = createServerFn({ method: "POST" })
 
 // Claim an anonymous kit when a user signs in.
 export const claimKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       anonToken: z.string().min(1).max(200),

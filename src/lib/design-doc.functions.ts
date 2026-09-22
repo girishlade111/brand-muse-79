@@ -29,7 +29,7 @@ export const listDesignVersions = createServerFn({ method: "GET" })
 
 export const getDesignVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ id: z.string().uuid() }).parse)
+  .validator(z.object({ id: z.string().uuid() }).parse)
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: row, error } = await supabase
@@ -50,7 +50,7 @@ export const getDesignVersion = createServerFn({ method: "POST" })
 
 export const saveDesignVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     z.object({
       markdown: z.string().min(1).max(500_000),
       label: z.string().max(200).optional(),
@@ -86,7 +86,7 @@ export const saveDesignVersion = createServerFn({ method: "POST" })
 
 export const diffDesignVersions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     z.object({
       aId: z.string().uuid(),
       bId: z.string().uuid(),

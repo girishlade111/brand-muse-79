@@ -258,7 +258,7 @@ async function editImage(
 }
 
 export const generateLogoVariants = createServerFn({ method: "POST" })
-  .inputValidator((d) => InputSchema.parse(d))
+  .validator((d) => InputSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = getAdmin();
 

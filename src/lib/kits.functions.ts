@@ -12,7 +12,7 @@ export const warmServer = createServerFn({ method: "GET" }).handler(async () => 
 
 // Create a kit row (anonymous or owned). Returns kit id + anon token if anon.
 export const createKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       ownerToken: z.string().min(1).max(200), // anon token from client OR auth user id
       isAuthed: z.boolean(),
@@ -43,7 +43,7 @@ export const createKit = createServerFn({ method: "POST" })
 
 // Fetch a kit + all related data, gated by owner token or share token.
 export const getKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       ownerToken: z.string().min(1).max(200).optional(),
@@ -102,7 +102,7 @@ async function loadOwnedKit(kitId: string, ownerToken: string) {
 }
 
 export const renameKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       ownerToken: z.string().min(1).max(200),
@@ -121,7 +121,7 @@ export const renameKit = createServerFn({ method: "POST" })
   });
 
 export const deleteKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       ownerToken: z.string().min(1).max(200),
@@ -144,7 +144,7 @@ export const deleteKit = createServerFn({ method: "POST" })
   });
 
 export const duplicateKit = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitId: z.string().uuid(),
       ownerToken: z.string().min(1).max(200),
@@ -190,7 +190,7 @@ export const duplicateKit = createServerFn({ method: "POST" })
 
 // List all kits owned by the given token (anon or user id).
 export const listKitsByOwner = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       ownerToken: z.string().min(1).max(200),
       // Optional: include older anon tokens this browser has used so kits
@@ -324,7 +324,7 @@ export const listKitsByOwner = createServerFn({ method: "POST" })
 
 // Delete many kits at once. Skips kits not owned by the token.
 export const bulkDeleteKits = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       kitIds: z.array(z.string().uuid()).min(1).max(200),
       ownerToken: z.string().min(1).max(200),

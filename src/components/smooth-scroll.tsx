@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 
 declare global {
-  // eslint-disable-next-line no-var
+  // `declare global` blocks still require `var` for ambient globals.
   var __lenis: Lenis | undefined;
 }
 

@@ -576,6 +576,7 @@ function BuildPage() {
             type="button"
             className={`${ghostBtn} mt-3`}
             onClick={() => setColors((p) => [...p, { hex: "#000000", name: "", role: "" }])}
+            disabled={colors.length >= 40}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> Add colour
           </button>
@@ -641,6 +642,7 @@ function BuildPage() {
             type="button"
             className={`${ghostBtn} mt-3`}
             onClick={() => setFonts((p) => [...p, { family: "", role: "body", weights: "400" }])}
+            disabled={fonts.length >= 12}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> Add font
           </button>
@@ -700,6 +702,7 @@ function BuildPage() {
             type="button"
             className={`${ghostBtn} mt-3`}
             onClick={() => setTokens((p) => [...p, { category: "spacing", name: "", value: "" }])}
+            disabled={tokens.length >= 120}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> Add token
           </button>

@@ -9,35 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StartHereRouteImport } from './routes/start-here'
-import { Route as LibraryRouteImport } from './routes/library'
-import { Route as DesignRouteImport } from './routes/design'
-import { Route as CompareRouteImport } from './routes/compare'
-import { Route as BuildRouteImport } from './routes/build'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ShareShareTokenRouteImport } from './routes/share.$shareToken'
-import { Route as KitKitIdRouteImport } from './routes/kit.$kitId'
+import { Route as BuildRouteImport } from './routes/build'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DesignRouteImport } from './routes/design'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as StartHereRouteImport } from './routes/start-here'
 import { Route as DesignHistoryRouteImport } from './routes/design.history'
+import { Route as KitKitIdRouteImport } from './routes/kit.$kitId'
+import { Route as ShareShareTokenRouteImport } from './routes/share.$shareToken'
 import { Route as DesignHistoryDiffRouteImport } from './routes/design.history.diff'
 
-const StartHereRoute = StartHereRouteImport.update({
-  id: '/start-here',
-  path: '/start-here',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LibraryRoute = LibraryRouteImport.update({
-  id: '/library',
-  path: '/library',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesignRoute = DesignRouteImport.update({
-  id: '/design',
-  path: '/design',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompareRoute = CompareRouteImport.update({
-  id: '/compare',
-  path: '/compare',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BuildRoute = BuildRouteImport.update({
@@ -45,25 +30,40 @@ const BuildRoute = BuildRouteImport.update({
   path: '/build',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShareShareTokenRoute = ShareShareTokenRouteImport.update({
-  id: '/share/$shareToken',
-  path: '/share/$shareToken',
+const DesignRoute = DesignRouteImport.update({
+  id: '/design',
+  path: '/design',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KitKitIdRoute = KitKitIdRouteImport.update({
-  id: '/kit/$kitId',
-  path: '/kit/$kitId',
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartHereRoute = StartHereRouteImport.update({
+  id: '/start-here',
+  path: '/start-here',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesignHistoryRoute = DesignHistoryRouteImport.update({
   id: '/history',
   path: '/history',
   getParentRoute: () => DesignRoute,
+} as any)
+const KitKitIdRoute = KitKitIdRouteImport.update({
+  id: '/kit/$kitId',
+  path: '/kit/$kitId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareShareTokenRoute = ShareShareTokenRouteImport.update({
+  id: '/share/$shareToken',
+  path: '/share/$shareToken',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DesignHistoryDiffRoute = DesignHistoryDiffRouteImport.update({
   id: '/diff',
@@ -160,32 +160,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/start-here': {
-      id: '/start-here'
-      path: '/start-here'
-      fullPath: '/start-here'
-      preLoaderRoute: typeof StartHereRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/library': {
-      id: '/library'
-      path: '/library'
-      fullPath: '/library'
-      preLoaderRoute: typeof LibraryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/design': {
-      id: '/design'
-      path: '/design'
-      fullPath: '/design'
-      preLoaderRoute: typeof DesignRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compare': {
-      id: '/compare'
-      path: '/compare'
-      fullPath: '/compare'
-      preLoaderRoute: typeof CompareRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/build': {
@@ -195,25 +174,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuildRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/share/$shareToken': {
-      id: '/share/$shareToken'
-      path: '/share/$shareToken'
-      fullPath: '/share/$shareToken'
-      preLoaderRoute: typeof ShareShareTokenRouteImport
+    '/design': {
+      id: '/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof DesignRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/kit/$kitId': {
-      id: '/kit/$kitId'
-      path: '/kit/$kitId'
-      fullPath: '/kit/$kitId'
-      preLoaderRoute: typeof KitKitIdRouteImport
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start-here': {
+      id: '/start-here'
+      path: '/start-here'
+      fullPath: '/start-here'
+      preLoaderRoute: typeof StartHereRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/design/history': {
@@ -222,6 +208,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/design/history'
       preLoaderRoute: typeof DesignHistoryRouteImport
       parentRoute: typeof DesignRoute
+    }
+    '/kit/$kitId': {
+      id: '/kit/$kitId'
+      path: '/kit/$kitId'
+      fullPath: '/kit/$kitId'
+      preLoaderRoute: typeof KitKitIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share/$shareToken': {
+      id: '/share/$shareToken'
+      path: '/share/$shareToken'
+      fullPath: '/share/$shareToken'
+      preLoaderRoute: typeof ShareShareTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/design/history/diff': {
       id: '/design/history/diff'

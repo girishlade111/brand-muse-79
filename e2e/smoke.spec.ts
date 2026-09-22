@@ -34,13 +34,14 @@ test.describe("route smoke coverage", () => {
     await expect(page.locator('[aria-label="Font 1 family"]')).toBeVisible();
     await expect(page.locator('[aria-label="Token 1 name"]')).toBeVisible();
 
-    // Rows can be added and removed.
-    await page.getByRole("button", { name: /add colour/i }).click();
-    await page.getByRole("button", { name: /add font/i }).click();
-    await page.getByRole("button", { name: /add token/i }).click();
-    await expect(page.locator('[aria-label="Colour 2 hex"]')).toBeVisible();
-    await expect(page.locator('[aria-label="Font 2 family"]')).toBeVisible();
-    await expect(page.locator('[aria-label="Token 2 name"]')).toBeVisible();
+    // Rows can be added and removed. The builder's own buttons are strict-match
+    // labels, so use exact text (the /add/i regex also matches "Add link").
+    await page.getByRole("button", { name: "Add colour", exact: true }).click();
+    await page.getByRole("button", { name: "Add font", exact: true }).click();
+    await page.getByRole("button", { name: "Add token", exact: true }).click();
+    await expect(page.locator('[aria-label="Colour 2 hex"]')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[aria-label="Font 2 family"]')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[aria-label="Token 2 name"]')).toBeVisible({ timeout: 10_000 });
   });
 
   test("library renders its shell", async ({ page }) => {

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 type FontRecord = {
   family?: string | null;
@@ -49,11 +49,34 @@ function formatFromUrl(url: string, fallback?: string): string {
  * the text then renders in whatever fallback the consumer specifies.
  */
 export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
+  // Serialize the hook input so callers can safely pass a freshly-mapped
+  // array every render without re-injecting links/font-faces each time.
+  const key = useMemo(
+    () =>
+      (fonts ?? [])
+        .map((f) =>
+          [
+            f?.family ?? "",
+            f?.source_family ?? "",
+            f?.google_font ? "1" : "0",
+            Array.isArray(f?.weights) ? [...f.weights].sort().join(",") : "",
+            Array.isArray(f?.file_urls) ? f.file_urls.map((u) => u?.url ?? "").join(",") : "",
+          ].join("|"),
+        )
+        .join("~"),
+    [fonts],
+  );
+
+  // The effect body reads `records` (built from `fonts`) but is keyed on the
+  // serialized `key` above, which changes exactly when the font set changes,
+  // keeping the DOM injections idempotent. deps are intentionally [key].
   useEffect(() => {
-    if (typeof document === "undefined" || !fonts?.length) return;
+    if (typeof document === "undefined" || !key) return;
+
+    const records = (fonts ?? []) as FontRecord[];
 
     // 1. Google Fonts
-    fonts.forEach((f) => {
+    records.forEach((f) => {
       if (!f?.google_font || !f?.family) return;
       const id = `branddna-gf-${slugify(String(f.family))}`;
       if (document.getElementById(id)) return;
@@ -74,7 +97,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
 
     // 2. Self-hosted / discovered file_urls — one @font-face per file.
     const faceRules: string[] = [];
-    fonts.forEach((f) => {
+    records.forEach((f) => {
       if (!Array.isArray(f?.file_urls) || f!.file_urls!.length === 0) return;
       // Use source_family when present so we render the *original* identity.
       const family = (f.source_family || f.family || "").trim();
@@ -103,7 +126,7 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       const next = faceRules.filter((r) => !existing.includes(r)).join("");
       if (next) style.textContent = existing + next;
     }
-  }, [fonts]);
+  }, [key]);
 }
 
 /**

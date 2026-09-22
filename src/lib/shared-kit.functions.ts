@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getAdmin } from "@/server/supabase-admin.server";
 
 export const getSharedKit = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ shareToken: z.string().min(8).max(64) }).parse)
+  .validator(z.object({ shareToken: z.string().min(8).max(64) }).parse)
   .handler(async ({ data }) => {
     const admin = getAdmin();
     const { data: kit } = await admin

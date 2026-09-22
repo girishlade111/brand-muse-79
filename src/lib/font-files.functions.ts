@@ -16,7 +16,7 @@ export type FontFileResult = {
 
 // Proxy fetch font files server-side (bypasses CORS) and return base64.
 export const fetchFontFiles = createServerFn({ method: "POST" })
-  .inputValidator((d) => InputSchema.parse(d))
+  .validator((d) => InputSchema.parse(d))
   .handler(async ({ data }): Promise<{ files: FontFileResult[] }> => {
     const files = await Promise.all(
       data.urls.map(async (url): Promise<FontFileResult> => {
@@ -62,7 +62,7 @@ const GoogleInputSchema = z.object({
 // Resolve actual woff2 file URLs for a Google Font family by fetching its
 // css2 stylesheet (with a modern UA so Google returns woff2 instead of ttf).
 export const resolveGoogleFontFiles = createServerFn({ method: "POST" })
-  .inputValidator((d) => GoogleInputSchema.parse(d))
+  .validator((d) => GoogleInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ urls: string[] }> => {
     try {
       const weights = (

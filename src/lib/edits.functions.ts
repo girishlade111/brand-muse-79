@@ -23,7 +23,7 @@ const DeleteAssetSchema = z.object({
 });
 
 export const deleteKitAsset = createServerFn({ method: "POST" })
-  .inputValidator((d) => DeleteAssetSchema.parse(d))
+  .validator((d) => DeleteAssetSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { data: asset } = await admin
@@ -54,7 +54,7 @@ const DeleteColorSchema = z.object({
 });
 
 export const deleteKitColor = createServerFn({ method: "POST" })
-  .inputValidator((d) => DeleteColorSchema.parse(d))
+  .validator((d) => DeleteColorSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { error } = await admin
@@ -76,7 +76,7 @@ const UpdateColorSchema = z.object({
 });
 
 export const updateKitColor = createServerFn({ method: "POST" })
-  .inputValidator((d) => UpdateColorSchema.parse(d))
+  .validator((d) => UpdateColorSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const patch: Record<string, any> = {};
@@ -102,7 +102,7 @@ const AddColorSchema = z.object({
 });
 
 export const addKitColor = createServerFn({ method: "POST" })
-  .inputValidator((d) => AddColorSchema.parse(d))
+  .validator((d) => AddColorSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { count } = await admin
@@ -136,7 +136,7 @@ const UpdateFontSchema = z.object({
 });
 
 export const updateKitFont = createServerFn({ method: "POST" })
-  .inputValidator((d) => UpdateFontSchema.parse(d))
+  .validator((d) => UpdateFontSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const patch: Record<string, any> = {};
@@ -164,7 +164,7 @@ const DeleteFontSchema = z.object({
 });
 
 export const deleteKitFont = createServerFn({ method: "POST" })
-  .inputValidator((d) => DeleteFontSchema.parse(d))
+  .validator((d) => DeleteFontSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { error } = await admin
@@ -185,7 +185,7 @@ const AddFontSchema = z.object({
 });
 
 export const addKitFont = createServerFn({ method: "POST" })
-  .inputValidator((d) => AddFontSchema.parse(d))
+  .validator((d) => AddFontSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { count } = await admin
@@ -221,7 +221,7 @@ const UpdateTokenSchema = z.object({
 });
 
 export const updateKitToken = createServerFn({ method: "POST" })
-  .inputValidator((d) => UpdateTokenSchema.parse(d))
+  .validator((d) => UpdateTokenSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const patch: Record<string, any> = {};
@@ -245,7 +245,7 @@ const DeleteTokenSchema = z.object({
 });
 
 export const deleteKitToken = createServerFn({ method: "POST" })
-  .inputValidator((d) => DeleteTokenSchema.parse(d))
+  .validator((d) => DeleteTokenSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { error } = await admin
@@ -266,7 +266,7 @@ const AddTokenSchema = z.object({
 });
 
 export const addKitToken = createServerFn({ method: "POST" })
-  .inputValidator((d) => AddTokenSchema.parse(d))
+  .validator((d) => AddTokenSchema.parse(d))
   .handler(async ({ data }) => {
     const admin = await assertOwner(data.kitId, data.ownerToken);
     const { count } = await admin

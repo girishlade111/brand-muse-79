@@ -17,7 +17,7 @@ export type AssetFileResult = {
 // Proxy fetch arbitrary remote assets server-side (bypasses CORS) and
 // return base64 so the client can stuff them into the kit zip.
 export const fetchAssetFiles = createServerFn({ method: "POST" })
-  .inputValidator((d) => InputSchema.parse(d))
+  .validator((d) => InputSchema.parse(d))
   .handler(async ({ data }): Promise<{ files: AssetFileResult[] }> => {
     const files = await Promise.all(
       data.urls.map(async (url): Promise<AssetFileResult> => {
