@@ -81,13 +81,16 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
       if (!f?.google_font || !f?.family) return;
       const id = `branddna-gf-${slugify(String(f.family))}`;
       if (document.getElementById(id)) return;
-      const weights = (
+      const parsed = (
         Array.isArray(f.weights) && f.weights.length
           ? f.weights
           : ["300", "400", "500", "600", "700"]
       )
         .map((w) => String(w).replace(/[^0-9]/g, ""))
         .filter(Boolean);
+      const weights = parsed.length
+        ? parsed
+        : ["300", "400", "500", "600", "700"];
       const familyParam = encodeURIComponent(String(f.family)).replace(/%20/g, "+");
       const link = document.createElement("link");
       link.id = id;
@@ -101,15 +104,17 @@ export function useAutoImportFonts(fonts: FontRecord[] | undefined | null) {
     records.forEach((f) => {
       if (!Array.isArray(f?.file_urls) || f!.file_urls!.length === 0) return;
       // Use source_family when present so we render the *original* identity.
-      const family = (f.source_family || f.family || "").trim();
+      const family = (f.source_family || f.family || "").trim().replace(/["\\]/g, "");
       if (!family) return;
       f.file_urls!.slice(0, 24).forEach((file) => {
         if (!file?.url) return;
-        const fmt = formatFromUrl(file.url, file.format);
+        const safeUrl = String(file.url).replace(/["\\]/g, "");
+        if (!/^https?:\/\//i.test(safeUrl)) return;
+        const fmt = formatFromUrl(safeUrl, file.format);
         const weight = file.weight && /\d/.test(String(file.weight)) ? file.weight : "400";
         const style = file.style && /italic|oblique/i.test(file.style) ? "italic" : "normal";
         faceRules.push(
-          `@font-face{font-family:"${family}";src:url("${file.url}") format("${fmt}");font-weight:${weight};font-style:${style};font-display:swap;}`,
+          `@font-face{font-family:"${family}";src:url("${safeUrl}") format("${fmt}");font-weight:${weight};font-style:${style};font-display:swap;}`,
         );
       });
     });
