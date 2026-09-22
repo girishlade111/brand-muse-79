@@ -177,6 +177,7 @@ function HistoryPage() {
             ))
           )}
         </ul>
+        <Outlet />
       </main>
     </div>
   );
