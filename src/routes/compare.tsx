@@ -70,11 +70,22 @@ type FontRow = {
 };
 type TokenRow = { category: string; name: string; value: string };
 
+type VoiceRow = {
+  tone?: Array<{ label?: string; confidence?: number }> | null;
+  vocabulary?: string[] | null;
+  dos?: string[] | null;
+  donts?: string[] | null;
+  samples?: Record<string, string> | null;
+  summary?: string | null;
+};
+
 type FullKit = {
   kit: { id: string; name: string; source_url: string | null; status: string };
   colors: ColorRow[];
   fonts: FontRow[];
   tokens: TokenRow[];
+  voice: VoiceRow | null;
+  positioning: unknown;
 };
 
 const eyebrow = "font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground";
