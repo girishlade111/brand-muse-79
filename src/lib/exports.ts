@@ -51,15 +51,25 @@ export function slug(s: string) {
 // W3C Design Tokens JSON
 export function buildTokensJSON(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }) {
   const obj: any = { color: {}, font: {}, spacing: {}, radius: {}, shadow: {}, animation: {} };
+  const seen = new Set<string>();
+  const uniqueKey = (base: string) => {
+    let key = base || "unnamed";
+    let i = 2;
+    while (seen.has(key)) key = `${base}-${i++}`;
+    seen.add(key);
+    return key;
+  };
   p.colors.forEach((c) => {
-    obj.color[c.role || c.name || c.hex] = { $value: c.hex, $type: "color" };
+    const key = uniqueKey(slug(c.role || c.name || c.hex));
+    obj.color[key] = { $value: c.hex, $type: "color" };
   });
   p.fonts.forEach((f) => {
-    obj.font[f.role || f.family] = { $value: f.family, $type: "fontFamily" };
+    const key = uniqueKey(slug(f.role || f.family));
+    obj.font[key] = { $value: f.family, $type: "fontFamily" };
   });
   p.tokens.forEach((t) => {
     const cat = t.category as keyof typeof obj;
-    if (obj[cat]) obj[cat][t.name] = { $value: t.value, $type: t.category };
+    if (obj[cat]) obj[cat][uniqueKey(slug(t.name))] = { $value: t.value, $type: t.category };
   });
   return JSON.stringify(obj, null, 2);
 }
@@ -67,9 +77,9 @@ export function buildTokensJSON(p: { colors: Color[]; fonts: Font[]; tokens: Tok
 // Plain CSS variables
 export function buildCSS(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }) {
   const lines = [":root {"];
-  p.colors.forEach((c) => lines.push(`  --color-${c.role || slug(c.name || c.hex)}: ${c.hex};`));
-  p.fonts.forEach((f) => lines.push(`  --font-${f.role || slug(f.family)}: "${f.family}";`));
-  p.tokens.forEach((t) => lines.push(`  --${t.category}-${slug(t.name)}: ${t.value};`));
+  p.colors.forEach((c) => lines.push(`  --color-${slug(c.role || c.name || c.hex)}: ${c.hex};`));
+  p.fonts.forEach((f) => lines.push(`  --font-${slug(f.role || f.family)}: "${f.family}";`));
+  p.tokens.forEach((t) => lines.push(`  --${slug(t.category)}-${slug(t.name)}: ${t.value};`));
   lines.push("}");
   return lines.join("\n");
 }
@@ -77,10 +87,10 @@ export function buildCSS(p: { colors: Color[]; fonts: Font[]; tokens: Token[] })
 // Tailwind v4 @theme block
 export function buildTailwindTheme(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }) {
   const lines = ['@import "tailwindcss";', "", "@theme {"];
-  p.colors.forEach((c) => lines.push(`  --color-${c.role || slug(c.name || c.hex)}: ${c.hex};`));
+  p.colors.forEach((c) => lines.push(`  --color-${slug(c.role || c.name || c.hex)}: ${c.hex};`));
   p.fonts.forEach((f) =>
     lines.push(
-      `  --font-${f.role || slug(f.family)}: "${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"};`,
+      `  --font-${slug(f.role || f.family)}: "${f.family}", ${f.role === "mono" ? "monospace" : "sans-serif"};`,
     ),
   );
   p.tokens.forEach((t) => {
@@ -96,10 +106,10 @@ export function buildTailwindTheme(p: { colors: Color[]; fonts: Font[]; tokens: 
 export function buildTokensStudioJSON(p: { colors: Color[]; fonts: Font[]; tokens: Token[] }) {
   const out: any = { global: {} };
   p.colors.forEach((c) => {
-    out.global[c.role || c.name || c.hex] = { value: c.hex, type: "color" };
+    out.global[slug(c.role || c.name || c.hex)] = { value: c.hex, type: "color" };
   });
   p.fonts.forEach((f) => {
-    out.global[`font-${f.role || slug(f.family)}`] = { value: f.family, type: "fontFamilies" };
+    out.global[`font-${slug(f.role || f.family)}`] = { value: f.family, type: "fontFamilies" };
   });
   p.tokens.forEach((t) => {
     out.global[`${t.category}-${slug(t.name)}`] = {
@@ -1269,8 +1279,11 @@ export function downloadBlob(blob: Blob, filename: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // design.md — full implementation instructions for a designer / developer / AI
