@@ -748,19 +748,20 @@ function SidePicker({
   label,
   kits,
   value,
-  otherId,
+  takenIds,
   onChange,
   disabled,
 }: {
   label: string;
   kits: KitSummary[];
   value: string | undefined;
-  otherId: string | undefined;
+  takenIds: Array<string | undefined>;
   onChange: (id: string | undefined) => void;
   disabled: boolean;
 }) {
+  const taken = new Set(takenIds.filter(Boolean));
   return (
-    <label className="flex min-w-56 flex-1 flex-col gap-1.5">
+    <label className="flex min-w-0 flex-1 flex-col gap-1.5">
       <span className={mono + " text-muted-foreground"}>{label}</span>
       <select
         className="h-10 w-full appearance-none rounded-none border bg-background px-3 font-mono text-[12px] text-foreground outline-none focus:border-foreground disabled:opacity-40"
@@ -771,9 +772,9 @@ function SidePicker({
       >
         <option value="">Select a kit…</option>
         {kits.map((k) => (
-          <option key={k.id} value={k.id} disabled={k.id === otherId}>
+          <option key={k.id} value={k.id} disabled={taken.has(k.id)}>
             {k.name}
-            {k.id === otherId ? " (already selected)" : ""}
+            {taken.has(k.id) ? " (already selected)" : ""}
           </option>
         ))}
       </select>
@@ -784,29 +785,29 @@ function SidePicker({
 function EmptyState({
   hasKits,
   loading,
-  aId,
-  bId,
-  loadingA,
-  loadingB,
+  ids,
+  slotLoading,
 }: {
   hasKits: boolean;
   loading: boolean;
-  aId?: string;
-  bId?: string;
-  loadingA: boolean;
-  loadingB: boolean;
+  ids: Array<string | undefined>;
+  slotLoading: boolean[];
 }) {
+  const chosen = ids.filter(Boolean);
+  const distinct = new Set(chosen);
   let msg = "Select two kits above to start the comparison.";
   if (loading) msg = "Loading your library…";
   else if (!hasKits) msg = "You have no kits yet — build one first, then come back to compare.";
-  else if (aId && bId && aId === bId) msg = "Pick two different kits to compare them.";
-  else if ((aId && loadingA) || (bId && loadingB)) msg = "Loading kit data…";
+  else if (chosen.length >= 2 && distinct.size < chosen.length)
+    msg = "Pick different kits to compare them.";
+  else if (ids.some((id, i) => id && slotLoading[i])) msg = "Loading kit data…";
+  else if (chosen.length === 1) msg = "One kit selected — add a second to start comparing.";
   return (
     <div
       className="flex flex-col items-center gap-3 border border-dashed py-24 text-center"
       style={{ borderColor: "rgba(10,10,10,0.25)" }}
     >
-      {(loading || loadingA || loadingB) && (
+      {(loading || slotLoading.some(Boolean)) && (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       )}
       <p className={`${mono} text-muted-foreground`}>{msg}</p>
