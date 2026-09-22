@@ -12,7 +12,11 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/design/history/diff")({
-  validateSearch: (search) => searchSchema.parse(search),
+  validateSearch: (search) => {
+    const parsed = searchSchema.safeParse(search);
+    if (parsed.success) return parsed.data;
+    return { a: "", b: "" };
+  },
   head: () => ({
     meta: [
       { title: "Design diff — Brand DNA" },
@@ -40,9 +44,21 @@ function DiffPage() {
   const [showUnchanged, setShowUnchanged] = useState(false);
 
   useEffect(() => {
+    if (!a || !b) {
+      setError("Pick two versions to compare.");
+      return;
+    }
+    let cancelled = false;
     run({ data: { aId: a, bId: b } })
-      .then((res) => setData(res as DiffResult))
-      .catch((e) => setError(e instanceof Error ? e.message : "Failed to diff"));
+      .then((res) => {
+        if (!cancelled) setData(res as DiffResult);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to diff");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [a, b, run]);
 
   const summary = data ? summarizeDiff(data.diff) : null;
