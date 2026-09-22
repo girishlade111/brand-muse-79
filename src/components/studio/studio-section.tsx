@@ -54,10 +54,10 @@ const PLACEMENT_LABEL: Record<StudioLogoPlacement, string> = {
 };
 
 function publicLogoUrl(a: StudioKitAsset): string {
-  const supabaseUrl = (import.meta as unknown as { env?: Record<string, string> }).env
-    ?.VITE_SUPABASE_URL;
-  if (a.storage_path && supabaseUrl) {
-    return `${supabaseUrl}/storage/v1/object/public/brand-assets/${a.storage_path}`;
+  const r2PublicUrl = (import.meta as unknown as { env?: Record<string, string> }).env
+    ?.VITE_R2_PUBLIC_URL;
+  if (a.storage_path && r2PublicUrl) {
+    return `${r2PublicUrl}/${a.storage_path}`;
   }
   return a.url;
 }

@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAdmin } from "@/server/supabase-admin.server";
+import { and, desc, eq } from "drizzle-orm";
+import { db, brandKits, kitAssets } from "@/db/index.server";
+import { publicUrlFor, uploadAsset } from "@/server/storage.server";
 import { decode as decodePng, encode as encodePng } from "fast-png";
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -260,35 +262,31 @@ async function editImage(
 export const generateLogoVariants = createServerFn({ method: "POST" })
   .validator((d) => InputSchema.parse(d))
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-
     // Shared workspace: any visitor can act on any kit. Just confirm the kit exists.
-    const { data: kit, error: kitErr } = await admin
-      .from("brand_kits")
-      .select("id")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (kitErr || !kit) throw new Error("Kit not found");
+    const kitRows = await db
+      .select({ id: brandKits.id })
+      .from(brandKits)
+      .where(eq(brandKits.id, data.kitId))
+      .limit(1);
+    if (!kitRows.length) throw new Error("Kit not found");
 
     // Source asset (with fallbacks across other logo-ish assets in the kit)
-    const { data: source } = await admin
-      .from("kit_assets")
-      .select("*")
-      .eq("id", data.assetId)
-      .eq("kit_id", data.kitId)
-      .maybeSingle();
+    const sourceRows = await db
+      .select()
+      .from(kitAssets)
+      .where(and(eq(kitAssets.id, data.assetId), eq(kitAssets.kitId, data.kitId)))
+      .limit(1);
+    const source = sourceRows[0] as any;
     if (!source) throw new Error("Source logo not found");
 
     // Server-side dedup: skip any variant kind that already exists for this kit.
     // The UI also disables these buttons, but two clients (or a race) could
     // bypass it. The server is the source of truth.
-    const { data: existingAssetsForDedup } = await admin
-      .from("kit_assets")
-      .select("kind")
-      .eq("kit_id", data.kitId);
-    const existingKinds = new Set<string>(
-      (existingAssetsForDedup ?? []).map((a: { kind: string }) => a.kind),
-    );
+    const existingKindRows = await db
+      .select({ kind: kitAssets.kind })
+      .from(kitAssets)
+      .where(eq(kitAssets.kitId, data.kitId));
+    const existingKinds = new Set<string>((existingKindRows ?? []).map((a) => a.kind));
     const requestedVariants = Array.from(new Set(data.variants)) as typeof data.variants;
     const variantsToRun = requestedVariants.filter((k) => !existingKinds.has(k));
     const skippedResults: Array<{ kind: string; ok: boolean; skipped: boolean; error?: string }> =
@@ -299,21 +297,29 @@ export const generateLogoVariants = createServerFn({ method: "POST" })
       return { ok: true, results: skippedResults };
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const urlFor = (a: { storage_path: string | null; url: string | null }) =>
-      a.storage_path
-        ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${a.storage_path}`
+    const urlFor = (a: {
+      storagePath?: string | null;
+      storage_path?: string | null;
+      url: string | null;
+    }) =>
+      (a.storagePath ?? a.storage_path)
+        ? publicUrlFor(String(a.storagePath ?? a.storage_path))
         : a.url;
 
     // Build candidate list: requested source first, then siblings preferring
     // assets cached in our own storage (remote URLs like vendor CDNs often 404).
-    const { data: siblings } = await admin
-      .from("kit_assets")
-      .select("id, kind, url, storage_path")
-      .eq("kit_id", data.kitId);
+    const siblings = await db
+      .select({
+        id: kitAssets.id,
+        kind: kitAssets.kind,
+        url: kitAssets.url,
+        storagePath: kitAssets.storagePath,
+      })
+      .from(kitAssets)
+      .where(eq(kitAssets.kitId, data.kitId));
     const logoSiblings = (siblings ?? [])
       .filter((a: any) => a.id !== source.id && /logo|favicon/i.test(a.kind ?? ""))
-      .sort((a: any, b: any) => Number(!!b.storage_path) - Number(!!a.storage_path));
+      .sort((a: any, b: any) => Number(!!b.storagePath) - Number(!!a.storagePath));
     const candidates = [source, ...logoSiblings];
 
     let sourceDataUrl: string | null = null;
@@ -331,11 +337,11 @@ export const generateLogoVariants = createServerFn({ method: "POST" })
     if (!sourceDataUrl) throw new Error(`Could not load source logo: ${lastErr}`);
 
     // Find current max position
-    const { data: existing } = await admin
-      .from("kit_assets")
-      .select("position, kind")
-      .eq("kit_id", data.kitId)
-      .order("position", { ascending: false })
+    const existing = await db
+      .select({ position: kitAssets.position })
+      .from(kitAssets)
+      .where(eq(kitAssets.kitId, data.kitId))
+      .orderBy(desc(kitAssets.position))
       .limit(1);
     let pos = (existing?.[0]?.position ?? 0) + 1;
 
@@ -370,19 +376,14 @@ export const generateLogoVariants = createServerFn({ method: "POST" })
               ? "jpg"
               : "png";
         const path = `${data.kitId}/assets/${key}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-        const { error: upErr } = await admin.storage
-          .from("brand-assets")
-          .upload(path, buf, { contentType, upsert: false });
-        if (upErr) throw new Error(upErr.message);
-        const publicUrl = `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}`;
-        const { error: insErr } = await admin.from("kit_assets").insert({
-          kit_id: data.kitId,
+        const { url: publicUrl } = await uploadAsset(buf, path, contentType);
+        await db.insert(kitAssets).values({
+          kitId: data.kitId,
           kind: key,
           url: publicUrl,
-          storage_path: path,
+          storagePath: path,
           position: pos++,
         });
-        if (insErr) throw new Error(insErr.message);
         results.push({ kind: key, ok: true });
       } catch (e: any) {
         results.push({ kind: key, ok: false, error: String(e?.message ?? "failed").slice(0, 200) });

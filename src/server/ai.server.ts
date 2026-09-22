@@ -422,19 +422,32 @@ export async function generateBrandCopyServerFn(input: {
   const assetType = String(input.assetType ?? "og-card");
   const topic = String(input.topic ?? "").slice(0, 300);
 
-  const { getAdmin } = await import("./supabase-admin.server");
-  const admin = getAdmin();
-  const [{ data: voice }, { data: kit }] = await Promise.all([
-    admin
-      .from("kit_voice")
-      .select("tone, vocabulary, dos, donts, samples, summary")
-      .eq("kit_id", kitId)
-      .maybeSingle(),
-    admin.from("brand_kits").select("name, brand_positioning").eq("id", kitId).maybeSingle(),
+  const { db, brandKits, kitVoice } = await import("@/db/index.server");
+  const { eq } = await import("drizzle-orm");
+  const [voiceRows, kitRows] = await Promise.all([
+    db
+      .select({
+        tone: kitVoice.tone,
+        vocabulary: kitVoice.vocabulary,
+        dos: kitVoice.dos,
+        donts: kitVoice.donts,
+        samples: kitVoice.samples,
+        summary: kitVoice.summary,
+      })
+      .from(kitVoice)
+      .where(eq(kitVoice.kitId, kitId))
+      .limit(1),
+    db
+      .select({ name: brandKits.name, brandPositioning: brandKits.brandPositioning })
+      .from(brandKits)
+      .where(eq(brandKits.id, kitId))
+      .limit(1),
   ]);
+  const voice = voiceRows[0] ?? null;
+  const kit = kitRows[0] ?? null;
   if (!kit) throw new Error("Kit not found");
-  const brandName = String((kit as { name?: unknown }).name ?? "Brand");
-  const positioning = (kit as { brand_positioning?: unknown }).brand_positioning ?? null;
+  const brandName = String(kit.name ?? "Brand");
+  const positioning = kit.brandPositioning ?? null;
 
   const system = [
     `You are a senior brand copywriter. Brand: ${brandName}.`,
@@ -504,53 +517,80 @@ export async function analyzeMarketNicheServerFn(input: {
   const ids = [...new Set((input.kitIds ?? []).map((s) => String(s)).filter(Boolean))].slice(0, 4);
   if (ids.length < 2) throw new Error("Select at least two kits to analyze the market.");
 
-  const { getAdmin } = await import("./supabase-admin.server");
+  const { db, brandKits, kitColors, kitFonts, kitVoice } = await import("@/db/index.server");
   const { analyzeWhiteSpace } = await import("../lib/intelligence");
-  const admin = getAdmin();
+  const { asc, inArray } = await import("drizzle-orm");
 
-  const [{ data: kits }, { data: colors }, { data: fonts }, { data: voices }] = await Promise.all([
-    admin.from("brand_kits").select("id, name, brand_positioning").in("id", ids),
-    admin.from("kit_colors").select("kit_id, hex, role, name").in("kit_id", ids).order("position"),
-    admin
-      .from("kit_fonts")
-      .select("kit_id, family, role, weights")
-      .in("kit_id", ids)
-      .order("position"),
-    admin
-      .from("kit_voice")
-      .select("kit_id, tone, vocabulary, dos, donts, samples, summary")
-      .in("kit_id", ids),
+  const [kits, colors, fonts, voices] = await Promise.all([
+    db
+      .select({
+        id: brandKits.id,
+        name: brandKits.name,
+        brandPositioning: brandKits.brandPositioning,
+      })
+      .from(brandKits)
+      .where(inArray(brandKits.id, ids)),
+    db
+      .select({
+        kitId: kitColors.kitId,
+        hex: kitColors.hex,
+        role: kitColors.role,
+        name: kitColors.name,
+      })
+      .from(kitColors)
+      .where(inArray(kitColors.kitId, ids))
+      .orderBy(asc(kitColors.position)),
+    db
+      .select({
+        kitId: kitFonts.kitId,
+        family: kitFonts.family,
+        role: kitFonts.role,
+        weights: kitFonts.weights,
+      })
+      .from(kitFonts)
+      .where(inArray(kitFonts.kitId, ids))
+      .orderBy(asc(kitFonts.position)),
+    db
+      .select({
+        kitId: kitVoice.kitId,
+        tone: kitVoice.tone,
+        vocabulary: kitVoice.vocabulary,
+        dos: kitVoice.dos,
+        donts: kitVoice.donts,
+        samples: kitVoice.samples,
+        summary: kitVoice.summary,
+      })
+      .from(kitVoice)
+      .where(inArray(kitVoice.kitId, ids)),
   ]);
   if (!kits || kits.length < 2) throw new Error("Could not load the selected kits.");
 
-  const byKit = (rows: Array<{ kit_id: string }> | null) => {
+  const byKit = <T extends { kitId: string }>(rows: T[] | null) => {
     const map = new Map<string, Array<Record<string, unknown>>>();
     for (const r of rows ?? []) {
-      const list = map.get(r.kit_id) ?? [];
+      const list = map.get(r.kitId) ?? [];
       list.push(r as Record<string, unknown>);
-      map.set(r.kit_id, list);
+      map.set(r.kitId, list);
     }
     return map;
   };
-  const colorMap = byKit(colors as Array<{ kit_id: string }> | null);
-  const fontMap = byKit(fonts as Array<{ kit_id: string }> | null);
-  const voiceMap = new Map((voices ?? []).map((v: { kit_id: string }) => [v.kit_id, v]));
+  const colorMap = byKit(colors);
+  const fontMap = byKit(fonts);
+  const voiceMap = new Map((voices ?? []).map((v) => [v.kitId, v]));
 
-  const compared = (kits as Array<{ id: string; name: string; brand_positioning?: unknown }>).map(
-    (k) => ({
-      id: k.id,
-      name: String(k.name ?? "Untitled"),
-      colors: ((colorMap.get(k.id) ?? []) as Array<{ hex: string; role?: string | null }>) ?? [],
-      fonts:
-        ((fontMap.get(k.id) ?? []) as Array<{
-          family?: string | null;
-          role?: string | null;
-          weights?: unknown;
-        }>) ?? [],
-      voice: (voiceMap.get(k.id) as never) ?? null,
-      positioning: k.brand_positioning ?? null,
-    }),
-  );
+  const compared = kits.map((k) => ({
+    id: k.id,
+    name: String(k.name ?? "Untitled"),
+    colors: ((colorMap.get(k.id) ?? []) as Array<{ hex: string; role?: string | null }>) ?? [],
+    fonts:
+      ((fontMap.get(k.id) ?? []) as Array<{
+        family?: string | null;
+        role?: string | null;
+        weights?: unknown;
+      }>) ?? [],
+    voice: (voiceMap.get(k.id) as never) ?? null,
+    positioning: k.brandPositioning ?? null,
+  }));
 
   const deterministic = analyzeWhiteSpace(compared);
   const fallback: MarketNiche = {

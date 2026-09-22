@@ -18,10 +18,6 @@ export default tseslint.config(
       ".wrangler",
       "test-results",
       "e2e",
-      // Supabase-generated file uses newer TS syntax (parenthesized `keyof`
-      // unions) that the pinned Prettier 3.9.8 cannot print. Excluded so the
-      // lint gate stays green; the file is untouched by `npm run format`.
-      "src/integrations/supabase/types.ts",
     ],
   },
   {
@@ -39,11 +35,9 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      // `any` is used deliberately at the DB/storage boundary: Supabase rows are
-      // untyped (`Record<string, any>` patches, `as any` casts on joined rows)
-      // and the extraction pipeline handles third-party JSON. Typing every one
-      // of those would mean mirroring the whole Postgres schema by hand, so the
-      // rule is off here — matching the existing no-unused-vars decision.
+      // `any` is used deliberately at the DB/storage boundary: Drizzle rows are
+      // cast at join points and the extraction pipeline handles third-party
+      // JSON. The rule stays off — matching the existing no-unused-vars decision.
       "@typescript-eslint/no-explicit-any": "off",
       // Allow `catch {}` for best-effort work (sessionStorage, cookie probing,
       // optional cleanup) while still catching genuinely empty blocks.

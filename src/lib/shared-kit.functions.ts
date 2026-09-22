@@ -1,32 +1,39 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAdmin } from "@/server/supabase-admin.server";
+import { and, asc, eq } from "drizzle-orm";
+import {
+  db,
+  brandKits,
+  kitAssets,
+  kitColors,
+  kitFonts,
+  kitTokens,
+  kitVoice,
+} from "@/db/index.server";
 
 export const getSharedKit = createServerFn({ method: "POST" })
   .validator(z.object({ shareToken: z.string().min(8).max(64) }).parse)
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-    const { data: kit } = await admin
-      .from("brand_kits")
-      .select("*")
-      .eq("share_token", data.shareToken)
-      .eq("is_public", true)
-      .maybeSingle();
-    if (!kit) throw new Error("Shared kit not found or no longer public");
-    const k = kit as any;
-    const [colors, fonts, tokens, assets, voice] = await Promise.all([
-      admin.from("kit_colors").select("*").eq("kit_id", k.id).order("position"),
-      admin.from("kit_fonts").select("*").eq("kit_id", k.id).order("position"),
-      admin.from("kit_tokens").select("*").eq("kit_id", k.id).order("position"),
-      admin.from("kit_assets").select("*").eq("kit_id", k.id).order("position"),
-      admin.from("kit_voice").select("*").eq("kit_id", k.id).maybeSingle(),
+    const kitRows = await db
+      .select()
+      .from(brandKits)
+      .where(and(eq(brandKits.shareToken, data.shareToken), eq(brandKits.isPublic, true)))
+      .limit(1);
+    const k = kitRows[0] as any;
+    if (!k) throw new Error("Shared kit not found or no longer public");
+    const [colors, fonts, tokens, assets, voiceRows] = await Promise.all([
+      db.select().from(kitColors).where(eq(kitColors.kitId, k.id)).orderBy(asc(kitColors.position)),
+      db.select().from(kitFonts).where(eq(kitFonts.kitId, k.id)).orderBy(asc(kitFonts.position)),
+      db.select().from(kitTokens).where(eq(kitTokens.kitId, k.id)).orderBy(asc(kitTokens.position)),
+      db.select().from(kitAssets).where(eq(kitAssets.kitId, k.id)).orderBy(asc(kitAssets.position)),
+      db.select().from(kitVoice).where(eq(kitVoice.kitId, k.id)).limit(1),
     ]);
     return {
       kit: k,
-      colors: colors.data ?? [],
-      fonts: fonts.data ?? [],
-      tokens: tokens.data ?? [],
-      assets: assets.data ?? [],
-      voice: voice.data ?? null,
+      colors,
+      fonts,
+      tokens,
+      assets,
+      voice: voiceRows[0] ?? null,
     };
   });

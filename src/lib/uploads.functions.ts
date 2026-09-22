@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getAdmin } from "@/server/supabase-admin.server";
+import { eq } from "drizzle-orm";
+import { db, brandKits } from "@/db/index.server";
+import { uploadAsset } from "@/server/storage.server";
 
 const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 const MAX_FILES = 10;
@@ -63,16 +65,14 @@ export const uploadBrandSource = createServerFn({ method: "POST" })
     return { kitId, ownerToken, files };
   })
   .handler(async ({ data }): Promise<UploadResult> => {
-    const admin = getAdmin();
-
     // Shared workspace — confirm kit exists; do not gate on ownership.
     void data.ownerToken;
-    const { data: kit, error: kitErr } = await admin
-      .from("brand_kits")
-      .select("id")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (kitErr || !kit) throw new Error("Kit not found");
+    const kitRows = await db
+      .select({ id: brandKits.id })
+      .from(brandKits)
+      .where(eq(brandKits.id, data.kitId))
+      .limit(1);
+    if (!kitRows.length) throw new Error("Kit not found");
 
     const imageUrls: string[] = [];
     const pdfTexts: string[] = [];
@@ -81,23 +81,19 @@ export const uploadBrandSource = createServerFn({ method: "POST" })
       const buf = new Uint8Array(await file.arrayBuffer());
       const ext = extFor(file.name, file.type);
       const path = `${data.kitId}/sources/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await admin.storage
-        .from("brand-assets")
-        .upload(path, buf, { contentType: file.type, upsert: false });
-      if (upErr) {
-        console.error("[uploads] storage upload failed", upErr);
-        continue;
-      }
-      const { data: pub } = admin.storage.from("brand-assets").getPublicUrl(path);
-      const publicUrl = pub.publicUrl;
-
-      if (file.type === "application/pdf") {
-        const text = await extractPdfText(buf);
-        if (text.trim()) {
-          pdfTexts.push(`--- PDF source: ${file.name} ---\n${text.slice(0, 30000)}`);
+      try {
+        const { url } = await uploadAsset(buf, path, file.type);
+        if (file.type === "application/pdf") {
+          const text = await extractPdfText(buf);
+          if (text.trim()) {
+            pdfTexts.push(`--- PDF source: ${file.name} ---\n${text.slice(0, 30000)}`);
+          }
+        } else {
+          imageUrls.push(url);
         }
-      } else {
-        imageUrls.push(publicUrl);
+      } catch (e) {
+        console.error("[uploads] R2 upload failed", e);
+        continue;
       }
     }
 

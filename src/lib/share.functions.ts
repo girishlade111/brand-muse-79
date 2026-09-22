@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAdmin } from "@/server/supabase-admin.server";
+import { and, eq } from "drizzle-orm";
+import { db, brandKits } from "@/db/index.server";
 
 // Toggle public sharing for a kit. Owner-only.
 export const setKitShare = createServerFn({ method: "POST" })
@@ -12,32 +13,43 @@ export const setKitShare = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-    const { data: kit } = await admin
-      .from("brand_kits")
-      .select("id, user_id, anon_token, share_token")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (!kit) throw new Error("Kit not found");
-    const k = kit as any;
+    const rows = await db
+      .select({
+        id: brandKits.id,
+        userId: brandKits.userId,
+        anonToken: brandKits.anonToken,
+        shareToken: brandKits.shareToken,
+      })
+      .from(brandKits)
+      .where(eq(brandKits.id, data.kitId))
+      .limit(1);
+    const k = rows[0] as any;
+    if (!k) throw new Error("Kit not found");
     // Ownership gate: only the kit owner (auth user_id OR anon_token holder) may toggle sharing.
     const isOwner =
-      (k.user_id && k.user_id === data.ownerToken) ||
-      (k.anon_token && k.anon_token === data.ownerToken);
+      (k.userId && k.userId === data.ownerToken) ||
+      (k.anonToken && k.anonToken === data.ownerToken);
     if (!isOwner) throw new Error("Forbidden: only the kit owner can change sharing");
 
-    const update: Record<string, any> = { is_public: data.isPublic };
-    if (data.isPublic && !k.share_token) {
-      update.share_token = crypto.randomUUID().replace(/-/g, "");
-    }
-    const { data: updated, error } = await admin
-      .from("brand_kits")
-      .update(update)
-      .eq("id", data.kitId)
-      .select("share_token, is_public")
-      .single();
-    if (error) throw new Error(error.message);
-    return updated as { share_token: string | null; is_public: boolean };
+    const shareToken =
+      data.isPublic && !k.shareToken ? crypto.randomUUID().replace(/-/g, "") : undefined;
+    const updatedRows = await db
+      .update(brandKits)
+      .set({
+        isPublic: data.isPublic,
+        ...(shareToken ? { shareToken } : {}),
+      })
+      .where(eq(brandKits.id, data.kitId))
+      .returning({ shareToken: brandKits.shareToken, isPublic: brandKits.isPublic });
+    const updated = updatedRows[0];
+    if (!updated) throw new Error("Failed to update sharing");
+    // Return both snake_case (legacy client) and camelCase shapes.
+    return {
+      share_token: updated.shareToken,
+      is_public: updated.isPublic,
+      shareToken: updated.shareToken,
+      isPublic: updated.isPublic,
+    };
   });
 
 // Claim an anonymous kit when a user signs in.
@@ -50,12 +62,9 @@ export const claimKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-    const { error } = await admin
-      .from("brand_kits")
-      .update({ user_id: data.userId, anon_token: null })
-      .eq("id", data.kitId)
-      .eq("anon_token", data.anonToken);
-    if (error) throw new Error(error.message);
+    await db
+      .update(brandKits)
+      .set({ userId: data.userId, anonToken: null })
+      .where(and(eq(brandKits.id, data.kitId), eq(brandKits.anonToken, data.anonToken)));
     return { ok: true };
   });

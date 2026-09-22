@@ -1,6 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getAdmin } from "@/server/supabase-admin.server";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import {
+  db,
+  brandKits,
+  kitAssets,
+  kitColors,
+  kitFonts,
+  kitTokens,
+  kitVoice,
+} from "@/db/index.server";
 
 const STALE_PROCESSING_MS = 90 * 1000;
 
@@ -22,23 +31,20 @@ export const createKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-    const row: Record<string, any> = {
-      name: data.name ?? "Untitled brand kit",
-      source_type: data.sourceType,
-      source_url: data.sourceUrl ?? null,
-      status: "pending",
-    };
-    if (data.isAuthed) row.user_id = data.ownerToken;
-    else row.anon_token = data.ownerToken;
-
-    const { data: created, error } = await admin
-      .from("brand_kits")
-      .insert(row)
-      .select("id")
-      .single();
-    if (error || !created) throw new Error(error?.message ?? "Failed to create kit");
-    return { id: (created as any).id as string };
+    const rows = await db
+      .insert(brandKits)
+      .values({
+        name: data.name ?? "Untitled brand kit",
+        sourceType: data.sourceType,
+        sourceUrl: data.sourceUrl ?? null,
+        status: "pending",
+        userId: data.isAuthed ? data.ownerToken : null,
+        anonToken: data.isAuthed ? null : data.ownerToken,
+      })
+      .returning({ id: brandKits.id });
+    const created = rows[0];
+    if (!created) throw new Error("Failed to create kit");
+    return { id: created.id as string };
   });
 
 // Fetch a kit + all related data, gated by owner token or share token.
@@ -51,51 +57,63 @@ export const getKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
-    const { data: kit } = await admin
-      .from("brand_kits")
-      .select("*")
-      .eq("id", data.kitId)
-      .maybeSingle();
-    if (!kit) throw new Error("Kit not found");
-    let k = kit as any;
+    const kitRows = await db.select().from(brandKits).where(eq(brandKits.id, data.kitId)).limit(1);
+    const found = kitRows[0];
+    if (!found) throw new Error("Kit not found");
+    let k: any = found;
     // Personal app — no auth gate. Anyone with the link can view/edit.
 
-    const updatedAt = k.updated_at ? Date.parse(k.updated_at) : Date.now();
+    const updatedAt = k.updatedAt ? Date.parse(String(k.updatedAt)) : Date.now();
     if (
       (k.status === "pending" || k.status === "processing") &&
       Date.now() - updatedAt > STALE_PROCESSING_MS
     ) {
       const message = "Extraction timed out before completion. Retry will restart it.";
-      await admin
-        .from("brand_kits")
-        .update({ status: "error", error_code: "timeout", error_message: message })
-        .eq("id", data.kitId);
+      await db
+        .update(brandKits)
+        .set({ status: "error", errorCode: "timeout", errorMessage: message })
+        .where(eq(brandKits.id, data.kitId));
       k = { ...k, status: "error", error_code: "timeout", error_message: message };
     }
 
-    const [colors, fonts, tokens, assets, voice] = await Promise.all([
-      admin.from("kit_colors").select("*").eq("kit_id", data.kitId).order("position"),
-      admin.from("kit_fonts").select("*").eq("kit_id", data.kitId).order("position"),
-      admin.from("kit_tokens").select("*").eq("kit_id", data.kitId).order("position"),
-      admin.from("kit_assets").select("*").eq("kit_id", data.kitId).order("position"),
-      admin.from("kit_voice").select("*").eq("kit_id", data.kitId).maybeSingle(),
+    const [colors, fonts, tokens, assets, voiceRows] = await Promise.all([
+      db
+        .select()
+        .from(kitColors)
+        .where(eq(kitColors.kitId, data.kitId))
+        .orderBy(asc(kitColors.position)),
+      db
+        .select()
+        .from(kitFonts)
+        .where(eq(kitFonts.kitId, data.kitId))
+        .orderBy(asc(kitFonts.position)),
+      db
+        .select()
+        .from(kitTokens)
+        .where(eq(kitTokens.kitId, data.kitId))
+        .orderBy(asc(kitTokens.position)),
+      db
+        .select()
+        .from(kitAssets)
+        .where(eq(kitAssets.kitId, data.kitId))
+        .orderBy(asc(kitAssets.position)),
+      db.select().from(kitVoice).where(eq(kitVoice.kitId, data.kitId)).limit(1),
     ]);
 
     return {
       kit: k,
-      colors: colors.data ?? [],
-      fonts: fonts.data ?? [],
-      tokens: tokens.data ?? [],
-      assets: assets.data ?? [],
-      voice: voice.data ?? null,
+      colors,
+      fonts,
+      tokens,
+      assets,
+      voice: voiceRows[0] ?? null,
     };
   });
 
 // Helper: verify ownership of a kit
-async function loadOwnedKit(kitId: string, ownerToken: string) {
-  const admin = getAdmin();
-  const { data: kit } = await admin.from("brand_kits").select("*").eq("id", kitId).maybeSingle();
+async function loadOwnedKit(kitId: string, _ownerToken: string) {
+  const rows = await db.select().from(brandKits).where(eq(brandKits.id, kitId)).limit(1);
+  const kit = rows[0];
   if (!kit) throw new Error("Kit not found");
   // Personal app — no ownership gate.
   return kit as any;
@@ -110,13 +128,8 @@ export const renameKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
     await loadOwnedKit(data.kitId, data.ownerToken);
-    const { error } = await admin
-      .from("brand_kits")
-      .update({ name: data.name })
-      .eq("id", data.kitId);
-    if (error) throw new Error(error.message);
+    await db.update(brandKits).set({ name: data.name }).where(eq(brandKits.id, data.kitId));
     return { ok: true };
   });
 
@@ -128,18 +141,19 @@ export const deleteKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
     await loadOwnedKit(data.kitId, data.ownerToken);
-    // Explicit child cleanup (no FK cascade defined)
-    await Promise.all([
-      admin.from("kit_colors").delete().eq("kit_id", data.kitId),
-      admin.from("kit_fonts").delete().eq("kit_id", data.kitId),
-      admin.from("kit_tokens").delete().eq("kit_id", data.kitId),
-      admin.from("kit_assets").delete().eq("kit_id", data.kitId),
-      admin.from("kit_voice").delete().eq("kit_id", data.kitId),
-    ]);
-    const { error } = await admin.from("brand_kits").delete().eq("id", data.kitId);
-    if (error) throw new Error(error.message);
+    // FK cascades handle children, but delete explicitly for Neon parity
+    // with the old Supabase flow (which had no cascade).
+    await db.transaction(async (tx) => {
+      await Promise.all([
+        tx.delete(kitColors).where(eq(kitColors.kitId, data.kitId)),
+        tx.delete(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
+        tx.delete(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
+        tx.delete(kitAssets).where(eq(kitAssets.kitId, data.kitId)),
+        tx.delete(kitVoice).where(eq(kitVoice.kitId, data.kitId)),
+      ]);
+      await tx.delete(brandKits).where(eq(brandKits.id, data.kitId));
+    });
     return { ok: true };
   });
 
@@ -151,38 +165,49 @@ export const duplicateKit = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
     const src = await loadOwnedKit(data.kitId, data.ownerToken);
-    const { id: _omitId, created_at: _ca, updated_at: _ua, share_token: _st, ...rest } = src as any;
-    const insertRow = {
-      ...rest,
-      name: `${src.name ?? "Untitled"} (copy)`,
-      share_token: null,
-      is_public: false,
-    };
-    const { data: created, error } = await admin
-      .from("brand_kits")
-      .insert(insertRow)
-      .select("*")
-      .single();
-    if (error || !created) throw new Error(error?.message ?? "Failed to duplicate kit");
+    const { id: _omitId, createdAt: _ca, updatedAt: _ua, shareToken: _st, ...rest } = src as any;
+    void _omitId;
+    void _ca;
+    void _ua;
+    void _st;
+    const createdRows = await db
+      .insert(brandKits)
+      .values({
+        ...rest,
+        name: `${src.name ?? "Untitled"} (copy)`,
+        shareToken: null,
+        isPublic: false,
+      })
+      .returning();
+    const created = createdRows[0];
+    if (!created) throw new Error("Failed to duplicate kit");
     const newId = (created as any).id as string;
 
-    async function copyChildren(table: string) {
-      const { data: rows } = await admin.from(table).select("*").eq("kit_id", data.kitId);
+    async function copyChildren(
+      table:
+        typeof kitColors | typeof kitFonts | typeof kitTokens | typeof kitAssets | typeof kitVoice,
+    ) {
+      const rows = await db
+        .select()
+        .from(table as any)
+        .where(eq((table as any).kitId, data.kitId));
       if (!rows || rows.length === 0) return;
-      const cleaned = rows.map((r: any) => {
-        const { id, created_at, updated_at, ...rest } = r;
-        return { ...rest, kit_id: newId };
+      const cleaned = (rows as any[]).map((r: any) => {
+        const { id, createdAt, updatedAt, ...restRow } = r;
+        void id;
+        void createdAt;
+        void updatedAt;
+        return { ...restRow, kitId: newId };
       });
-      await admin.from(table).insert(cleaned);
+      await db.insert(table as any).values(cleaned);
     }
     await Promise.all([
-      copyChildren("kit_colors"),
-      copyChildren("kit_fonts"),
-      copyChildren("kit_tokens"),
-      copyChildren("kit_assets"),
-      copyChildren("kit_voice"),
+      copyChildren(kitColors),
+      copyChildren(kitFonts),
+      copyChildren(kitTokens),
+      copyChildren(kitAssets),
+      copyChildren(kitVoice),
     ]);
 
     return { kit: created };
@@ -202,43 +227,76 @@ export const listKitsByOwner = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
     // Shared workspace: every visitor sees every kit. The ownerToken /
     // ownerTokens inputs are accepted for backward compatibility but ignored.
     void data.ownerToken;
     void data.ownerTokens;
-    let query = admin
-      .from("brand_kits")
-      .select("id, name, source_url, status, created_at")
-      .order("created_at", { ascending: false });
-    if (data.limit) query = query.limit(data.limit);
-    const { data: kitRows, error } = await query;
-    if (error) throw new Error(error.message);
+    const kitRows = data.limit
+      ? await db
+          .select({
+            id: brandKits.id,
+            name: brandKits.name,
+            sourceUrl: brandKits.sourceUrl,
+            status: brandKits.status,
+            createdAt: brandKits.createdAt,
+          })
+          .from(brandKits)
+          .orderBy(desc(brandKits.createdAt))
+          .limit(data.limit)
+      : await db
+          .select({
+            id: brandKits.id,
+            name: brandKits.name,
+            sourceUrl: brandKits.sourceUrl,
+            status: brandKits.status,
+            createdAt: brandKits.createdAt,
+          })
+          .from(brandKits)
+          .orderBy(desc(brandKits.createdAt));
     const rows = kitRows ?? [];
     if (rows.length === 0) return { kits: [] };
 
     const ids = rows.map((r: any) => r.id);
-    const [colorsRes, fontsRes, assetsRes] = await Promise.all([
-      admin
-        .from("kit_colors")
-        .select("kit_id, hex, role, position")
-        .in("kit_id", ids)
-        .order("position"),
-      admin
-        .from("kit_fonts")
-        .select("kit_id, family, source_family, role, google_font, weights, file_urls, position")
-        .in("kit_id", ids)
-        .order("position"),
-      admin
-        .from("kit_assets")
-        .select("kit_id, kind, url, position")
-        .in("kit_id", ids)
-        .order("position"),
+    const [colors, fonts, assets] = await Promise.all([
+      db
+        .select({
+          kitId: kitColors.kitId,
+          hex: kitColors.hex,
+          role: kitColors.role,
+          position: kitColors.position,
+        })
+        .from(kitColors)
+        .where(inArray(kitColors.kitId, ids))
+        .orderBy(asc(kitColors.position)),
+      db
+        .select({
+          kitId: kitFonts.kitId,
+          family: kitFonts.family,
+          sourceFamily: kitFonts.sourceFamily,
+          role: kitFonts.role,
+          googleFont: kitFonts.googleFont,
+          weights: kitFonts.weights,
+          fileUrls: kitFonts.fileUrls,
+          position: kitFonts.position,
+        })
+        .from(kitFonts)
+        .where(inArray(kitFonts.kitId, ids))
+        .orderBy(asc(kitFonts.position)),
+      db
+        .select({
+          kitId: kitAssets.kitId,
+          kind: kitAssets.kind,
+          url: kitAssets.url,
+          position: kitAssets.position,
+        })
+        .from(kitAssets)
+        .where(inArray(kitAssets.kitId, ids))
+        .orderBy(asc(kitAssets.position)),
     ]);
 
     const palette: Record<string, { hex: string; role: string | null }[]> = {};
-    (colorsRes.data ?? []).forEach((c: any) => {
-      (palette[c.kit_id] ||= []).push({ hex: c.hex, role: c.role ?? null });
+    (colors ?? []).forEach((c: any) => {
+      (palette[c.kitId] ||= []).push({ hex: c.hex, role: c.role ?? null });
     });
 
     type DisplayFont = {
@@ -273,23 +331,24 @@ export const listKitsByOwner = createServerFn({ method: "POST" })
       if (generics.has(f.toLowerCase())) return false;
       return true;
     };
-    (fontsRes.data ?? []).forEach((f: any) => {
+    (fonts ?? []).forEach((f: any) => {
       if (!f.family) return;
       if (!isUsableFamily(f.family)) return;
       const roleIdx = rolePriority.indexOf((f.role ?? "").toLowerCase());
       let rank = roleIdx === -1 ? 99 : roleIdx;
       // Loadable = google-hosted OR has discovered file_urls we can @font-face.
-      const hasFiles = Array.isArray(f.file_urls) && f.file_urls.length > 0;
-      if (!f.google_font && !hasFiles) rank += 100;
-      const cur = displayRank[f.kit_id];
+      const fileUrls = f.fileUrls as DisplayFont["file_urls"];
+      const hasFiles = Array.isArray(fileUrls) && fileUrls.length > 0;
+      if (!f.googleFont && !hasFiles) rank += 100;
+      const cur = displayRank[f.kitId];
       if (cur === undefined || rank < cur) {
-        displayRank[f.kit_id] = rank;
-        displayFont[f.kit_id] = {
+        displayRank[f.kitId] = rank;
+        displayFont[f.kitId] = {
           family: f.family,
-          google: !!f.google_font,
-          source_family: f.source_family ?? null,
+          google: !!f.googleFont,
+          source_family: f.sourceFamily ?? null,
           weights: Array.isArray(f.weights) ? f.weights : null,
-          file_urls: hasFiles ? f.file_urls : null,
+          file_urls: hasFiles ? fileUrls : null,
         };
       }
     });
@@ -297,24 +356,27 @@ export const listKitsByOwner = createServerFn({ method: "POST" })
     const logoPriority = ["logo", "logo-mark", "logomark", "wordmark", "icon", "favicon"];
     const bestRank: Record<string, number> = {};
     const logo: Record<string, string | null> = {};
-    (assetsRes.data ?? []).forEach((a: any) => {
+    (assets ?? []).forEach((a: any) => {
       const rank = logoPriority.indexOf(a.kind);
       if (rank === -1) return;
-      const cur = bestRank[a.kit_id];
+      const cur = bestRank[a.kitId];
       if (cur === undefined || rank < cur) {
-        bestRank[a.kit_id] = rank;
-        logo[a.kit_id] = a.url;
+        bestRank[a.kitId] = rank;
+        logo[a.kitId] = a.url;
       }
     });
 
     return {
       kits: rows.map((r: any) => {
-        const colors = palette[r.id] ?? [];
-        const primary = colors.find((c) => c.role === "primary")?.hex ?? colors[0]?.hex ?? null;
+        const kitColorsList = palette[r.id] ?? [];
+        const primary =
+          kitColorsList.find((c) => c.role === "primary")?.hex ?? kitColorsList[0]?.hex ?? null;
         return {
           ...r,
+          source_url: r.sourceUrl ?? null,
+          created_at: r.createdAt instanceof Date ? r.createdAt.toISOString() : r.createdAt,
           primaryHex: primary,
-          palette: colors.slice(0, 5).map((c) => c.hex),
+          palette: kitColorsList.slice(0, 5).map((c) => c.hex),
           displayFont: displayFont[r.id] ?? null,
           logoUrl: logo[r.id] ?? null,
         };
@@ -331,20 +393,29 @@ export const bulkDeleteKits = createServerFn({ method: "POST" })
     }).parse,
   )
   .handler(async ({ data }) => {
-    const admin = getAdmin();
     // Shared workspace — anyone can delete any kit.
     void data.ownerToken;
-    const { data: rows } = await admin.from("brand_kits").select("id").in("id", data.kitIds);
+    const rows = await db
+      .select({ id: brandKits.id })
+      .from(brandKits)
+      .where(inArray(brandKits.id, data.kitIds));
     const ownedIds = (rows ?? []).map((r: any) => r.id as string);
     if (ownedIds.length === 0) return { deleted: 0 };
-    await Promise.all([
-      admin.from("kit_colors").delete().in("kit_id", ownedIds),
-      admin.from("kit_fonts").delete().in("kit_id", ownedIds),
-      admin.from("kit_tokens").delete().in("kit_id", ownedIds),
-      admin.from("kit_assets").delete().in("kit_id", ownedIds),
-      admin.from("kit_voice").delete().in("kit_id", ownedIds),
-    ]);
-    const { error } = await admin.from("brand_kits").delete().in("id", ownedIds);
-    if (error) throw new Error(error.message);
+    await db.transaction(async (tx) => {
+      await Promise.all([
+        tx.delete(kitColors).where(inArray(kitColors.kitId, ownedIds)),
+        tx.delete(kitFonts).where(inArray(kitFonts.kitId, ownedIds)),
+        tx.delete(kitTokens).where(inArray(kitTokens.kitId, ownedIds)),
+        tx.delete(kitAssets).where(inArray(kitAssets.kitId, ownedIds)),
+        tx.delete(kitVoice).where(inArray(kitVoice.kitId, ownedIds)),
+      ]);
+      await tx.delete(brandKits).where(inArray(brandKits.id, ownedIds));
+    });
     return { deleted: ownedIds.length };
   });
+
+// Named exports for step-5 parity (`getBrandKitFn` / `listUserKitsFn`).
+export const getBrandKitFn = getKit;
+export const listUserKitsFn = listKitsByOwner;
+export const deleteKitFn = deleteKit;
+export { and };

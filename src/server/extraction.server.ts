@@ -1,5 +1,15 @@
 import { z } from "zod";
-import { getAdmin } from "./supabase-admin.server";
+import { eq } from "drizzle-orm";
+import {
+  db,
+  brandKits,
+  kitAssets,
+  kitColors,
+  kitFonts,
+  kitTokens,
+  kitVoice,
+} from "@/db/index.server";
+import { uploadAsset, publicUrlFor } from "./storage.server";
 import { callAIStructured, firecrawlScrape, firecrawlMap } from "./ai.server";
 import { detectFontsFromSite, substituteFor, type DetectedFont } from "./fonts.server";
 import { extractColorsFromText, type ColorObservation } from "./css-colors.server";
@@ -512,11 +522,7 @@ function dataUrlToBuffer(input: string): { buf: Uint8Array; contentType: string 
   }
 }
 
-async function uploadScreenshot(
-  admin: ReturnType<typeof getAdmin>,
-  kitId: string,
-  raw: string,
-): Promise<string | null> {
+async function uploadScreenshot(kitId: string, raw: string): Promise<string | null> {
   if (!raw) return null;
   // If it's already an https URL, return as-is.
   if (/^https?:\/\//i.test(raw)) return raw;
@@ -528,12 +534,12 @@ async function uploadScreenshot(
       ? "webp"
       : "png";
   const path = `${kitId}/screenshots/${crypto.randomUUID().slice(0, 8)}.${ext}`;
-  const { error } = await admin.storage
-    .from("brand-assets")
-    .upload(path, decoded.buf, { contentType: decoded.contentType, upsert: false });
-  if (error) return null;
-  const { data: pub } = admin.storage.from("brand-assets").getPublicUrl(path);
-  return pub?.publicUrl ?? null;
+  try {
+    const { url } = await uploadAsset(decoded.buf, path, decoded.contentType);
+    return url;
+  } catch {
+    return null;
+  }
 }
 
 // ============================================================================
@@ -720,12 +726,7 @@ export const ExtractKitInputSchema = z.object({
 });
 export type ExtractKitInput = z.infer<typeof ExtractKitInputSchema>;
 
-async function rehostAsset(
-  admin: ReturnType<typeof getAdmin>,
-  kitId: string,
-  kind: string,
-  url: string,
-): Promise<string | null> {
+async function rehostAsset(kitId: string, kind: string, url: string): Promise<string | null> {
   try {
     const { isBlockedSourceUrl } = await import("./url-guard.server");
     if (isBlockedSourceUrl(url)) return null;
@@ -753,10 +754,11 @@ async function rehostAsset(
                 : "bin");
     const safeKind = kind.replace(/[^a-z0-9-]/gi, "_");
     const path = `${kitId}/assets/${safeKind}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
-    const { error } = await admin.storage
-      .from("brand-assets")
-      .upload(path, buf, { contentType, upsert: false });
-    if (error) return null;
+    try {
+      await uploadAsset(buf, path, contentType);
+    } catch {
+      return null;
+    }
     return path;
   } catch {
     return null;
@@ -764,18 +766,16 @@ async function rehostAsset(
 }
 
 export async function extractKitImpl(data: ExtractKitInput) {
-  const admin = getAdmin();
-
   // Shared workspace — any visitor may re-extract any kit.
   void data.ownerToken;
-  const { data: kit, error: kitErr } = await admin
-    .from("brand_kits")
-    .select("id")
-    .eq("id", data.kitId)
-    .maybeSingle();
-  if (kitErr || !kit) throw new Error("Kit not found");
+  const kitRows = await db
+    .select({ id: brandKits.id })
+    .from(brandKits)
+    .where(eq(brandKits.id, data.kitId))
+    .limit(1);
+  if (!kitRows.length) throw new Error("Kit not found");
 
-  await admin.from("brand_kits").update({ status: "processing" }).eq("id", data.kitId);
+  await db.update(brandKits).set({ status: "processing" }).where(eq(brandKits.id, data.kitId));
 
   try {
     let markdown: string | undefined;
@@ -837,7 +837,7 @@ export async function extractKitImpl(data: ExtractKitInput) {
         const shotPromises = pages.map(async (p) => {
           const raw: string | undefined = p.doc.screenshot ?? p.doc.screenshotUrl;
           if (!raw) return null;
-          return uploadScreenshot(admin, data.kitId, raw);
+          return uploadScreenshot(data.kitId, raw);
         });
         const shots = await Promise.all(shotPromises);
         pageScreenshots = shots.filter((u): u is string => !!u);
@@ -1034,34 +1034,36 @@ export async function extractKitImpl(data: ExtractKitInput) {
         .slice(0, 200000) || null;
 
     // 3. Persist
-    const updateRow: Record<string, any> = {
-      source_text: sourceText,
-      name: extraction.name,
-      status: "ready",
-      typography_scale: extraction.typography_scale ?? [],
-      imagery_style: extraction.imagery_style ?? null,
-      motion_style: extraction.motion_style ?? null,
-      brand_positioning: extraction.brand_positioning ?? null,
-      error_code: degradedReason ? "scrape_blocked" : null,
-      error_status: null,
-      error_message: degradedReason,
-    };
-    if (data.url) updateRow.source_url = data.url;
-    await admin.from("brand_kits").update(updateRow).eq("id", data.kitId);
+    await db
+      .update(brandKits)
+      .set({
+        sourceText,
+        name: extraction.name,
+        status: "ready",
+        sourceUrl: data.url ?? undefined,
+        typographyScale: extraction.typography_scale ?? [],
+        imageryStyle: extraction.imagery_style ?? null,
+        motionStyle: extraction.motion_style ?? null,
+        brandPositioning: extraction.brand_positioning ?? null,
+        errorCode: degradedReason ? "scrape_blocked" : null,
+        errorStatus: null,
+        errorMessage: degradedReason,
+      })
+      .where(eq(brandKits.id, data.kitId));
 
     // Wipe and re-insert children (simple approach for this template)
     await Promise.all([
-      admin.from("kit_colors").delete().eq("kit_id", data.kitId),
-      admin.from("kit_fonts").delete().eq("kit_id", data.kitId),
-      admin.from("kit_tokens").delete().eq("kit_id", data.kitId),
-      admin.from("kit_assets").delete().eq("kit_id", data.kitId),
-      admin.from("kit_voice").delete().eq("kit_id", data.kitId),
+      db.delete(kitColors).where(eq(kitColors.kitId, data.kitId)),
+      db.delete(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
+      db.delete(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
+      db.delete(kitAssets).where(eq(kitAssets.kitId, data.kitId)),
+      db.delete(kitVoice).where(eq(kitVoice.kitId, data.kitId)),
     ]);
 
     if (extraction.colors.length)
-      await admin.from("kit_colors").insert(
+      await db.insert(kitColors).values(
         extraction.colors.map((c, i) => ({
-          kit_id: data.kitId,
+          kitId: data.kitId,
           hex: c.hex.startsWith("#") ? c.hex : `#${c.hex}`,
           role: c.role,
           name: c.name,
@@ -1069,27 +1071,27 @@ export async function extractKitImpl(data: ExtractKitInput) {
         })),
       );
     if (mergedFonts.length)
-      await admin.from("kit_fonts").insert(
+      await db.insert(kitFonts).values(
         mergedFonts.map((f, i) => ({
-          kit_id: data.kitId,
+          kitId: data.kitId,
           family: f.family,
           role: f.role,
           weights: f.weights ?? [],
-          google_font: f.google_font ?? false,
-          source_family: f.source_family,
+          googleFont: f.google_font ?? false,
+          sourceFamily: f.source_family,
           provider: f.provider,
-          provider_url: f.provider_url,
+          providerUrl: f.provider_url,
           license: f.license,
-          license_note: f.license_note,
-          file_urls: f.file_urls ?? [],
-          is_substitute: f.is_substitute ?? false,
+          licenseNote: f.license_note,
+          fileUrls: f.file_urls ?? [],
+          isSubstitute: f.is_substitute ?? false,
           position: i,
         })),
       );
     if (extraction.tokens.length)
-      await admin.from("kit_tokens").insert(
+      await db.insert(kitTokens).values(
         extraction.tokens.map((t, i) => ({
-          kit_id: data.kitId,
+          kitId: data.kitId,
           category: t.category,
           name: t.name,
           value: t.value,
@@ -1097,29 +1099,29 @@ export async function extractKitImpl(data: ExtractKitInput) {
         })),
       );
     if (dedupedAssets.length) {
-      // Best-effort rehost into brand-assets bucket so logos survive source changes.
+      // Best-effort rehost into R2 so logos survive source changes.
       const rehosted = await Promise.all(
         dedupedAssets.map(async (a) => ({
           ...a,
-          storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
+          storage_path: await rehostAsset(data.kitId, a.kind, a.url),
         })),
       );
       // Drop assets whose source URL we couldn't fetch — those are dead links
       // that would render as broken images on the kit page.
       const reachable = rehosted.filter((a) => !!a.storage_path);
       if (reachable.length)
-        await admin.from("kit_assets").insert(
+        await db.insert(kitAssets).values(
           reachable.map((a, i) => ({
-            kit_id: data.kitId,
+            kitId: data.kitId,
             kind: a.kind,
-            url: a.url,
-            storage_path: a.storage_path,
+            url: a.storage_path ? publicUrlFor(a.storage_path as string) : a.url,
+            storagePath: a.storage_path,
             position: i,
           })),
         );
     }
-    await admin.from("kit_voice").insert({
-      kit_id: data.kitId,
+    await db.insert(kitVoice).values({
+      kitId: data.kitId,
       tone: extraction.voice.tone ?? [],
       vocabulary: extraction.voice.vocabulary ?? [],
       dos: extraction.voice.dos ?? [],
@@ -1135,15 +1137,15 @@ export async function extractKitImpl(data: ExtractKitInput) {
     const code: string = e?.code ?? "unknown";
     const statusMatch = rawMsg.match(/\[(\d{3})\]|error (\d{3})/i);
     const errStatus = statusMatch ? Number(statusMatch[1] ?? statusMatch[2]) : null;
-    await admin
-      .from("brand_kits")
-      .update({
+    await db
+      .update(brandKits)
+      .set({
         status: "error",
-        error_code: code,
-        error_status: errStatus,
-        error_message: errMessage,
+        errorCode: code,
+        errorStatus: errStatus,
+        errorMessage: errMessage,
       })
-      .eq("id", data.kitId);
+      .where(eq(brandKits.id, data.kitId));
     console.error("[extractKit]", e);
     return { ok: false, error: errMessage, kitId: data.kitId };
   }
@@ -1158,17 +1160,27 @@ export const GenerateSampleCopyInputSchema = z.object({
 export type GenerateSampleCopyInput = z.infer<typeof GenerateSampleCopyInputSchema>;
 
 export async function generateSampleCopyImpl(data: GenerateSampleCopyInput) {
-  const admin = getAdmin();
-  const { data: voice } = await admin
-    .from("kit_voice")
-    .select("tone, vocabulary, dos, donts, samples, summary")
-    .eq("kit_id", data.kitId)
-    .maybeSingle();
-  const { data: kit } = await admin
-    .from("brand_kits")
-    .select("name")
-    .eq("id", data.kitId)
-    .maybeSingle();
+  const [voiceRows, kitRows] = await Promise.all([
+    db
+      .select({
+        tone: kitVoice.tone,
+        vocabulary: kitVoice.vocabulary,
+        dos: kitVoice.dos,
+        donts: kitVoice.donts,
+        samples: kitVoice.samples,
+        summary: kitVoice.summary,
+      })
+      .from(kitVoice)
+      .where(eq(kitVoice.kitId, data.kitId))
+      .limit(1),
+    db
+      .select({ name: brandKits.name })
+      .from(brandKits)
+      .where(eq(brandKits.id, data.kitId))
+      .limit(1),
+  ]);
+  const voice = voiceRows[0] ?? null;
+  const kit = kitRows[0] ?? null;
 
   if (!voice || !kit) throw new Error("Kit not found");
 
@@ -1203,21 +1215,20 @@ export const HarvestMoreAssetsInputSchema = z.object({
 export type HarvestMoreAssetsInput = z.infer<typeof HarvestMoreAssetsInputSchema>;
 
 export async function harvestMoreAssetsImpl(data: HarvestMoreAssetsInput) {
-  const admin = getAdmin();
-
   void data.ownerToken;
-  const { data: kit, error: kitErr } = await admin
-    .from("brand_kits")
-    .select("id, source_url")
-    .eq("id", data.kitId)
-    .maybeSingle();
-  if (kitErr || !kit) throw new Error("Kit not found");
-  if (!kit.source_url) return { ok: false, added: 0, error: "No source URL" };
+  const kitRows = await db
+    .select({ id: brandKits.id, sourceUrl: brandKits.sourceUrl })
+    .from(brandKits)
+    .where(eq(brandKits.id, data.kitId))
+    .limit(1);
+  const kit = kitRows[0] ?? null;
+  if (!kit) throw new Error("Kit not found");
+  if (!kit.sourceUrl) return { ok: false, added: 0, error: "No source URL" };
 
-  const { data: existing } = await admin
-    .from("kit_assets")
-    .select("url, kind, position")
-    .eq("kit_id", data.kitId);
+  const existing = await db
+    .select({ url: kitAssets.url, kind: kitAssets.kind, position: kitAssets.position })
+    .from(kitAssets)
+    .where(eq(kitAssets.kitId, data.kitId));
   // Build a normalized-key set from existing rows so cache-busted / mirror
   // URLs of the same logo don't get re-imported.
   const existingKeys = new Set<string>(
@@ -1234,7 +1245,7 @@ export async function harvestMoreAssetsImpl(data: HarvestMoreAssetsInput) {
 
   let scraped: any;
   try {
-    scraped = await firecrawlScrape(kit.source_url);
+    scraped = await firecrawlScrape(kit.sourceUrl as string);
   } catch (e: any) {
     return { ok: false, added: 0, error: e?.message ?? "Scrape failed" };
   }
@@ -1255,7 +1266,7 @@ export async function harvestMoreAssetsImpl(data: HarvestMoreAssetsInput) {
   }
   if (rawHtml) {
     try {
-      for (const a of harvestLogosFromHtml(rawHtml, kit.source_url)) candidates.push(a);
+      for (const a of harvestLogosFromHtml(rawHtml, kit.sourceUrl as string)) candidates.push(a);
     } catch (e) {
       console.warn("[harvestMoreAssets] harvest failed", e);
     }
@@ -1275,18 +1286,21 @@ export async function harvestMoreAssetsImpl(data: HarvestMoreAssetsInput) {
   const rehosted = await Promise.all(
     fresh.map(async (a) => ({
       ...a,
-      storage_path: await rehostAsset(admin, data.kitId, a.kind, a.url),
+      storage_path: await rehostAsset(data.kitId, a.kind, a.url),
     })),
   );
-  const { error: insErr } = await admin.from("kit_assets").insert(
-    rehosted.map((a, i) => ({
-      kit_id: data.kitId,
-      kind: a.kind,
-      url: a.url,
-      storage_path: a.storage_path,
-      position: startPos + i,
-    })),
-  );
-  if (insErr) return { ok: false, added: 0, error: insErr.message };
+  try {
+    await db.insert(kitAssets).values(
+      rehosted.map((a, i) => ({
+        kitId: data.kitId,
+        kind: a.kind,
+        url: a.storage_path ? publicUrlFor(a.storage_path as string) : a.url,
+        storagePath: a.storage_path,
+        position: startPos + i,
+      })),
+    );
+  } catch (e: any) {
+    return { ok: false, added: 0, error: e?.message ?? "Insert failed" };
+  }
   return { ok: true, added: fresh.length };
 }

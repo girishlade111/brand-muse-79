@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { getAdmin } from "./supabase-admin.server";
+import { eq } from "drizzle-orm";
+import { db, brandKits, kitColors, kitFonts, kitTokens } from "@/db/index.server";
 import { firecrawlScrape } from "./ai.server";
 
 export const ScrapeSourceTextInputSchema = z.object({
@@ -65,76 +66,73 @@ export const SaveManualKitInputSchema = z.object({
 export type SaveManualKitInput = z.infer<typeof SaveManualKitInputSchema>;
 
 export async function saveManualKitImpl(data: SaveManualKitInput) {
-  const admin = getAdmin();
+  return db.transaction(async (tx) => {
+    const existing = await tx
+      .select({ id: brandKits.id })
+      .from(brandKits)
+      .where(eq(brandKits.id, data.kitId))
+      .limit(1);
+    if (!existing.length) throw new Error("Kit not found");
 
-  const { data: kit } = await admin
-    .from("brand_kits")
-    .select("id")
-    .eq("id", data.kitId)
-    .maybeSingle();
-  if (!kit) throw new Error("Kit not found");
+    await tx
+      .update(brandKits)
+      .set({
+        name: data.name,
+        status: "ready",
+        sourceType: "manual",
+        sourceUrl: data.sourceUrl ?? undefined,
+        sourceText: data.sourceText !== undefined ? data.sourceText || null : undefined,
+        errorCode: null,
+        errorStatus: null,
+        errorMessage: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(brandKits.id, data.kitId));
 
-  const updateRow: Record<string, any> = {
-    name: data.name,
-    status: "ready",
-    source_type: "manual",
-    error_code: null,
-    error_status: null,
-    error_message: null,
-    updated_at: new Date().toISOString(),
-  };
-  if (data.sourceUrl) updateRow.source_url = data.sourceUrl;
-  if (data.sourceText !== undefined) updateRow.source_text = data.sourceText || null;
+    await Promise.all([
+      tx.delete(kitColors).where(eq(kitColors.kitId, data.kitId)),
+      tx.delete(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
+      tx.delete(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
+    ]);
 
-  const { error: upErr } = await admin.from("brand_kits").update(updateRow).eq("id", data.kitId);
-  if (upErr) throw new Error(upErr.message);
+    if (data.colors.length) {
+      await tx.insert(kitColors).values(
+        data.colors.map((c, i) => ({
+          kitId: data.kitId,
+          hex: c.hex.toUpperCase(),
+          name: c.name || null,
+          role: c.role || null,
+          position: i,
+        })),
+      );
+    }
 
-  await Promise.all([
-    admin.from("kit_colors").delete().eq("kit_id", data.kitId),
-    admin.from("kit_fonts").delete().eq("kit_id", data.kitId),
-    admin.from("kit_tokens").delete().eq("kit_id", data.kitId),
-  ]);
+    if (data.fonts.length) {
+      await tx.insert(kitFonts).values(
+        data.fonts.map((f, i) => ({
+          kitId: data.kitId,
+          family: f.family,
+          sourceFamily: f.family,
+          role: f.role || null,
+          weights: f.weights ?? [],
+          googleFont: f.google_font ?? true,
+          position: i,
+        })),
+      );
+    }
 
-  if (data.colors.length) {
-    const { error } = await admin.from("kit_colors").insert(
-      data.colors.map((c, i) => ({
-        kit_id: data.kitId,
-        hex: c.hex.toUpperCase(),
-        name: c.name || null,
-        role: c.role || null,
-        position: i,
-      })),
-    );
-    if (error) throw new Error(error.message);
-  }
+    if (data.tokens.length) {
+      await tx.insert(kitTokens).values(
+        data.tokens.map((t, i) => ({
+          kitId: data.kitId,
+          category: t.category,
+          name: t.name,
+          value: t.value,
+          position: i,
+        })),
+      );
+    }
 
-  if (data.fonts.length) {
-    const { error } = await admin.from("kit_fonts").insert(
-      data.fonts.map((f, i) => ({
-        kit_id: data.kitId,
-        family: f.family,
-        source_family: f.family,
-        role: f.role || null,
-        weights: f.weights ?? [],
-        google_font: f.google_font ?? true,
-        position: i,
-      })),
-    );
-    if (error) throw new Error(error.message);
-  }
-
-  if (data.tokens.length) {
-    const { error } = await admin.from("kit_tokens").insert(
-      data.tokens.map((t, i) => ({
-        kit_id: data.kitId,
-        category: t.category,
-        name: t.name,
-        value: t.value,
-        position: i,
-      })),
-    );
-    if (error) throw new Error(error.message);
-  }
-
-  return { ok: true, kitId: data.kitId };
+    return { ok: true, kitId: data.kitId };
+  });
 }

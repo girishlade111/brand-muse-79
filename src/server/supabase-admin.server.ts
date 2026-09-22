@@ -1,15 +1,9 @@
-// Admin Supabase client (service role) — server-only.
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-
-let cached: SupabaseClient<any, any, any> | null = null;
-
-export function getAdmin(): SupabaseClient<any, any, any> {
-  if (cached) return cached;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Supabase server env missing");
-  cached = createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-  return cached;
-}
+// DEPRECATED — Neon migration shim.
+// This module previously exposed a Supabase service-role client via
+// `getAdmin()`. All data access now goes through Drizzle + Neon
+// (`src/db/index.server.ts`) and R2 (`src/server/storage.server.ts`).
+//
+// Kept as a re-export so any stale import keeps working until removed.
+// New code should `import { db } from "@/db/index.server"` directly.
+export { db, getDb } from "@/db/index.server";
+export { uploadAsset, deleteAsset, publicUrlFor, urlForAsset } from "./storage.server";

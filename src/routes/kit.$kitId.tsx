@@ -614,9 +614,9 @@ function OverviewSection({
   colors: any[];
   fonts: any[];
 }) {
-  const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+  const r2PublicUrl = (import.meta as any).env?.VITE_R2_PUBLIC_URL as string | undefined;
   const publicFor = (path: string | null | undefined) =>
-    path && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}` : null;
+    path && r2PublicUrl ? `${r2PublicUrl}/${path}` : null;
   const logoPriority = ["logo", "logo-mark", "logomark", "wordmark", "icon", "favicon"];
   const logo =
     [...assets]
@@ -2127,9 +2127,9 @@ function AssetsSection({
   ownerToken: string;
   onChanged: () => void;
 }) {
-  const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+  const r2PublicUrl = (import.meta as any).env?.VITE_R2_PUBLIC_URL as string | undefined;
   const publicFor = (path: string | null | undefined) =>
-    path && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}` : null;
+    path && r2PublicUrl ? `${r2PublicUrl}/${path}` : null;
 
   const generate = useServerFn(generateLogoVariants);
   const [busy, setBusy] = useState<string | null>(null); // assetId currently generating
@@ -2833,9 +2833,9 @@ function SandboxSection({
   fonts: any[];
   assets: any[];
 }) {
-  const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string | undefined;
+  const r2PublicUrl = (import.meta as any).env?.VITE_R2_PUBLIC_URL as string | undefined;
   const publicFor = (path: string | null | undefined) =>
-    path && supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/brand-assets/${path}` : null;
+    path && r2PublicUrl ? `${r2PublicUrl}/${path}` : null;
   const priority = ["logo", "wordmark", "logo-mark", "logomark", "logo-on-light", "icon"];
   const logo =
     [...assets]
