@@ -44,3 +44,7 @@ lerna-debug.log*
 
 # Tooling cache / Worktrees
 .kilo/
+
+# Test artifacts (Playwright traces, screenshots, last-run status)
+test-results/
+playwright-report/
