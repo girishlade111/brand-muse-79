@@ -1572,7 +1572,8 @@ function FontCard({
           String(f.family).replace(/\s+/g, "+"),
         )}`
       : null;
-  const externalHref = f.provider_url ?? googleHref ?? null;
+  const externalHref =
+    f.provider_url && isHttpUrl(f.provider_url) ? f.provider_url : (googleHref ?? null);
 
   // License notice shown inside the tooltip.
   const licenseNotice = (() => {
@@ -1620,7 +1621,12 @@ function FontCard({
         return "font";
       };
       const decode = (b64: string) => {
-        const bin = atob(b64);
+        let bin: string;
+        try {
+          bin = atob(b64);
+        } catch {
+          throw new Error("Download failed — corrupted font data.");
+        }
         const bytes = new Uint8Array(bin.length);
         for (let j = 0; j < bin.length; j++) bytes[j] = bin.charCodeAt(j);
         return bytes;
