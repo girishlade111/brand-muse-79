@@ -534,80 +534,115 @@ function ComparePage() {
               letterSpacing: "-0.02em",
             }}
           >
-            Two kits, side by side.
+            Two to four kits, side by side.
           </h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-            Pick two kits from your library and compare palette, typography and tokens — with
-            accessibility contrast checks and a per-section verdict.
+            Pick up to four kits from your library — color temperature and vibrancy radar,
+            typography DNA, voice spectrum, and AI white-space discovery, with accessibility
+            contrast checks and a per-section verdict.
           </p>
         </div>
 
         {/* Pickers */}
         <div
-          className="mb-10 flex flex-wrap items-end gap-4 border-y py-5"
+          className="mb-10 grid gap-4 border-y py-5 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_1fr_1fr]"
           style={{ borderColor: "rgba(10,10,10,0.20)" }}
         >
           <SidePicker
             label="Kit A"
             kits={kits}
             value={aId}
-            otherId={bId}
+            takenIds={[bId, cId, dId]}
             onChange={setAId}
             disabled={loadingKits}
           />
-          <button
-            type="button"
-            className={ghostBtn}
-            onClick={swap}
-            disabled={!aId && !bId}
-            aria-label="Swap kits"
-            title="Swap A and B"
-          >
-            <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-            Swap
-          </button>
+          <div className="flex items-end pb-0.5">
+            <button
+              type="button"
+              className={ghostBtn}
+              onClick={swap}
+              disabled={!aId && !bId}
+              aria-label="Swap kits"
+              title="Swap A and B"
+            >
+              <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+              Swap
+            </button>
+          </div>
           <SidePicker
             label="Kit B"
             kits={kits}
             value={bId}
-            otherId={aId}
+            takenIds={[aId, cId, dId]}
             onChange={setBId}
+            disabled={loadingKits}
+          />
+          <SidePicker
+            label="Kit C — optional"
+            kits={kits}
+            value={cId}
+            takenIds={[aId, bId, dId]}
+            onChange={setCId}
+            disabled={loadingKits}
+          />
+          <SidePicker
+            label="Kit D — optional"
+            kits={kits}
+            value={dId}
+            takenIds={[aId, bId, cId]}
+            onChange={setDId}
             disabled={loadingKits}
           />
           {loadingKits && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
 
-        {!comparing || !aKit || !bKit ? (
+        {!comparing ? (
           <EmptyState
             hasKits={kits.length > 0}
             loading={loadingKits}
-            aId={aId}
-            bId={bId}
-            loadingA={loadingA}
-            loadingB={loadingB}
+            ids={[aId, bId, cId, dId]}
+            slotLoading={[slotA.loading, slotB.loading, slotC.loading, slotD.loading]}
           />
         ) : (
           <>
-            {analysis && (
-              <VerdictStrip
-                analysis={analysis}
-                aName={aKit.kit.name}
-                bName={bKit.kit.name}
-                aHex={kits.find((k) => k.id === aId)?.primaryHex ?? null}
-                bHex={kits.find((k) => k.id === bId)?.primaryHex ?? null}
-              />
+            {activeKits.length > 2 ? (
+              <VerdictMatrix kits={activeKits} />
+            ) : (
+              pairwise &&
+              analysis && (
+                <VerdictStrip
+                  analysis={analysis}
+                  aName={aKit.kit.name}
+                  bName={bKit.kit.name}
+                  aHex={kits.find((k) => k.id === aId)?.primaryHex ?? null}
+                  bHex={kits.find((k) => k.id === bId)?.primaryHex ?? null}
+                />
+              )
             )}
 
-            <SectionHeader
-              title="01 — Palette"
-              winner={analysis?.palette.winner ?? "na"}
-              aName={aKit.kit.name}
-              bName={bKit.kit.name}
+            <IntelligenceSections
+              activeKits={activeKits}
+              matrix={matrix}
+              colorProfiles={colorProfiles}
+              typeProfiles={typeProfiles}
+              voiceProfiles={voiceProfiles}
+              niche={niche}
+              nicheBusy={nicheBusy}
+              onRunWhiteSpace={runWhiteSpace}
             />
-            <div className="grid gap-6 lg:grid-cols-2">
-              <PalettePanel kit={aKit} score={analysis?.palette.a} other={bKit} />
-              <PalettePanel kit={bKit} score={analysis?.palette.b} other={aKit} />
-            </div>
+
+            {pairwise && aKit && bKit && (
+              <>
+                <SectionHeader
+                  title="Palette detail"
+                  winner={analysis?.palette.winner ?? "na"}
+                  aName={aKit.kit.name}
+                  bName={bKit.kit.name}
+                />
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <PalettePanel kit={aKit} score={analysis?.palette.a} other={bKit} />
+                  <PalettePanel kit={bKit} score={analysis?.palette.b} other={aKit} />
+                </div>
             {analysis && (
               <p className={`${mono} mt-3 text-muted-foreground`}>
                 {analysis.palette.winner === "tie"
