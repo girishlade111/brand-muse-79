@@ -1336,7 +1336,6 @@ function PairingSample({
   // WCAG: ≥4.5 passes for body text; 3–4.5 passes for large text only; <3 fails.
   const tier = ratio >= 4.5 ? "do" : ratio >= 3 ? "large" : "dont";
   const failsAA = ratio < 4.5;
-  const tier = ratio >= 4.5 ? "do" : ratio >= 3 ? "large" : "dont";
   const ringClass =
     tier === "do"
       ? "ring-2 ring-foreground/70"
