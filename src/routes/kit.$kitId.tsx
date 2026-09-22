@@ -2195,35 +2195,43 @@ function AssetsSection({
                   backgroundPosition: "0 0, 0 6px, 6px -6px, -6px 0px",
                 }}
               >
-                <img
-                  src={primary}
-                  alt={a.kind}
-                  className="max-h-full max-w-full object-contain"
-                  style={
-                    a.kind === "favicon"
-                      ? { imageRendering: "pixelated", maxHeight: 64, maxWidth: 64 }
-                      : undefined
-                  }
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    if (rehosted && img.src !== a.url) img.src = a.url;
-                    else img.style.opacity = "0.3";
-                  }}
-                />
+                {primary ? (
+                  <img
+                    src={primary}
+                    alt={a.kind}
+                    className="max-h-full max-w-full object-contain"
+                    style={
+                      a.kind === "favicon"
+                        ? { imageRendering: "pixelated", maxHeight: 64, maxWidth: 64 }
+                        : undefined
+                    }
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      if (rehosted && isHttpUrl(a.url) && img.src !== a.url) img.src = a.url;
+                      else img.style.opacity = "0.3";
+                    }}
+                  />
+                ) : (
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Invalid URL
+                  </span>
+                )}
               </div>
               <div className="flex items-center justify-between border-t border-[color:var(--border-subtle)] p-3">
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                   {a.kind}
                 </span>
-                <a
-                  href={primary}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
-                >
-                  Download
-                </a>
+                {primary ? (
+                  <a
+                    href={primary}
+                    download
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
+                  >
+                    Download
+                  </a>
+                ) : null}
               </div>
             </div>
           );

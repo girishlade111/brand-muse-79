@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getSharedKit } from "@/lib/shared-kit.functions";
+import { isHttpUrl } from "@/lib/utils";
 import { TokensSection, VoiceSection } from "@/routes/kit.$kitId";
 
 export const Route = createFileRoute("/share/$shareToken")({
@@ -18,9 +19,17 @@ function SharedKitPage() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     fetchKit({ data: { shareToken } })
-      .then(setData)
-      .catch((e: any) => setErr(e?.message ?? "Failed to load"));
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch((e: any) => {
+        if (!cancelled) setErr(e?.message ?? "Failed to load");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [shareToken, fetchKit]);
 
   if (err) {
@@ -59,7 +68,7 @@ function SharedKitPage() {
             Shared kit · read-only
           </span>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight">{kit.name}</h1>
-          {kit.source_url && (
+          {kit.source_url && isHttpUrl(kit.source_url) && (
             <a
               href={kit.source_url}
               target="_blank"
