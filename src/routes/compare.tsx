@@ -405,72 +405,23 @@ function ComparePage() {
     })();
   }, [ownerToken, list]);
 
-  // Load full data for each selected side.
-  useEffect(() => {
-    if (!aId || !ownerToken) {
-      setAKit(null);
-      return;
-    }
-    let cancelled = false;
-    setLoadingA(true);
-    fetchKit({ data: { kitId: aId, ownerToken } })
-      .then((res) => {
-        if (cancelled) return;
-        setAKit({
-          kit: res.kit,
-          colors: res.colors ?? [],
-          fonts: res.fonts ?? [],
-          tokens: res.tokens ?? [],
-        });
-      })
-      .catch((e) => {
-        if (!cancelled) toast.error(e instanceof Error ? e.message : "Failed to load kit A");
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingA(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [aId, ownerToken, fetchKit]);
-
-  useEffect(() => {
-    if (!bId || !ownerToken) {
-      setBKit(null);
-      return;
-    }
-    let cancelled = false;
-    setLoadingB(true);
-    fetchKit({ data: { kitId: bId, ownerToken } })
-      .then((res) => {
-        if (cancelled) return;
-        setBKit({
-          kit: res.kit,
-          colors: res.colors ?? [],
-          fonts: res.fonts ?? [],
-          tokens: res.tokens ?? [],
-        });
-      })
-      .catch((e) => {
-        if (!cancelled) toast.error(e instanceof Error ? e.message : "Failed to load kit B");
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingB(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [bId, ownerToken, fetchKit]);
+  // Load full data for each selected side (handled by useKitSlot above).
 
   // Keep the URL shareable.
   useEffect(() => {
-    if (search.a === (aId || undefined) && search.b === (bId || undefined)) return;
+    if (
+      search.a === (aId || undefined) &&
+      search.b === (bId || undefined) &&
+      search.c === (cId || undefined) &&
+      search.d === (dId || undefined)
+    )
+      return;
     navigate({
       to: "/compare",
-      search: { a: aId || undefined, b: bId || undefined },
+      search: { a: aId || undefined, b: bId || undefined, c: cId || undefined, d: dId || undefined },
       replace: true,
     });
-  }, [aId, bId, navigate, search.a, search.b]);
+  }, [aId, bId, cId, dId, navigate, search.a, search.b, search.c, search.d]);
 
   // Import real fonts for both kits so specimens render in the actual faces.
   useAutoImportFonts(
