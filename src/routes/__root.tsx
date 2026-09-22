@@ -51,16 +51,6 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Brand Kit" },
       {
-        name: "description",
-        content:
-          "Get any site's full brand guide with logos, typography and voice just by entering a URL.",
-      },
-      {
-        property: "og:description",
-        content:
-          "Get any site's full brand guide with logos, typography and voice just by entering a URL.",
-      },
-      {
         name: "twitter:description",
         content:
           "Get any site's full brand guide with logos, typography and voice just by entering a URL.",

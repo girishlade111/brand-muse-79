@@ -13,14 +13,20 @@ const STAGES = [
 // Shared ticker so every <ExtractionProgress /> instance shows the same stage.
 let sharedIndex = 0;
 const listeners = new Set<(n: number) => void>();
-let tickerStarted = false;
+let ticker: ReturnType<typeof setInterval> | null = null;
 function ensureTicker() {
-  if (tickerStarted || typeof window === "undefined") return;
-  tickerStarted = true;
-  setInterval(() => {
+  if (typeof window === "undefined") return;
+  if (ticker) return;
+  ticker = setInterval(() => {
     sharedIndex = (sharedIndex + 1) % STAGES.length;
     listeners.forEach((fn) => fn(sharedIndex));
   }, 2200);
+}
+function releaseTicker() {
+  if (listeners.size === 0 && ticker) {
+    clearInterval(ticker);
+    ticker = null;
+  }
 }
 
 export function ExtractionProgress({
@@ -37,6 +43,7 @@ export function ExtractionProgress({
     listeners.add(setI);
     return () => {
       listeners.delete(setI);
+      releaseTicker();
     };
   }, []);
   const stage = STAGES[i];

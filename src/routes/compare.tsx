@@ -326,7 +326,7 @@ function ComparePage() {
 
   // Load full data for each selected side.
   useEffect(() => {
-    if (!aId) {
+    if (!aId || !ownerToken) {
       setAKit(null);
       return;
     }
@@ -383,12 +383,13 @@ function ComparePage() {
 
   // Keep the URL shareable.
   useEffect(() => {
+    if (search.a === (aId || undefined) && search.b === (bId || undefined)) return;
     navigate({
       to: "/compare",
       search: { a: aId || undefined, b: bId || undefined },
       replace: true,
     });
-  }, [aId, bId, navigate]);
+  }, [aId, bId, navigate, search.a, search.b]);
 
   // Import real fonts for both kits so specimens render in the actual faces.
   useAutoImportFonts(
