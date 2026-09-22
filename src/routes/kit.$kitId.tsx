@@ -37,7 +37,7 @@ import {
 import { fetchFontFiles, resolveGoogleFontFiles } from "@/lib/font-files.functions";
 import { fetchAssetFiles } from "@/lib/asset-files.functions";
 import { useAutoImportFonts, renderFamilyFor } from "@/lib/font-loader";
-import { wcag, relativeLuminance } from "@/lib/color";
+import { wcag, relativeLuminance, autoFixContrast } from "@/lib/color";
 import {
   buildTokensJSON,
   buildCSS,
