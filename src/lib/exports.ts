@@ -1315,7 +1315,7 @@ export function buildDesignInstructionsMarkdown(args: {
     L.push("## Color palette", "");
     L.push("| Role | Hex | CSS variable |", "| --- | --- | --- |");
     colors.forEach((c) => {
-      const role = c.role || c.name || c.hex;
+      const role = slug(c.role || c.name || c.hex);
       L.push(`| ${role} | \`${c.hex}\` | \`--color-${role}\` |`);
     });
     L.push("", "**Usage rules:**", "");
