@@ -26,15 +26,26 @@ function HistoryPage() {
   const [aId, setAId] = useState<string>("");
   const [bId, setBId] = useState<string>("");
   const [busy, setBusy] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     list()
       .then(({ versions: v }) => {
+        if (cancelled) return;
         setVersions(v);
         if (v.length >= 1) setAId(v[0].id);
         if (v.length >= 2) setBId(v[1].id);
       })
-      .finally(() => setBusy(false));
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load history");
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [list]);
 
   function compare() {
