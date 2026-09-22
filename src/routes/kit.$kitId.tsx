@@ -68,6 +68,7 @@ import { toast } from "sonner";
 import { ExtractionProgress } from "@/components/extraction-progress";
 import { QuietLoader } from "@/components/quiet-loader";
 import { smoothScrollTo } from "@/components/smooth-scroll";
+import { StudioSection } from "@/components/studio/studio-section";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -382,6 +383,18 @@ function KitPage() {
               <SectionAnchor id="voice" label="Voice">
                 <VoiceSection voice={data.voice} kitId={kit.id} />
               </SectionAnchor>
+              <SectionAnchor id="studio" label="// 07. STUDIO">
+                <StudioSection
+                  kitId={kit.id}
+                  kitName={kit.name}
+                  colors={data.colors}
+                  fonts={data.fonts}
+                  assets={data.assets}
+                  defaultHeadline={data.voice?.samples?.headline}
+                  defaultBody={data.voice?.summary ?? undefined}
+                  defaultCta={data.voice?.samples?.cta}
+                />
+              </SectionAnchor>
               {typeof kit.source_text === "string" && kit.source_text.trim() && (
                 <SectionAnchor id="text" label="Source Text">
                   <SourceTextSection text={kit.source_text} />
@@ -424,6 +437,7 @@ const KIT_SECTIONS = [
   { id: "type", label: "Typography" },
   { id: "tokens", label: "Tokens" },
   { id: "voice", label: "Voice" },
+  { id: "studio", label: "Studio" },
   { id: "text", label: "Source Text" },
   { id: "export", label: "Export" },
 ] as const;
