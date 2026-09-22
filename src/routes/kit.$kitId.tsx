@@ -1021,11 +1021,19 @@ function ColorsSection({
   onChanged?: () => void;
 }) {
   const canEdit = !!(isOwner && kitId && ownerToken);
+  const persistFix = useServerFn(updateColorServerFn);
+  // Optimistic overrides: applied instantly on 1-click fix, reconciled when
+  // the parent reloads (onChanged). Reverted if the server call fails.
+  const [overrides, setOverrides] = useState<Record<string, string>>({});
+  const [fixingId, setFixingId] = useState<string | null>(null);
   if (!colors.length && !canEdit) return <Empty label="No colors extracted" />;
+  const effectiveColors = colors.map((c) =>
+    overrides[c.id] ? { ...c, hex: overrides[c.id] } : c,
+  );
   // Pick light + dark mode pairs from extracted colors so we can show pairings
   // for both surfaces. Fall back to pure white/black if extraction didn't yield
   // a sufficiently light or dark neutral.
-  const sortedByLum = [...colors].sort(
+  const sortedByLum = [...effectiveColors].sort(
     (a, b) => relativeLuminance(b.hex) - relativeLuminance(a.hex),
   );
   const lightest = sortedByLum[0]?.hex ?? "#ffffff";
@@ -1035,10 +1043,34 @@ function ColorsSection({
   const lightText = darkest;
   const darkText = lightest;
 
+  async function autoFixColor(colorId: string, currentHex: string, fixedHex: string) {
+    if (!canEdit || !kitId || !ownerToken || fixingId) return;
+    if (fixedHex.toUpperCase() === currentHex.toUpperCase()) {
+      toast.message("Already AA compliant");
+      return;
+    }
+    setFixingId(colorId);
+    setOverrides((o) => ({ ...o, [colorId]: fixedHex }));
+    try {
+      await persistFix({ data: { kitId, ownerToken, colorId, hex: fixedHex } });
+      toast.success(`Fixed to ${fixedHex} — passes AA`);
+      onChanged?.();
+    } catch (e: any) {
+      setOverrides((o) => {
+        const next = { ...o };
+        delete next[colorId];
+        return next;
+      });
+      toast.error(e?.message ?? "Auto-fix failed — reverted");
+    } finally {
+      setFixingId(null);
+    }
+  }
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {colors.map((c) => (
+        {effectiveColors.map((c) => (
           <ColorCard
             key={c.id}
             color={c}
@@ -1051,10 +1083,32 @@ function ColorsSection({
         {canEdit && <AddColorCard kitId={kitId!} ownerToken={ownerToken!} onAdded={onChanged} />}
       </div>
 
-      {colors.length > 0 && (
+      {effectiveColors.length > 0 && (
         <>
-          <PairingTable label="Light mode" colors={colors} bg={lightBg} text={lightText} />
-          <PairingTable label="Dark mode" colors={colors} bg={darkBg} text={darkText} />
+          <PairingTable
+            label="Light mode"
+            colors={effectiveColors}
+            bg={lightBg}
+            text={lightText}
+            canFix={canEdit}
+            fixingId={fixingId}
+            onAutoFix={autoFixColor}
+          />
+          <PairingTable
+            label="Dark mode"
+            colors={effectiveColors}
+            bg={darkBg}
+            text={darkText}
+            canFix={canEdit}
+            fixingId={fixingId}
+            onAutoFix={autoFixColor}
+          />
+          <div>
+            <h3 className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              // color vision check
+            </h3>
+            <CvdSimulator colors={effectiveColors} />
+          </div>
         </>
       )}
 
