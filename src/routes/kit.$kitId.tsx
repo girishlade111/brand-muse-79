@@ -2154,7 +2154,8 @@ function AssetsSection({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {assets.map((a) => {
           const rehosted = publicFor(a.storage_path);
-          const primary = rehosted ?? a.url;
+          const rawPrimary = rehosted ?? a.url;
+          const primary = isHttpUrl(rawPrimary) ? rawPrimary : null;
           const showChecker =
             a.kind === "logo-mark" ||
             a.kind === "logo-on-light" ||
