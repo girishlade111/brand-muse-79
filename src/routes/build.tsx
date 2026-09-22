@@ -127,10 +127,13 @@ function BuildPage() {
       next.push(f);
     }
     if (!next.length) return;
-    const merged = [...filesRef.current, ...next].slice(0, MAX_FILES);
-    if (filesRef.current.length + next.length > MAX_FILES) {
+    const room = Math.max(0, MAX_FILES - filesRef.current.length);
+    const accepted = next.slice(0, room);
+    if (accepted.length < next.length) {
       toast.error(`Max ${MAX_FILES} files — keeping the first ${MAX_FILES}`);
     }
+    if (!accepted.length) return;
+    const merged = [...filesRef.current, ...accepted];
     filesRef.current = merged;
     setFiles(merged);
     if (next.some(isPdfFile) && !buildingRef.current) {

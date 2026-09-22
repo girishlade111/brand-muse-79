@@ -5,10 +5,22 @@ const HISTORY_KEY = "branddna.anon_token_history";
 
 export function getAnonToken(): string {
   if (typeof window === "undefined") return "";
-  let t = localStorage.getItem(KEY);
+  let t: string | null = null;
+  try {
+    t = localStorage.getItem(KEY);
+  } catch {
+    t = null;
+  }
   if (!t) {
-    t = crypto.randomUUID();
-    localStorage.setItem(KEY, t);
+    t =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `anon-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    try {
+      localStorage.setItem(KEY, t);
+    } catch {
+      // Private mode / quota — return ephemeral token.
+    }
   }
   // Always make sure the active token is recorded in history.
   try {
