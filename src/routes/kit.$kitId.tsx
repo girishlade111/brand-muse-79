@@ -1380,6 +1380,22 @@ function PairingSample({
       <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         {ratioLabel}
       </span>
+      {failsAA && (
+        <span className="inline-flex items-center border border-[color:var(--accent)] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-[color:var(--accent)]">
+          AA fail
+        </span>
+      )}
+      {failsAA && fix && (
+        <button
+          type="button"
+          onClick={fix.onFix}
+          disabled={fix.fixing}
+          title={`Adjust to closest compliant shade ${fix.fixedHex} (hue preserved)`}
+          className="inline-flex items-center border border-foreground bg-foreground px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-background hover:opacity-90 disabled:opacity-50"
+        >
+          {fix.fixing ? "Fixing…" : "Fix to AA"}
+        </button>
+      )}
     </div>
   );
 }
