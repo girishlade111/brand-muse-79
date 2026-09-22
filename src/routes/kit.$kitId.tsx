@@ -25,6 +25,7 @@ import {
   deleteKitAsset,
   deleteKitColor,
   updateKitColor,
+  updateKitColor as updateColorServerFn,
   addKitColor,
   updateKitFont,
   deleteKitFont,
