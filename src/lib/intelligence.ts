@@ -661,5 +661,3 @@ export function cvdBreakageReport(colors: KitColorLike[]): CvdReport[] {
 
 // Re-export for charts: stable series colors in the sumi editorial aesthetic.
 export const SERIES_INK = ["#0A0A0A", "#8B1A1A", "#5F5A52", "#A39E93"];
-
-export { contrastRatio };
