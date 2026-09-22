@@ -348,3 +348,136 @@ export async function firecrawlMap(url: string, limit = 50): Promise<string[]> {
     return [];
   }
 }
+
+// ============================================================================
+// Generative Marketing Studio — AI Brand Copywriter & Headline Generator.
+// Reads the kit's extracted voice + positioning and synthesizes structured
+// marketing copy strictly in that persona.
+// ============================================================================
+
+export const STUDIO_ASSET_TYPES = [
+  "linkedin-banner",
+  "twitter-header",
+  "instagram-post",
+  "og-card",
+  "deck-cover",
+] as const;
+
+export type StudioAssetType = (typeof STUDIO_ASSET_TYPES)[number];
+
+export type BrandCopy = {
+  headlines: string[];
+  valueProps: string[];
+  ctas: string[];
+  caption: string;
+};
+
+function fallbackBrandCopy(brandName: string, topic: string): BrandCopy {
+  const subject = topic.trim() || "the latest release";
+  const name = brandName.trim() || "Brand";
+  return {
+    headlines: [
+      `${name} on ${subject}`,
+      `A clear take on ${subject}`,
+      `${subject}, in the voice of ${name}`,
+    ],
+    valueProps: [`Built around ${subject} with intent`, `Documented, structured, ready to use`],
+    ctas: ["Explore the system", "Read the guide", "Start extracting"],
+    caption: `${name} on ${subject}. Colors. Typography. Voice. Tokens. #brand #design #identity`,
+  };
+}
+
+function normalizeBrandCopy(raw: unknown, brandName: string, topic: string): BrandCopy {
+  const fallback = fallbackBrandCopy(brandName, topic);
+  if (!raw || typeof raw !== "object") return fallback;
+  const r = raw as Record<string, unknown>;
+  const pick = (v: unknown, n: number, fb: string[]): string[] => {
+    const list = Array.isArray(v) ? v.filter((s): s is string => typeof s === "string") : [];
+    const cleaned = list.map((s) => s.trim()).filter(Boolean).slice(0, n);
+    while (cleaned.length < n) cleaned.push(fb[cleaned.length] ?? fb[0]);
+    return cleaned;
+  };
+  const caption =
+    typeof r.caption === "string" && r.caption.trim() ? r.caption.trim() : fallback.caption;
+  return {
+    headlines: pick(r.headlines, 3, fallback.headlines),
+    valueProps: pick(r.valueProps ?? r.value_props, 2, fallback.valueProps),
+    ctas: pick(r.ctas, 3, fallback.ctas),
+    caption,
+  };
+}
+
+// Server function: synthesize on-brand marketing copy for a studio asset.
+// Feed the extracted brand voice (tone, dos, donts, vocabulary) plus brand
+// positioning so the LLM adheres strictly to the brand's persona.
+export async function generateBrandCopyServerFn(input: {
+  kitId: string;
+  assetType: StudioAssetType | string;
+  topic?: string;
+}): Promise<BrandCopy> {
+  const kitId = String(input.kitId ?? "");
+  const assetType = String(input.assetType ?? "og-card");
+  const topic = String(input.topic ?? "").slice(0, 300);
+
+  const { getAdmin } = await import("./supabase-admin.server");
+  const admin = getAdmin();
+  const [{ data: voice }, { data: kit }] = await Promise.all([
+    admin
+      .from("kit_voice")
+      .select("tone, vocabulary, dos, donts, samples, summary")
+      .eq("kit_id", kitId)
+      .maybeSingle(),
+    admin.from("brand_kits").select("name, brand_positioning").eq("id", kitId).maybeSingle(),
+  ]);
+  if (!kit) throw new Error("Kit not found");
+  const brandName = String((kit as { name?: unknown }).name ?? "Brand");
+  const positioning = (kit as { brand_positioning?: unknown }).brand_positioning ?? null;
+
+  const system = [
+    `You are a senior brand copywriter. Brand: ${brandName}.`,
+    `Tone: ${JSON.stringify((voice as { tone?: unknown } | null)?.tone ?? [])}`,
+    `Vocabulary to favor: ${JSON.stringify((voice as { vocabulary?: unknown } | null)?.vocabulary ?? [])}`,
+    `DO: ${JSON.stringify((voice as { dos?: unknown } | null)?.dos ?? [])}`,
+    `DON'T: ${JSON.stringify((voice as { donts?: unknown } | null)?.donts ?? [])}`,
+    `Existing samples: ${JSON.stringify((voice as { samples?: unknown } | null)?.samples ?? {})}`,
+    `Brand positioning: ${JSON.stringify(positioning)}`,
+    "Match this voice exactly. Short sentences. No exclamation marks.",
+    "No hype words (powerful, seamless, game-changing, next-level). No speed claims.",
+    "Return exactly 3 headlines, 2 value props, 3 CTA labels, 1 social caption with hashtags.",
+  ].join("\n");
+
+  const user = `Write marketing copy for asset type "${assetType}" about: ${topic || "the brand itself"}`;
+
+  try {
+    const raw = await callAIStructured<unknown>({
+      system,
+      user,
+      toolName: "save_brand_copy",
+      toolDescription: "Save structured on-brand marketing copy for a social asset.",
+      parameters: {
+        type: "object",
+        properties: {
+          headlines: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 3,
+            maxItems: 3,
+          },
+          valueProps: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 2,
+            maxItems: 2,
+          },
+          ctas: { type: "array", items: { type: "string" }, minItems: 3, maxItems: 3 },
+          caption: { type: "string" },
+        },
+        required: ["headlines", "valueProps", "ctas", "caption"],
+      },
+    });
+    return normalizeBrandCopy(raw, brandName, topic);
+  } catch (e) {
+    console.warn("[generateBrandCopyServerFn] AI failed, using fallback", e);
+    return fallbackBrandCopy(brandName, topic);
+  }
+}
