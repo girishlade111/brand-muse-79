@@ -1290,6 +1290,42 @@ function ScoreRow({
 
 // ---------- verdict matrix (3-4 kits) ----------
 
+function ScoreRow({
+  label,
+  a,
+  b,
+  winner,
+}: {
+  label: string;
+  a: number;
+  b: number;
+  winner: Verdict;
+}) {
+  const total = Math.max(a + b, 1);
+  const aPct = Math.round((a / total) * 100);
+  return (
+    <>
+      <div className="flex items-center justify-end gap-2 py-1.5">
+        <WinnerMark winner={winner} side="a" />
+        <span className="w-8 text-right font-mono text-[11px]">{a}</span>
+      </div>
+      <div className="py-1.5">
+        <p className={`${mono} mb-1 text-center text-muted-foreground`}>{label}</p>
+        <div
+          className="flex h-1.5 w-full overflow-hidden"
+          style={{ background: "rgba(10,10,10,0.08)" }}
+        >
+          <div style={{ width: `${aPct}%`, background: INK }} />
+        </div>
+      </div>
+      <div className="flex items-center gap-2 py-1.5">
+        <span className="w-8 font-mono text-[11px]">{b}</span>
+        <WinnerMark winner={winner} side="b" />
+      </div>
+    </>
+  );
+}
+
 function VerdictMatrix({ kits }: { kits: FullKit[] }) {
   const rows = kits.map((k) => {
     const p = paletteScore(k.colors);
