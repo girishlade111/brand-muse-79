@@ -58,7 +58,8 @@ export function IngestionPanel() {
     return () => {
       cancelled = true;
     };
-  }, [warm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const signalIntent = useCallback(() => {
     if (typeof window !== "undefined") window.dispatchEvent(new Event("branddna:ingestion-intent"));
