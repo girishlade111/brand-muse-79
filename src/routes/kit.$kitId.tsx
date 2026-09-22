@@ -1236,11 +1236,17 @@ function PairingTable({
   colors,
   bg,
   text,
+  canFix,
+  fixingId,
+  onAutoFix,
 }: {
   label: string;
   colors: any[];
   bg: string;
   text: string;
+  canFix?: boolean;
+  fixingId?: string | null;
+  onAutoFix?: (colorId: string, currentHex: string, fixedHex: string) => void;
 }) {
   return (
     <div>
