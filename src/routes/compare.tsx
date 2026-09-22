@@ -12,10 +12,12 @@ import { contrastRatio, isValidHex, normalizeHex, relativeLuminance } from "@/li
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
-  validateSearch: (search: Record<string, unknown>): { a?: string; b?: string } => {
-    const out: { a?: string; b?: string } = {};
+  validateSearch: (search: Record<string, unknown>): { a?: string; b?: string; c?: string; d?: string } => {
+    const out: { a?: string; b?: string; c?: string; d?: string } = {};
     if (typeof search.a === "string" && search.a) out.a = search.a;
     if (typeof search.b === "string" && search.b) out.b = search.b;
+    if (typeof search.c === "string" && search.c) out.c = search.c;
+    if (typeof search.d === "string" && search.d) out.d = search.d;
     return out;
   },
   head: () => ({
