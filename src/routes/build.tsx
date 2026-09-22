@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, Plus, Sparkles, Trash2, Upload, X } from "lucide-react";
@@ -312,6 +312,10 @@ function BuildPage() {
   }
 
   autoBuildRef.current = autoBuildKit;
+
+  useEffect(() => {
+    autoBuildRef.current = autoBuildKit;
+  });
 
   async function handleSave() {
     if (saving) return;
