@@ -311,8 +311,6 @@ function BuildPage() {
     }
   }
 
-  autoBuildRef.current = autoBuildKit;
-
   useEffect(() => {
     autoBuildRef.current = autoBuildKit;
   });
@@ -459,7 +457,13 @@ function BuildPage() {
                     <button
                       type="button"
                       aria-label={`Remove ${f.name}`}
-                      onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                      onClick={() =>
+                        setFiles((prev) => {
+                          const next = prev.filter((_, idx) => idx !== i);
+                          filesRef.current = next;
+                          return next;
+                        })
+                      }
                       className="text-muted-foreground hover:text-foreground"
                     >
                       <X className="h-3.5 w-3.5" strokeWidth={1.5} />
