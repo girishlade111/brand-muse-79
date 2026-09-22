@@ -299,21 +299,72 @@ type Analysis = {
 
 // ---------- page ----------
 
+// Loads one comparison slot (A/B/C/D). Each slot is independent so kits can
+// be added or removed without disturbing the others.
+function useKitSlot(
+  kitId: string | undefined,
+  ownerToken: string,
+  fetchKit: ReturnType<typeof useServerFn<typeof getKit>>,
+): { kit: FullKit | null; loading: boolean } {
+  const [kit, setKit] = useState<FullKit | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!kitId || !ownerToken) {
+      setKit(null);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    fetchKit({ data: { kitId, ownerToken } })
+      .then((res) => {
+        if (cancelled) return;
+        setKit({
+          kit: res.kit,
+          colors: res.colors ?? [],
+          fonts: res.fonts ?? [],
+          tokens: res.tokens ?? [],
+          voice: (res.voice as VoiceRow | null) ?? null,
+          positioning: (res.kit as { brand_positioning?: unknown })?.brand_positioning ?? null,
+        });
+      })
+      .catch((e) => {
+        if (!cancelled) toast.error(e instanceof Error ? e.message : "Failed to load kit");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [kitId, ownerToken, fetchKit]);
+
+  return { kit, loading };
+}
+
 function ComparePage() {
   const ownerToken = typeof window !== "undefined" ? getAnonToken() : "";
   const navigate = useNavigate();
   const search = Route.useSearch();
   const list = useServerFn(listKitsByOwner);
   const fetchKit = useServerFn(getKit);
+  const runNiche = useServerFn(analyzeMarketNiche);
 
   const [kits, setKits] = useState<KitSummary[]>([]);
   const [loadingKits, setLoadingKits] = useState(true);
   const [aId, setAId] = useState<string | undefined>(search.a);
   const [bId, setBId] = useState<string | undefined>(search.b);
-  const [aKit, setAKit] = useState<FullKit | null>(null);
-  const [bKit, setBKit] = useState<FullKit | null>(null);
-  const [loadingA, setLoadingA] = useState(false);
-  const [loadingB, setLoadingB] = useState(false);
+  const [cId, setCId] = useState<string | undefined>(search.c);
+  const [dId, setDId] = useState<string | undefined>(search.d);
+  const [niche, setNiche] = useState<MarketNiche | null>(null);
+  const [nicheBusy, setNicheBusy] = useState(false);
+
+  const slotA = useKitSlot(aId, ownerToken, fetchKit);
+  const slotB = useKitSlot(bId, ownerToken, fetchKit);
+  const slotC = useKitSlot(cId, ownerToken, fetchKit);
+  const slotD = useKitSlot(dId, ownerToken, fetchKit);
+  const aKit = slotA.kit;
+  const bKit = slotB.kit;
 
   useEffect(() => {
     if (!ownerToken) return;
