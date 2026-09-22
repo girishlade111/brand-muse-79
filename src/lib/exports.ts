@@ -41,10 +41,11 @@ type Voice = {
 } | null;
 
 export function slug(s: string) {
-  return String(s || "kit")
+  const out = String(s || "kit")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+    .replace(/^-+|-+$/g, "");
+  return out || "kit";
 }
 
 // W3C Design Tokens JSON
