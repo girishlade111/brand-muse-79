@@ -27,7 +27,7 @@ export function rgbToHex(r: number, g: number, b: number): string {
 
 function srgbToLin(c: number) {
   const v = c / 255;
-  return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }
 
 export function relativeLuminance(hex: string): number {
@@ -64,11 +64,12 @@ export function isValidHex(s: string): boolean {
 }
 
 export function normalizeHex(s: string): string {
-  let h = s.replace("#", "").trim().toLowerCase();
-  if (h.length === 3)
+  let h = s.replace(/^#+/, "").trim().toLowerCase();
+  if (h.length === 3 && /^[0-9a-f]{3}$/.test(h))
     h = h
       .split("")
       .map((c) => c + c)
       .join("");
+  if (!/^[0-9a-f]{6}$/.test(h)) return "#000000";
   return "#" + h;
 }
