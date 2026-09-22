@@ -444,11 +444,12 @@ function ComparePage() {
   }, [slotA.kit, slotB.kit, slotC.kit, slotD.kit]);
 
   const activeIds = useMemo(() => activeKits.map((k) => k.kit.id), [activeKits]);
+  const activeKey = activeIds.join("|");
 
   // Reset the white-space report whenever the cohort changes.
   useEffect(() => {
     setNiche(null);
-  }, [activeIds.join("|")]);
+  }, [activeKey]);
 
   const compared: ComparedKit[] = useMemo(
     () =>
