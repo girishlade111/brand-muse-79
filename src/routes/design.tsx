@@ -203,6 +203,7 @@ function DesignPage() {
             {markdown || "—"}
           </pre>
         )}
+        <Outlet />
       </main>
     </div>
   );
