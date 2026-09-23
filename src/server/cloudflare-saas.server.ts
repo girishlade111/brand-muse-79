@@ -65,8 +65,6 @@ export function normalizeCustomDomain(rawDomain: string): string {
   }
 
   return domain;
-
-  return domain;
 }
 
 /**
