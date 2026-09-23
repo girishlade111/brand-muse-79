@@ -2,13 +2,21 @@
 // Dispatches step-based extraction workflows (<15s per step)
 // with jittered exponential backoff retries and state synchronization.
 
-export {
+import {
   type ExtractionStepName,
   type ExtractionStatus,
   type StepMilestone,
   EXTRACTION_STEPS,
   getStepMilestone,
 } from "@/lib/extraction-milestones";
+
+export {
+  type ExtractionStepName,
+  type ExtractionStatus,
+  type StepMilestone,
+  EXTRACTION_STEPS,
+  getStepMilestone,
+};
 
 /**
  * Calculates jittered exponential backoff in milliseconds.
@@ -18,11 +26,6 @@ export function calculateBackoffMs(attempt: number): number {
   const base = 1000 * Math.pow(2, Math.max(0, attempt - 1));
   const jitter = Math.random() * 500;
   return Math.min(15000, Math.round(base + jitter));
-}
-
-export function getStepMilestone(step: ExtractionStepName): StepMilestone {
-  const found = EXTRACTION_STEPS.find((s) => s.step === step);
-  return found || EXTRACTION_STEPS[0];
 }
 
 export function getNextStep(current: ExtractionStepName): ExtractionStepName | null {

@@ -91,28 +91,25 @@ export function generateRawApiKey(): { rawKey: string; prefix: string; keyHash: 
   return { rawKey, prefix, keyHash };
 }
 
-// ---------------------------------------------------------------------------
-// Schemas
-// ---------------------------------------------------------------------------
+import {
+  GenerateApiKeyInputSchema,
+  ListApiKeysInputSchema,
+  RevokeApiKeyInputSchema,
+  type GenerateApiKeyInput,
+  type ListApiKeysInput,
+  type RevokeApiKeyInput,
+  type GenerateApiKeyResult,
+} from "@/lib/api-keys";
 
-export const GenerateApiKeyInputSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
-  name: z.string().min(1, "Key name is required").max(80),
-  rateLimitPerMin: z.number().int().min(10).max(600).default(60),
-});
-
-export const ListApiKeysInputSchema = z.object({
-  userId: z.string().min(1),
-});
-
-export const RevokeApiKeyInputSchema = z.object({
-  keyId: z.string().uuid(),
-  userId: z.string().min(1),
-});
-
-export type GenerateApiKeyInput = z.infer<typeof GenerateApiKeyInputSchema>;
-export type ListApiKeysInput = z.infer<typeof ListApiKeysInputSchema>;
-export type RevokeApiKeyInput = z.infer<typeof RevokeApiKeyInputSchema>;
+export {
+  GenerateApiKeyInputSchema,
+  ListApiKeysInputSchema,
+  RevokeApiKeyInputSchema,
+  type GenerateApiKeyInput,
+  type ListApiKeysInput,
+  type RevokeApiKeyInput,
+  type GenerateApiKeyResult,
+};
 
 // ---------------------------------------------------------------------------
 // Authentication Result & Header Generator
@@ -264,21 +261,11 @@ export async function authenticateApiRequest(
 // Pure Handlers (Directly Testable)
 // ---------------------------------------------------------------------------
 
+
 export async function executeGenerateApiKey(
   input: GenerateApiKeyInput,
   overrides?: { db?: any },
-): Promise<{
-  ok: boolean;
-  rawKey: string;
-  apiKey: {
-    id: string;
-    userId: string;
-    prefix: string;
-    name: string;
-    rateLimitPerMin: number;
-    createdAt: string;
-  };
-}> {
+): Promise<GenerateApiKeyResult> {
   const activeDb = overrides?.db || db;
   const { rawKey, prefix, keyHash } = generateRawApiKey();
 
