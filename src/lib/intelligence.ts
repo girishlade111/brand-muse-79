@@ -3,7 +3,7 @@
 // white-space discovery, and color-vision-deficiency simulation.
 // No React. Fully unit-testable.
 
-import { hexToHsl, hexToRgb, normalizeHex } from "./color";
+import { hexToHsl, hexToRgb, isValidHex, normalizeHex } from "./color";
 
 export type KitColorLike = { hex: string; role?: string | null; name?: string | null };
 export type KitFontLike = { family?: string | null; role?: string | null; weights?: unknown };

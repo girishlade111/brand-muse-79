@@ -84,7 +84,7 @@ export function CompetitorRadarChart({
             <PolarGrid stroke="rgba(10,10,10,0.12)" strokeDasharray="3 3" />
             <PolarAngleAxis
               dataKey="axis"
-              tick={{ fill: "#0A0A0A", fontSize: 10, fontFamily: "monospace", textTransform: "uppercase" }}
+              tick={{ fill: "#0A0A0A", fontSize: 10, fontFamily: "monospace" }}
             />
             <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="rgba(10,10,10,0.15)" tick={false} />
             {competitors.map((c, idx) => {
