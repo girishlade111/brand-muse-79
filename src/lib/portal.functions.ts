@@ -24,6 +24,12 @@ import {
   purgePortalEdgeCache,
   setEdgeCachedJson,
 } from "@/server/edge-cache.server";
+import {
+  hashPassword,
+  createPasswordToken,
+  verifyPasswordToken,
+  safeTimingSafeEqual,
+} from "@/server/portal-auth.server";
 
 const RESERVED_SLUGS = new Set([
   "admin",
@@ -57,41 +63,6 @@ const RESERVED_SLUGS = new Set([
   "webhook",
   "www",
 ]);
-
-function hashPassword(password: string): string {
-  const salt = "bm_portal_salt_v1";
-  return crypto.createHash("sha256").update(`${salt}:${password}`).digest("hex");
-}
-
-function createPasswordToken(slug: string): string {
-  const secret = process.env.LOVABLE_CRON_SECRET || "portal_secret_key_8841";
-  const payload = `${slug}:${Date.now()}`;
-  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-  return Buffer.from(`${payload}:${sig}`).toString("base64");
-}
-
-function verifyPasswordToken(token: string, slug: string): boolean {
-  try {
-    const raw = Buffer.from(token, "base64").toString("utf-8");
-    const [tokenSlug, timestampStr, sig] = raw.split(":");
-    if (!tokenSlug || !timestampStr || !sig) return false;
-    if (tokenSlug !== slug) return false;
-
-    // Token valid for 7 days
-    const timestamp = parseInt(timestampStr, 10);
-    if (Date.now() - timestamp > 7 * 24 * 60 * 60 * 1000) return false;
-
-    const secret = process.env.LOVABLE_CRON_SECRET || "portal_secret_key_8841";
-    const expectedSig = crypto
-      .createHmac("sha256", secret)
-      .update(`${tokenSlug}:${timestampStr}`)
-      .digest("hex");
-
-    return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expectedSig));
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Public function to fetch Brand Guidelines Portal data.
@@ -325,10 +296,7 @@ export const verifyPortalPassword = createServerFn({ method: "POST" })
     const expectedHash = rows[0].passwordHash;
     const providedHash = hashPassword(data.password);
 
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(expectedHash),
-      Buffer.from(providedHash),
-    );
+    const isMatch = safeTimingSafeEqual(expectedHash, providedHash);
 
     if (!isMatch) {
       throw new Error("Incorrect password. Please try again.");

@@ -3,19 +3,11 @@
 
 import { db, publishedPortals } from "@/db/index.server";
 import { eq } from "drizzle-orm";
-import crypto from "node:crypto";
-
-function hashPassword(password: string): string {
-  const salt = "bm_portal_salt_v1";
-  return crypto.createHash("sha256").update(`${salt}:${password}`).digest("hex");
-}
-
-function createPasswordToken(slug: string): string {
-  const secret = process.env.LOVABLE_CRON_SECRET || "portal_secret_key_8841";
-  const payload = `${slug}:${Date.now()}`;
-  const sig = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-  return Buffer.from(`${payload}:${sig}`).toString("base64");
-}
+import {
+  hashPassword,
+  createPasswordToken,
+  safeTimingSafeEqual,
+} from "@/server/portal-auth.server";
 
 export default async function (event: any) {
   const req = event?.node?.req || event?.req;

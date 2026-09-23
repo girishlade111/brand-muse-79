@@ -153,9 +153,11 @@ export default async function (event: any) {
 
   // 2. Cloudflare Workers / Web ReadableStream Mode
   const textEncoder = new TextEncoder();
+  let isCancelled = false;
+  let interval: ReturnType<typeof setInterval> | null = null;
+
   const stream = new ReadableStream({
     async start(controller) {
-      let isCancelled = false;
       let lastStep = "";
       let lastProgress = -1;
       let lastStatus = "";
@@ -172,9 +174,9 @@ export default async function (event: any) {
         controller.enqueue(textEncoder.encode(`: keepalive\n\n`));
       };
 
-      const interval = setInterval(async () => {
+      interval = setInterval(async () => {
         if (isCancelled) {
-          clearInterval(interval);
+          if (interval) clearInterval(interval);
           return;
         }
 
@@ -198,7 +200,7 @@ export default async function (event: any) {
 
           if (!rows.length) {
             enqueueEvent("error", { error: "Brand kit not found" });
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
             controller.close();
             return;
           }
@@ -239,7 +241,7 @@ export default async function (event: any) {
               milestone: getStepMilestone("persist_and_finalize"),
               name: kit.name,
             });
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
             controller.close();
           } else if (kit.status === "error" || status === "failed") {
             enqueueEvent("failed", {
@@ -247,7 +249,7 @@ export default async function (event: any) {
               status: "failed",
               error: kit.errorMessage || "Extraction failed",
             });
-            clearInterval(interval);
+            if (interval) clearInterval(interval);
             controller.close();
           }
         } catch (e) {
@@ -256,7 +258,8 @@ export default async function (event: any) {
       }, 750);
     },
     cancel() {
-      // Stream consumer disconnected
+      isCancelled = true;
+      if (interval) clearInterval(interval);
     },
   });
 
