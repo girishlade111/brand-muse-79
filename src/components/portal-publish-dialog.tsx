@@ -117,7 +117,7 @@ export function PortalPublishDialog({
         toast.error(e?.message || "Failed to load portal configuration");
       })
       .finally(() => setLoading(false));
-  }, [open, kitId, ownerToken]);
+  }, [open, kitId, ownerToken, fetchSettings]);
 
   // Check slug availability debounce
   useEffect(() => {
@@ -140,7 +140,7 @@ export function PortalPublishDialog({
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [slug, settings?.slug, kitId]);
+  }, [slug, settings?.slug, kitId, checkSlug]);
 
   // Save Settings
   const handleSave = async () => {

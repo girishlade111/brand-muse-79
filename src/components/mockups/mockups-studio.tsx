@@ -152,7 +152,7 @@ export function MockupsStudio({
     return () => {
       cancelled = true;
     };
-  }, [kitId]);
+  }, [kitId, runFetchMockups]);
 
   // Derived color tokens
   const primaryHex = useMemo(() => {

@@ -38,8 +38,8 @@ export default async function (event: any) {
   const url = new URL(rawUrl, "http://localhost");
   const pathParts = url.pathname.split("/").filter(Boolean);
   const kitIdx = pathParts.indexOf("kits");
-  let kitId = "";
-  if (kitIdx !== -1 && pathParts.length > kitIdx + 1) {
+  let kitId = event?.context?.params?.kitId || "";
+  if (!kitId && kitIdx !== -1 && pathParts.length > kitIdx + 1) {
     const candidate = pathParts[kitIdx + 1];
     if (candidate !== "css" && candidate !== "tokens") {
       kitId = candidate;

@@ -18,6 +18,7 @@ import {
   getEdgeCachedJson,
   setEdgeCachedJson,
 } from "@/server/edge-cache.server";
+import { verifyPasswordToken } from "@/server/portal-auth.server";
 
 export default async function (event: any) {
   const req = event?.node?.req || event?.req;
@@ -38,13 +39,13 @@ export default async function (event: any) {
     return new Response(null, { status: 204 });
   }
 
-  // Extract slug from URL path
+  // Extract slug from route params or URL path
   const rawUrl = req?.url || event?.url || "/";
   const url = new URL(rawUrl, "http://localhost");
   const pathParts = url.pathname.split("/").filter(Boolean);
   const portalIdx = pathParts.indexOf("portal");
-  let slug = "";
-  if (portalIdx !== -1 && pathParts.length > portalIdx + 1) {
+  let slug = event?.context?.params?.slug || "";
+  if (!slug && portalIdx !== -1 && pathParts.length > portalIdx + 1) {
     slug = pathParts[portalIdx + 1];
   }
 
@@ -56,6 +57,19 @@ export default async function (event: any) {
     if (res) res.statusCode = 400;
     return { error: "Missing portal identifier or slug in request", status: 400 };
   }
+
+  // Extract potential password token
+  const authHeader = req?.headers?.authorization || event?.headers?.authorization || "";
+  const bearerToken = authHeader.toLowerCase().startsWith("bearer ")
+    ? authHeader.slice(7).trim()
+    : "";
+  const portalToken =
+    req?.headers?.["x-portal-token"] ||
+    event?.headers?.["x-portal-token"] ||
+    bearerToken ||
+    url.searchParams.get("token") ||
+    url.searchParams.get("password_token") ||
+    "";
 
   const cacheKey = buildPortalCacheKey(identifier);
 
@@ -108,6 +122,30 @@ export default async function (event: any) {
       isExpired: true,
       portal: { slug: portal.slug, name: kit.name, expiresAt: portal.expiresAt.toISOString() },
     };
+  }
+
+  // Check Password Protection
+  if (portal.isPasswordProtected) {
+    const hasAccess = portalToken && verifyPasswordToken(portalToken, portal.slug);
+    if (!hasAccess) {
+      if (res && typeof res.setHeader === "function") {
+        res.statusCode = 401;
+        res.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+      }
+      return {
+        isLocked: true,
+        isExpired: false,
+        isPasswordProtected: true,
+        portal: {
+          slug: portal.slug,
+          name: kit.name,
+          hint: portal.passwordHint || null,
+          whitelabelTitle: portal.whitelabelTitle || `${kit.name} — Brand Guidelines`,
+          whitelabelFaviconUrl: portal.whitelabelFaviconUrl || null,
+          whitelabelRemoveBadge: portal.whitelabelRemoveBadge || false,
+        },
+      };
+    }
   }
 
   // Query child entities
@@ -208,15 +246,19 @@ export default async function (event: any) {
     voice: voiceRows[0] || null,
   };
 
-  // Cache in Cloudflare Edge Cache
-  await setEdgeCachedJson(cacheKey, payload, 3600);
+  // Cache in Cloudflare Edge Cache ONLY for public portals
+  if (!portal.isPasswordProtected) {
+    await setEdgeCachedJson(cacheKey, payload, 3600);
+  }
 
   if (res && typeof res.setHeader === "function") {
     res.setHeader("CF-Cache-Status", "MISS");
     res.setHeader("X-Edge-Cache", "MISS");
     res.setHeader(
       "Cache-Control",
-      "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400",
+      portal.isPasswordProtected
+        ? "private, no-store, no-cache, must-revalidate"
+        : "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400",
     );
   }
 

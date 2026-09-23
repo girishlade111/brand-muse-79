@@ -19,6 +19,7 @@ import { Route as StartHereRouteImport } from './routes/start-here'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as DesignHistoryRouteImport } from './routes/design.history'
 import { Route as KitKitIdRouteImport } from './routes/kit.$kitId'
+import { Route as PSlugRouteImport } from './routes/p.$slug'
 import { Route as ShareShareTokenRouteImport } from './routes/share.$shareToken'
 import { Route as DesignHistoryDiffRouteImport } from './routes/design.history.diff'
 
@@ -72,6 +73,11 @@ const KitKitIdRoute = KitKitIdRouteImport.update({
   path: '/kit/$kitId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareShareTokenRoute = ShareShareTokenRouteImport.update({
   id: '/share/$shareToken',
   path: '/share/$shareToken',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
   '/kit/$kitId': typeof KitKitIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
   '/design/history/diff': typeof DesignHistoryDiffRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
   '/kit/$kitId': typeof KitKitIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
   '/design/history/diff': typeof DesignHistoryDiffRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
   '/kit/$kitId': typeof KitKitIdRoute
+  '/p/$slug': typeof PSlugRoute
   '/share/$shareToken': typeof ShareShareTokenRoute
   '/design/history/diff': typeof DesignHistoryDiffRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/design/history'
     | '/kit/$kitId'
+    | '/p/$slug'
     | '/share/$shareToken'
     | '/design/history/diff'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/design/history'
     | '/kit/$kitId'
+    | '/p/$slug'
     | '/share/$shareToken'
     | '/design/history/diff'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/design/history'
     | '/kit/$kitId'
+    | '/p/$slug'
     | '/share/$shareToken'
     | '/design/history/diff'
   fileRoutesById: FileRoutesById
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   StartHereRoute: typeof StartHereRoute
   StudioRoute: typeof StudioRoute
   KitKitIdRoute: typeof KitKitIdRoute
+  PSlugRoute: typeof PSlugRoute
   ShareShareTokenRoute: typeof ShareShareTokenRoute
 }
 
@@ -256,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KitKitIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share/$shareToken': {
       id: '/share/$shareToken'
       path: '/share/$shareToken'
@@ -306,6 +326,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartHereRoute: StartHereRoute,
   StudioRoute: StudioRoute,
   KitKitIdRoute: KitKitIdRoute,
+  PSlugRoute: PSlugRoute,
   ShareShareTokenRoute: ShareShareTokenRoute,
 }
 export const routeTree = rootRouteImport

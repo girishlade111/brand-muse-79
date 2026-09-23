@@ -33,8 +33,8 @@ export default async function (event: any) {
   const url = new URL(rawUrl, "http://localhost");
   const pathParts = url.pathname.split("/").filter(Boolean);
   const portalIdx = pathParts.indexOf("portal");
-  let slug = "";
-  if (portalIdx !== -1 && pathParts.length > portalIdx + 1) {
+  let slug = event?.context?.params?.slug || "";
+  if (!slug && portalIdx !== -1 && pathParts.length > portalIdx + 1) {
     slug = pathParts[portalIdx + 1];
   }
 
@@ -76,10 +76,7 @@ export default async function (event: any) {
   const expectedHash = rows[0].passwordHash;
   const providedHash = hashPassword(password);
 
-  const isMatch = crypto.timingSafeEqual(
-    Buffer.from(expectedHash),
-    Buffer.from(providedHash),
-  );
+  const isMatch = safeTimingSafeEqual(expectedHash, providedHash);
 
   if (!isMatch) {
     if (res) res.statusCode = 401;

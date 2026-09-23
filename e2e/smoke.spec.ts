@@ -51,10 +51,26 @@ test.describe("route smoke coverage", () => {
 
   test("compare view renders both pickers", async ({ page }) => {
     await page.goto("/compare");
-    await expect(page.getByRole("heading", { name: /two kits, side by side/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /two (?:to four )?kits, side by side/i }),
+    ).toBeVisible();
     await expect(page.getByLabel("Kit A")).toBeVisible();
     await expect(page.getByLabel("Kit B")).toBeVisible();
     await expect(page.getByRole("button", { name: /swap kits/i })).toBeVisible();
+  });
+
+  test("social asset studio standalone preview renders", async ({ page }) => {
+    await page.goto("/studio");
+    await expect(
+      page.getByRole("heading", { name: /social asset studio/i }),
+    ).toBeVisible();
+  });
+
+  test("developer settings page renders", async ({ page }) => {
+    await page.goto("/settings");
+    await expect(
+      page.getByRole("heading", { name: /developer api keys & webhooks/i }),
+    ).toBeVisible();
   });
 
   test("design source of truth page renders", async ({ page }) => {

@@ -97,12 +97,14 @@ describe("Cloudflare Edge Cache API Layer", () => {
   });
 });
 
-describe("Portal Security & Expiration Mechanics", () => {
-  function hashPassword(password: string): string {
-    const salt = "bm_portal_salt_v1";
-    return crypto.createHash("sha256").update(`${salt}:${password}`).digest("hex");
-  }
+import {
+  hashPassword,
+  createPasswordToken,
+  verifyPasswordToken,
+  safeTimingSafeEqual,
+} from "./portal-auth.server";
 
+describe("Portal Security & Expiration Mechanics", () => {
   it("hashes passwords deterministically and verifies with constant-time equality", () => {
     const secret = "TopSecretRebrand2026!";
     const hashed = hashPassword(secret);
@@ -110,11 +112,29 @@ describe("Portal Security & Expiration Mechanics", () => {
     expect(hashed).toBe(hashPassword(secret));
     expect(hashed).not.toBe(hashPassword("WrongPassword"));
 
-    const isMatch = crypto.timingSafeEqual(
-      Buffer.from(hashed),
-      Buffer.from(hashPassword(secret)),
-    );
+    const isMatch = safeTimingSafeEqual(hashed, hashPassword(secret));
     expect(isMatch).toBe(true);
+
+    const isMismatch = safeTimingSafeEqual(hashed, hashPassword("WrongPassword"));
+    expect(isMismatch).toBe(false);
+  });
+
+  it("safeTimingSafeEqual handles unequal length buffers safely without throwing", () => {
+    expect(() => safeTimingSafeEqual("short", "much-longer-string-with-different-bytes")).not.toThrow();
+    expect(safeTimingSafeEqual("short", "much-longer-string-with-different-bytes")).toBe(false);
+    expect(safeTimingSafeEqual("", "non-empty")).toBe(false);
+    expect(safeTimingSafeEqual("abc", "abc")).toBe(true);
+  });
+
+  it("creates and verifies HMAC password tokens accurately", () => {
+    const slug = "acme-rebrand";
+    const token = createPasswordToken(slug);
+
+    expect(token).toBeTruthy();
+    expect(verifyPasswordToken(token, slug)).toBe(true);
+    expect(verifyPasswordToken(token, "wrong-slug")).toBe(false);
+    expect(verifyPasswordToken("malformed:token", slug)).toBe(false);
+    expect(verifyPasswordToken("", slug)).toBe(false);
   });
 
   it("correctly identifies expired pre-launch guidelines dates", () => {
