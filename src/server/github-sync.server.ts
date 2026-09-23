@@ -310,16 +310,17 @@ export function buildTokenPullRequestBody(params: {
   const fontList = params.fonts
     .slice(0, 10)
     .map((f) => {
-      const weights = Array.isArray(f.weights) && f.weights.length ? `(${f.weights.join(", ")})` : "";
+      const weights =
+        Array.isArray(f.weights) && f.weights.length ? `(${f.weights.join(", ")})` : "";
       return `- **${f.family}** [${f.role || "body"}] ${weights}`;
     })
     .join("\n");
 
-  const tokenCategories = Array.from(new Set(params.tokens.map((t) => t.category))).join(", ") || "spacing, radius, shadow";
+  const tokenCategories =
+    Array.from(new Set(params.tokens.map((t) => t.category))).join(", ") ||
+    "spacing, radius, shadow";
 
-  const filesList = params.files
-    .map((f) => `- [\`${f.path}\`](#) — *${f.description}*`)
-    .join("\n");
+  const filesList = params.files.map((f) => `- [\`${f.path}\`](#) — *${f.description}*`).join("\n");
 
   return `## 🎨 Brand Muse Automated Design Tokens Sync
 
@@ -337,7 +338,10 @@ This pull request synchronizes the latest design tokens, theme definitions, and 
 
 | Category | Count | Summary |
 | :--- | :--- | :--- |
-| 🎨 **Colors** | \`${colorCount}\` | ${params.colors.slice(0, 4).map((c) => `\`${c.hex}\``).join(", ")}${colorCount > 4 ? " …" : ""} |
+| 🎨 **Colors** | \`${colorCount}\` | ${params.colors
+    .slice(0, 4)
+    .map((c) => `\`${c.hex}\``)
+    .join(", ")}${colorCount > 4 ? " …" : ""} |
 | 🔤 **Typography** | \`${fontCount}\` | ${params.fonts.map((f) => f.family).join(", ") || "Standard System"} |
 | 📐 **DTCG Tokens** | \`${tokenCount}\` | ${tokenCategories} |
 
@@ -435,28 +439,51 @@ export async function executeCreateTokenPullRequest(
 
   if (!colors || !fonts || !tokens) {
     const [colorRows, fontRows, tokenRows] = await Promise.all([
-      colors ? Promise.resolve(colors) : activeDb.select().from(kitColors).where(eq(kitColors.kitId, data.kitId)),
-      fonts ? Promise.resolve(fonts) : activeDb.select().from(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
-      tokens ? Promise.resolve(tokens) : activeDb.select().from(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
+      colors
+        ? Promise.resolve(colors)
+        : activeDb.select().from(kitColors).where(eq(kitColors.kitId, data.kitId)),
+      fonts
+        ? Promise.resolve(fonts)
+        : activeDb.select().from(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
+      tokens
+        ? Promise.resolve(tokens)
+        : activeDb.select().from(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
     ]);
     colors = colorRows || [];
     fonts = fontRows || [];
     tokens = tokenRows || [];
   }
 
+  const finalColors: any[] = colors || [];
+  const finalFonts: any[] = fonts || [];
+  const finalTokens: any[] = tokens || [];
+
   // 2. Generate Token Artifacts
-  const cssContent = buildCSS({ colors, fonts, tokens });
-  const tailwindContent = buildTailwindConfig({ colors, fonts, tokens });
-  const dtcgJsonContent = buildTokensJSON({ colors, fonts, tokens });
+  const cssContent = buildCSS({
+    colors: finalColors,
+    fonts: finalFonts,
+    tokens: finalTokens,
+  });
+  const tailwindContent = buildTailwindConfig({
+    colors: finalColors,
+    fonts: finalFonts,
+    tokens: finalTokens,
+  });
+  const dtcgJsonContent = buildTokensJSON({
+    colors: finalColors,
+    fonts: finalFonts,
+    tokens: finalTokens,
+  });
 
   // 3. Format Target Paths
   const rawPath = (data.filePath || "src/theme").replace(/\\/g, "/").trim();
   const cleanDir = rawPath.replace(/\/+$/, "").replace(/^\/+/, "");
-  
+
   // If user provided a specific file like `styles/tokens.css`, extract directory
-  const baseDir = cleanDir.endsWith(".css") || cleanDir.endsWith(".json") || cleanDir.endsWith(".js")
-    ? cleanDir.split("/").slice(0, -1).join("/")
-    : cleanDir;
+  const baseDir =
+    cleanDir.endsWith(".css") || cleanDir.endsWith(".json") || cleanDir.endsWith(".js")
+      ? cleanDir.split("/").slice(0, -1).join("/")
+      : cleanDir;
 
   const prefix = baseDir ? `${baseDir}/` : "";
   const cssPath = `${prefix}tokens.css`;
@@ -464,9 +491,21 @@ export async function executeCreateTokenPullRequest(
   const jsonPath = `${prefix}tokens.json`;
 
   const filesManifest = [
-    { path: cssPath, content: cssContent, description: "Plain CSS Custom Properties (:root variables)" },
-    { path: tailwindPath, content: tailwindContent, description: "Tailwind CSS theme configuration extension" },
-    { path: jsonPath, content: dtcgJsonContent, description: "W3C Design Tokens Community Group (DTCG) specification" },
+    {
+      path: cssPath,
+      content: cssContent,
+      description: "Plain CSS Custom Properties (:root variables)",
+    },
+    {
+      path: tailwindPath,
+      content: tailwindContent,
+      description: "Tailwind CSS theme configuration extension",
+    },
+    {
+      path: jsonPath,
+      content: dtcgJsonContent,
+      description: "W3C Design Tokens Community Group (DTCG) specification",
+    },
   ];
 
   // 4. Branch Name
@@ -552,15 +591,16 @@ export async function executeCreateTokenPullRequest(
     const prBody = buildTokenPullRequestBody({
       kitName: kit.name || "Brand Muse Kit",
       sourceUrl: kit.sourceUrl || kit.source_url,
-      colors,
-      fonts,
-      tokens,
+      colors: finalColors,
+      fonts: finalFonts,
+      tokens: finalTokens,
       files: filesManifest.map((f) => ({ path: f.path, description: f.description })),
     });
 
     // 11. Open Pull Request
     const prTitle =
-      data.customPrTitle || `feat(design-tokens): update brand tokens from ${kit.name || "Brand Muse"}`;
+      data.customPrTitle ||
+      `feat(design-tokens): update brand tokens from ${kit.name || "Brand Muse"}`;
 
     const prData = await githubRestRequest<{ html_url: string; number: number }>(
       `/repos/${owner}/${repo}/pulls`,

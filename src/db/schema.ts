@@ -167,4 +167,3 @@ export type NewKitGitSync = typeof kitGitSyncs.$inferInsert;
 export type DesignDocVersion = typeof designDocVersions.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type UserRole = typeof userRoles.$inferSelect;
-

@@ -2,7 +2,7 @@
 // Manages encrypted PAT connection, repository/branch/path selection, live PR preview,
 // and sync history from `kit_git_syncs`.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Dialog,
@@ -89,13 +89,7 @@ export function GitHubSyncModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Load sync history when modal opens or tab changes
-  useEffect(() => {
-    if (open) {
-      loadHistory();
-    }
-  }, [open, kitId]);
-
-  async function loadHistory() {
+  const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
     try {
       const logs = await getSyncs({ data: { kitId } });
@@ -105,7 +99,13 @@ export function GitHubSyncModal({
     } finally {
       setLoadingHistory(false);
     }
-  }
+  }, [kitId, getSyncs]);
+
+  useEffect(() => {
+    if (open) {
+      loadHistory();
+    }
+  }, [open, loadHistory]);
 
   // Handle PAT verification
   async function handleVerifyToken() {
@@ -279,8 +279,7 @@ export function GitHubSyncModal({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <GitPullRequest className="h-3.5 w-3.5" />
-              [ Configure & Dispatch ]
+              <GitPullRequest className="h-3.5 w-3.5" />[ Configure & Dispatch ]
             </button>
             <button
               type="button"
@@ -292,8 +291,7 @@ export function GitHubSyncModal({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <History className="h-3.5 w-3.5" />
-              [ Sync Logs ({historyList.length}) ]
+              <History className="h-3.5 w-3.5" />[ Sync Logs ({historyList.length}) ]
             </button>
             <button
               type="button"
@@ -305,8 +303,7 @@ export function GitHubSyncModal({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <FileCode className="h-3.5 w-3.5" />
-              [ PR Spec Preview ]
+              <FileCode className="h-3.5 w-3.5" />[ PR Spec Preview ]
             </button>
           </div>
         </div>
@@ -420,8 +417,8 @@ export function GitHubSyncModal({
 
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-[11px] text-muted-foreground">
-                        Requires GitHub PAT with <code>repo</code> or <code>contents:write</code> &amp;{" "}
-                        <code>pull_requests:write</code>.{" "}
+                        Requires GitHub PAT with <code>repo</code> or <code>contents:write</code>{" "}
+                        &amp; <code>pull_requests:write</code>.{" "}
                         <a
                           href="https://github.com/settings/tokens/new?description=Brand%20Muse%20Design%20Tokens&scopes=repo"
                           target="_blank"
@@ -564,13 +561,13 @@ export function GitHubSyncModal({
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4" />
-                      [ Commit Tokens &amp; Open Pull Request ]
+                      <Sparkles className="h-4 w-4" />[ Commit Tokens &amp; Open Pull Request ]
                     </>
                   )}
                 </button>
                 <p className="mt-2 text-center font-mono text-[10px] text-muted-foreground">
-                  Creates branch <code>brand-muse/update-tokens-*</code> from {targetBranch || "main"}
+                  Creates branch <code>brand-muse/update-tokens-*</code> from{" "}
+                  {targetBranch || "main"}
                 </p>
               </div>
             </div>
@@ -675,7 +672,7 @@ export function GitHubSyncModal({
                 // AUTOMATED EDITORIAL PR SUMMARY PREVIEW
               </span>
               <div className="border border-[color:var(--border-subtle)] bg-muted/10 p-4 font-mono text-[11px] text-muted-foreground max-h-72 overflow-y-auto leading-relaxed whitespace-pre-wrap">
-{`## 🎨 Brand Muse Automated Design Tokens Sync
+                {`## 🎨 Brand Muse Automated Design Tokens Sync
 Dispatched on: ${new Date().toUTCString()}
 
 ### 📦 Updated Brand Kit: ${kitName}

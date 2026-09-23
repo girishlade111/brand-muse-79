@@ -52,7 +52,7 @@ export function GitHubSyncBadge({ kitId, kitName, className }: GitHubSyncBadgePr
     return () => {
       cancelled = true;
     };
-  }, [kitId]);
+  }, [kitId, getSyncs]);
 
   return (
     <>

@@ -191,10 +191,7 @@ describe("GitHub Sync Server Engine", () => {
         ],
       });
 
-      const repos = await executeFetchGitHubRepos(
-        { token: "ghp_mock_token" },
-        mockFetch as any,
-      );
+      const repos = await executeFetchGitHubRepos({ token: "ghp_mock_token" }, mockFetch as any);
 
       expect(repos.length).toBe(1);
       expect(repos[0].fullName).toBe("octocat/hello-world");

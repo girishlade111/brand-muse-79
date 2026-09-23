@@ -3335,7 +3335,8 @@ function ExportSection(props: {
               Automated GitHub Pull Request Dispatcher
             </h3>
             <p className="mt-1 font-[family-name:var(--font-libre)] text-xs text-muted-foreground">
-              Directly synchronize and commit tokens.css, tailwind.config.js, and tokens.json to your repository via atomic PRs.
+              Directly synchronize and commit tokens.css, tailwind.config.js, and tokens.json to
+              your repository via atomic PRs.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -3345,7 +3346,8 @@ function ExportSection(props: {
 
         <div className="mt-4 border-t border-border/40 pt-3 font-mono text-[10px] text-muted-foreground flex flex-wrap items-center justify-between gap-2">
           <span>
-            Committed Artifacts: <code className="text-foreground">tokens.css · tailwind.config.js · tokens.json</code>
+            Committed Artifacts:{" "}
+            <code className="text-foreground">tokens.css · tailwind.config.js · tokens.json</code>
           </span>
           <span className="text-green-600">● Encrypted PAT &amp; Git Data API</span>
         </div>
