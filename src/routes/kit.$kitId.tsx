@@ -625,11 +625,12 @@ function KitSideNav() {
                     setActive(s.id);
                   }
                 }}
-                className={`block rounded-full px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                className={`block px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors ${
                   isActive
-                    ? "bg-foreground/[0.06] text-foreground"
+                    ? "border-l-2 border-[#8B1A1A] bg-foreground/[0.06] text-foreground pl-2.5 font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+                style={{ borderRadius: 0 }}
               >
                 {s.label}
               </a>
