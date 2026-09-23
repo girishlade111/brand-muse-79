@@ -638,7 +638,7 @@ export function generateComponentHtmlCode(
 ): string {
   switch (componentId) {
     case "buttons-suite":
-      return `<!-- Brand Buttons Suite: Pure HTML5 + CSS Variables -->
+      return `<!-- Brand Buttons Suite: HTML5 + CSS Variables -->
 <style>
   .brand-btn-primary {
     display: inline-flex;
@@ -674,7 +674,7 @@ export function generateComponentHtmlCode(
 <button class="brand-btn-secondary">[ Secondary Action ]</button>`;
 
     case "feature-card":
-      return `<!-- Brand Feature Card: HTML + CSS Variables -->
+      return `<!-- Brand Feature Card: HTML5 + CSS Variables -->
 <div style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 24px; border-radius: 0;">
   <div style="font-family: var(--brand-font-mono); font-size: 10px; letter-spacing: 0.22em; color: var(--brand-muted-fg); text-transform: uppercase;">
     // ARCHITECTURE SPEC 01
@@ -687,8 +687,82 @@ export function generateComponentHtmlCode(
   </p>
 </div>`;
 
+    case "product-card":
+      return `<!-- Brand Product Card: HTML5 + CSS Variables -->
+<div style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 20px; border-radius: 0;">
+  <div style="aspect-ratio: 16/9; background: var(--brand-surface-raised); border: 1px solid var(--brand-border-subtle); display: flex; align-items: center; justify-content: center; font-family: var(--brand-font-mono); font-size: 11px; color: var(--brand-muted-fg);">
+    [ HARDWARE ARCHIVE 01 ]
+  </div>
+  <h4 style="font-family: var(--brand-font-display); font-size: 20px; color: var(--brand-text); margin: 16px 0 8px 0;">
+    Tactile Mechanical Unit
+  </h4>
+  <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--brand-font-mono);">
+    <span style="font-size: 16px; font-weight: bold; color: var(--brand-text);">$340.00</span>
+    <button style="border: 1px solid var(--brand-border); background: var(--brand-primary); color: var(--brand-primary-fg); padding: 8px 16px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; border-radius: 0; cursor: pointer;">
+      [ Acquire ]
+    </button>
+  </div>
+</div>`;
+
+    case "pricing-card":
+      return `<!-- Brand Pricing Card: HTML5 + CSS Variables -->
+<div style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 28px; border-radius: 0; font-family: var(--brand-font-mono);">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--brand-muted-fg);">// ENTERPRISE COHORT</span>
+    <span style="background: var(--brand-accent); color: var(--brand-accent-fg); padding: 2px 8px; font-size: 9px; text-transform: uppercase;">RECOMMENDED</span>
+  </div>
+  <div style="font-family: var(--brand-font-display); font-size: 36px; font-weight: bold; color: var(--brand-text); margin: 16px 0;">
+    $290 <span style="font-family: var(--brand-font-mono); font-size: 12px; color: var(--brand-muted-fg);">/ MO</span>
+  </div>
+  <button style="width: 100%; border: 1px solid var(--brand-border); background: var(--brand-primary); color: var(--brand-primary-fg); padding: 12px; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; border-radius: 0; cursor: pointer;">
+    [ SUBSCRIBE ]
+  </button>
+</div>`;
+
+    case "form-controls":
+      return `<!-- Brand Form Controls: HTML5 + CSS Variables -->
+<div style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 24px; border-radius: 0; font-family: var(--brand-font-mono);">
+  <label style="display: block; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--brand-text); margin-bottom: 8px;">
+    // ACCESS IDENTIFIER
+  </label>
+  <input type="text" placeholder="architect@studio.design" style="width: 100%; border: 1px solid var(--brand-border); background: var(--brand-bg); color: var(--brand-text); padding: 10px 12px; font-size: 12px; border-radius: 0; outline-color: var(--brand-ring);" />
+</div>`;
+
+    case "navigation-bar":
+      return `<!-- Brand Navigation Bar: HTML5 + CSS Variables -->
+<nav style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 16px 24px; border-radius: 0; display: flex; justify-content: space-between; align-items: center; font-family: var(--brand-font-mono);">
+  <span style="font-family: var(--brand-font-display); font-size: 20px; font-weight: bold; color: var(--brand-text);">${theme.brandName}</span>
+  <div style="display: flex; gap: 16px; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;">
+    <a href="#" style="color: var(--brand-text); text-decoration: none;">[ SPEC ]</a>
+    <a href="#" style="color: var(--brand-muted-fg); text-decoration: none;">[ TOKENS ]</a>
+  </div>
+</nav>`;
+
+    case "hero-header":
+      return `<!-- Brand Hero Header: HTML5 + CSS Variables -->
+<section style="border: 1px solid var(--brand-border); background: var(--brand-surface); padding: 48px 32px; border-radius: 0;">
+  <p style="font-family: var(--brand-font-mono); font-size: 11px; letter-spacing: 0.24em; color: var(--brand-accent); text-transform: uppercase;">
+    // ARCHITECTURAL IDENTITY SYSTEM
+  </p>
+  <h1 style="font-family: var(--brand-font-display); font-size: 48px; color: var(--brand-text); margin: 16px 0;">
+    Precision is not decoration.
+  </h1>
+  <button style="border: 1px solid var(--brand-border); background: var(--brand-primary); color: var(--brand-primary-fg); padding: 14px 28px; font-family: var(--brand-font-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; border-radius: 0; cursor: pointer;">
+    [ EXPLORE ARCHIVE ]
+  </button>
+</section>`;
+
+    case "alert-banners":
+      return `<!-- Brand Alert Banners: HTML5 + CSS Variables -->
+<div style="display: flex; flex-direction: column; gap: 8px; font-family: var(--brand-font-mono); font-size: 12px;">
+  <div style="border: 1px solid var(--brand-border); background: var(--brand-surface); color: var(--brand-text); padding: 12px; border-radius: 0; display: flex; justify-content: space-between;">
+    <span><strong style="color: var(--brand-accent);">[ SUCCESS ]</strong> Brand tokens verified.</span>
+    <span style="color: var(--brand-muted-fg);">200 OK</span>
+  </div>
+</div>`;
+
     default:
-      return `<!-- Brand Component: ${componentId} -->
+      return `<!-- Brand Component: ${componentId}: HTML5 + CSS Variables -->
 <div style="border: 1px solid var(--brand-border); background: var(--brand-surface); color: var(--brand-text); padding: 20px; border-radius: 0; font-family: var(--brand-font-mono);">
   [ ${componentId.toUpperCase()} RENDERED WITH BRAND TOKENS ]
 </div>`;

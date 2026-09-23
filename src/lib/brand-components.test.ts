@@ -128,7 +128,7 @@ describe("Interactive Brand UI Component Library — Engine & Codegen", () => {
       for (const comp of SHOWCASE_COMPONENTS) {
         const htmlCode = generateComponentHtmlCode(comp.id, theme);
         expect(htmlCode).toBeTruthy();
-        expect(htmlCode).toContain("Pure HTML5 + CSS Variables");
+        expect(htmlCode).toContain("HTML + CSS Variables");
         // Must reference --brand-* variables
         expect(htmlCode).toContain("var(--brand-");
         expect(htmlCode).not.toContain("#0A0A0A");
