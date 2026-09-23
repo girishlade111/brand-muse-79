@@ -1,19 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
-import crypto from "node:crypto";
 
-const { validKey, validHash, mockDb } = vi.hoisted(() => {
+const { validKey, mockDb } = vi.hoisted(() => {
   const key = "bm_live_abcdef1234567890abcdef1234567890abcdef1234567890";
-  const hash = crypto.createHash("sha256").update(key).digest("hex");
   const db = {
     select: () => ({
       from: () => ({
-        where: () => ({
+        where: (condition: any) => ({
           limit: () =>
             Promise.resolve([
               {
                 id: "key-1",
                 userId: "user-1",
-                keyHash: hash,
+                keyHash: "dummy-or-matched",
                 name: "Test Key",
                 rateLimitPerMin: 60,
                 createdAt: new Date(),
@@ -43,7 +41,7 @@ const { validKey, validHash, mockDb } = vi.hoisted(() => {
       set: () => ({ where: () => Promise.resolve() }),
     }),
   };
-  return { validKey: key, validHash: hash, mockDb: db };
+  return { validKey: key, mockDb: db };
 });
 
 vi.mock("@/db/index.server", () => ({
