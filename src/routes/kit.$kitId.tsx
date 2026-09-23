@@ -3089,7 +3089,104 @@ function ExportSection(props: {
             </div>
           )}
         </div>
-      )}
+      {/* Official Figma Plugin Bridge Card */}
+      <div
+        className="border border-[#0A0A0A] bg-card p-6 text-foreground"
+        style={{ borderRadius: 0 }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0A0A0A] pb-4">
+          <div>
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#8B1A1A]">
+              <span>// INTEGRATION BRIDGE</span>
+              <span>·</span>
+              <span>REST SYNC API</span>
+            </div>
+            <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-2xl font-bold tracking-tight">
+              Official Figma Plugin Bridge
+            </h3>
+            <p className="mt-1 font-[family-name:var(--font-libre)] text-xs text-muted-foreground">
+              Directly synchronize Figma Local Variables (Colors, Spacing, Radius), Text Styles, and
+              Vector Logos with 2-way diff tracking.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const apiEndpoint = `${window.location.origin}/api/v1/kits/${props.kitId}/tokens${props.shareToken ? `?token=${props.shareToken}` : ""}`;
+                window.open(apiEndpoint, "_blank");
+              }}
+              className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+              style={{ borderRadius: 0 }}
+            >
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+              Test API Endpoint
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              // BRAND KIT ID
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={props.kitId}
+                className="font-mono text-xs bg-muted/20"
+                style={{ borderRadius: 0 }}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => copy(props.kitId)}
+                style={{ borderRadius: 0 }}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              // SYNC ACCESS TOKEN (SHARE TOKEN)
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={
+                  props.shareToken ||
+                  (props.isPublic
+                    ? "Public Access Enabled"
+                    : "Enable Public Share to generate token")
+                }
+                className="font-mono text-xs bg-muted/20"
+                style={{ borderRadius: 0 }}
+              />
+              {props.shareToken && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copy(props.shareToken!)}
+                  style={{ borderRadius: 0 }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 border-t border-border/40 pt-3 font-mono text-[10px] text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Plugin Directory: <code className="text-foreground">/figma-plugin</code> (Import
+            manifest.json in Figma Developer Mode)
+          </span>
+          <span className="text-[#8B1A1A]">● W3C DTCG + Figma Variables Compliant</span>
+        </div>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <ExportBlock
