@@ -113,8 +113,8 @@ describe("Interactive Brand UI Component Library — Engine & Codegen", () => {
       for (const comp of SHOWCASE_COMPONENTS) {
         const reactCode = generateComponentReactCode(comp.id, theme);
         expect(reactCode).toBeTruthy();
-        expect(reactCode).toContain("import React");
         expect(reactCode).toContain("export function");
+        expect(reactCode).toContain("return (");
         // Must use CSS custom properties or dynamic classes, never hardcoded raw hex colors
         expect(reactCode).toContain("var(--brand-");
         expect(reactCode).not.toContain("#0A0A0A");
@@ -128,7 +128,7 @@ describe("Interactive Brand UI Component Library — Engine & Codegen", () => {
       for (const comp of SHOWCASE_COMPONENTS) {
         const htmlCode = generateComponentHtmlCode(comp.id, theme);
         expect(htmlCode).toBeTruthy();
-        expect(htmlCode).toContain("<!-- Component:");
+        expect(htmlCode).toContain("Pure HTML5 + CSS Variables");
         // Must reference --brand-* variables
         expect(htmlCode).toContain("var(--brand-");
         expect(htmlCode).not.toContain("#0A0A0A");

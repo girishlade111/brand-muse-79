@@ -771,3 +771,35 @@ export const DETERMINISTIC_AI_COMPONENTS: Record<
 </div>`,
   },
 };
+
+export function getDeterministicFallbackComponent(
+  prompt: string,
+  theme: BrandComponentTheme,
+) {
+  const p = prompt.toLowerCase();
+  const isCheckout =
+    p.includes("checkout") ||
+    p.includes("pricing") ||
+    p.includes("order") ||
+    p.includes("summary") ||
+    p.includes("cart");
+  const template = isCheckout
+    ? DETERMINISTIC_AI_COMPONENTS.checkout
+    : DETERMINISTIC_AI_COMPONENTS.testimonial;
+  const compName = isCheckout ? "CheckoutSummary" : "TestimonialSlider";
+
+  return {
+    componentName: compName,
+    description: template.description,
+    reactCode: template.jsx,
+    htmlCode: template.html,
+    wcagCompliance: "WCAG AA Compliant (4.5:1+ Contrast)",
+    tokensUsed: [
+      "--brand-primary",
+      "--brand-surface",
+      "--brand-text",
+      "--brand-border",
+      "--brand-font-mono",
+    ],
+  };
+}
