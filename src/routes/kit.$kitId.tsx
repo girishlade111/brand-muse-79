@@ -89,6 +89,7 @@ import { ComponentSandbox } from "@/components/component-sandbox";
 import { MockupsStudio } from "@/components/mockups/mockups-studio";
 import { BrandComponentLibrary } from "@/components/brand-components/brand-component-library";
 import { LogoVectorizerStudio } from "@/components/vectorizer/logo-vectorizer-studio";
+import { GitHubSyncBadge } from "@/components/github-sync-badge";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -276,12 +277,15 @@ function KitPage() {
                 </span>
               )}
             </div>
-            <span
-              className="font-mono text-[11px] uppercase tracking-[0.22em]"
-              style={{ color: status === "error" ? "var(--accent)" : "var(--muted-foreground)" }}
-            >
-              // {status}
-            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <GitHubSyncBadge kitId={kit.id} kitName={kit.name} />
+              <span
+                className="font-mono text-[11px] uppercase tracking-[0.22em]"
+                style={{ color: status === "error" ? "var(--accent)" : "var(--muted-foreground)" }}
+              >
+                // {status}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -3312,6 +3316,38 @@ function ExportSection(props: {
             manifest.json in Figma Developer Mode)
           </span>
           <span className="text-[#8B1A1A]">● W3C DTCG + Figma Variables Compliant</span>
+        </div>
+      </div>
+
+      {/* Automated GitHub Pull Request Dispatcher Bridge Card */}
+      <div
+        className="border border-[#0A0A0A] bg-card p-6 text-foreground"
+        style={{ borderRadius: 0 }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0A0A0A] pb-4">
+          <div>
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#8B1A1A]">
+              <span>// INTEGRATION BRIDGE</span>
+              <span>·</span>
+              <span>GITHUB PULL REQUEST DISPATCHER</span>
+            </div>
+            <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-2xl font-bold tracking-tight">
+              Automated GitHub Pull Request Dispatcher
+            </h3>
+            <p className="mt-1 font-[family-name:var(--font-libre)] text-xs text-muted-foreground">
+              Directly synchronize and commit tokens.css, tailwind.config.js, and tokens.json to your repository via atomic PRs.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <GitHubSyncBadge kitId={props.kitId} kitName={props.kitName} />
+          </div>
+        </div>
+
+        <div className="mt-4 border-t border-border/40 pt-3 font-mono text-[10px] text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Committed Artifacts: <code className="text-foreground">tokens.css · tailwind.config.js · tokens.json</code>
+          </span>
+          <span className="text-green-600">● Encrypted PAT &amp; Git Data API</span>
         </div>
       </div>
 

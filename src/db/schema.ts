@@ -140,6 +140,21 @@ export const userRoles = pgTable("user_roles", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const kitGitSyncs = pgTable("kit_git_syncs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  kitId: uuid("kit_id")
+    .notNull()
+    .references(() => brandKits.id, { onDelete: "cascade" }),
+  repoName: text("repo_name").notNull(),
+  branchName: text("branch_name"),
+  prUrl: text("pr_url"),
+  prNumber: integer("pr_number"),
+  status: text("status").notNull().default("pending"),
+  commitSha: text("commit_sha"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type BrandKit = typeof brandKits.$inferSelect;
 export type NewBrandKit = typeof brandKits.$inferInsert;
 export type KitColor = typeof kitColors.$inferSelect;
@@ -147,6 +162,9 @@ export type KitFont = typeof kitFonts.$inferSelect;
 export type KitAsset = typeof kitAssets.$inferSelect;
 export type KitToken = typeof kitTokens.$inferSelect;
 export type KitVoice = typeof kitVoice.$inferSelect;
+export type KitGitSync = typeof kitGitSyncs.$inferSelect;
+export type NewKitGitSync = typeof kitGitSyncs.$inferInsert;
 export type DesignDocVersion = typeof designDocVersions.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type UserRole = typeof userRoles.$inferSelect;
+
