@@ -71,8 +71,15 @@ function copyToClipboard(text: string, label: string = "Copied") {
   }
 }
 
-export function PublishedPortalPage() {
-  const { slug } = Route.useParams();
+export function PublishedPortalPage(props?: { overrideSlug?: string }) {
+  let routeSlug = "";
+  try {
+    const params = Route.useParams();
+    routeSlug = params?.slug || "";
+  } catch {
+    routeSlug = "";
+  }
+  const slug = props?.overrideSlug || routeSlug;
   const fetchPortal = useServerFn(getPortalData);
   const unlockPortal = useServerFn(verifyPortalPassword);
 

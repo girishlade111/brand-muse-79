@@ -3,6 +3,8 @@ import { BookOpen } from "lucide-react";
 import { IngestionPanel } from "@/components/ingestion-panel";
 import { RecentKits } from "@/components/recent-kits";
 import { StartHereButton } from "@/components/start-here-button";
+import { PublishedPortalPage } from "./p.$slug";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,7 +28,30 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+function isCustomDomain(hostname: string) {
+  if (!hostname) return false;
+  if (hostname === "localhost" || hostname === "127.0.0.1") return false;
+  if (hostname.endsWith(".lovable.app") || hostname === "lovable.app") return false;
+  if (hostname.endsWith("branddna.app") || hostname === "branddna.app") return false;
+  if (hostname.endsWith(".internal")) return false;
+  return true;
+}
+
 function Landing() {
+  const [customHost, setCustomHost] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      if (isCustomDomain(host)) {
+        setCustomHost(host);
+      }
+    }
+  }, []);
+
+  if (customHost) {
+    return <PublishedPortalPage overrideSlug={customHost} />;
+  }
   return (
     <>
       <style>{css}</style>
