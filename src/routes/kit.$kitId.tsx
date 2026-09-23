@@ -51,6 +51,11 @@ import {
   buildFlutterTheme,
   buildReactNativeTheme,
   buildSwiftColors,
+  buildFlutterBrandTheme,
+  buildSwiftBrandColors,
+  buildComposeColor,
+  buildComposeType,
+  buildReactNativeBrandTokens,
   buildDtcgTokens,
   downloadBlob,
   slug,
@@ -69,6 +74,9 @@ import {
   Check,
   FileText,
   Plus,
+  Smartphone,
+  Globe,
+  Layers,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
