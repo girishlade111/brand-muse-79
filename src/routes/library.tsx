@@ -15,6 +15,7 @@ import {
   listKitsByOwner,
 } from "@/lib/kits.functions";
 import { toast } from "sonner";
+import { DeveloperSettings } from "@/components/developer-settings";
 
 export const Route = createFileRoute("/library")({
   component: LibraryPage,
