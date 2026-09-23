@@ -1,14 +1,69 @@
 import { describe, it, expect, vi } from "vitest";
+import crypto from "node:crypto";
+
+const { validKey, validHash, mockDb } = vi.hoisted(() => {
+  const key = "bm_live_abcdef1234567890abcdef1234567890abcdef1234567890";
+  const hash = crypto.createHash("sha256").update(key).digest("hex");
+  const db = {
+    select: () => ({
+      from: () => ({
+        where: () => ({
+          limit: () =>
+            Promise.resolve([
+              {
+                id: "key-1",
+                userId: "user-1",
+                keyHash: hash,
+                name: "Test Key",
+                rateLimitPerMin: 60,
+                createdAt: new Date(),
+              },
+            ]),
+          orderBy: () => ({
+            limit: () => Promise.resolve([]),
+          }),
+        }),
+      }),
+    }),
+    insert: () => ({
+      values: (val: any) => ({
+        returning: () =>
+          Promise.resolve([
+            {
+              id: "mock-kit-uuid-123",
+              name: val.name || "Test Kit",
+              status: "processing",
+              createdAt: new Date(),
+              ...val,
+            },
+          ]),
+      }),
+    }),
+    update: () => ({
+      set: () => ({ where: () => Promise.resolve() }),
+    }),
+  };
+  return { validKey: key, validHash: hash, mockDb: db };
+});
+
+vi.mock("@/db/index.server", () => ({
+  db: mockDb,
+  apiKeys: { keyHash: "key_hash", id: "id" },
+  brandKits: { id: "id" },
+  kitColors: { kitId: "kit_id" },
+  kitFonts: { kitId: "kit_id" },
+  kitTokens: { kitId: "kit_id" },
+  kitAssets: { kitId: "kit_id" },
+  kitVoice: { kitId: "kit_id" },
+  webhookSubscriptions: { userId: "user_id" },
+}));
+
 import extractHandler from "../../server/api/v1/extract.post";
 import kitDetailHandler from "../../server/api/v1/kits/[kitId]/index.get";
 import kitCssHandler from "../../server/api/v1/kits/[kitId]/css.get";
 import openApiHandler from "../../server/api/v1/openapi.json.get";
-import { hashApiKey } from "./api-auth.server";
 
 describe("Developer REST API Endpoints Integration", () => {
-  const validKey = "bm_live_abcdef1234567890abcdef1234567890abcdef1234567890";
-  const validHash = hashApiKey(validKey);
-
   describe("POST /api/v1/extract", () => {
     it("rejects unauthorized request with 401", async () => {
       const event = {
@@ -25,35 +80,6 @@ describe("Developer REST API Endpoints Integration", () => {
     });
 
     it("rejects invalid payload missing both url and document_url with 400", async () => {
-      // Mock db containing valid API key
-      vi.mock("@/db/index.server", async (importOriginal) => {
-        const actual = await importOriginal<any>();
-        return {
-          ...actual,
-          db: {
-            ...actual.db,
-            select: () => ({
-              from: () => ({
-                where: () => ({
-                  limit: () =>
-                    Promise.resolve([
-                      {
-                        id: "key-1",
-                        userId: "user-1",
-                        keyHash: validHash,
-                        rateLimitPerMin: 60,
-                      },
-                    ]),
-                }),
-              }),
-            }),
-            update: () => ({
-              set: () => ({ where: () => Promise.resolve() }),
-            }),
-          },
-        };
-      });
-
       const event = {
         req: new Request("https://api.brandmuse.io/api/v1/extract", {
           method: "POST",
@@ -65,6 +91,21 @@ describe("Developer REST API Endpoints Integration", () => {
       const res = await extractHandler(event);
       expect(res.status).toBe(400);
       expect(res.error).toContain("Missing required parameter");
+    });
+
+    it("initiates extraction and returns kit_id with 202 on valid payload", async () => {
+      const event = {
+        req: new Request("https://api.brandmuse.io/api/v1/extract", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${validKey}` },
+        }),
+        readBody: async () => ({ url: "https://stripe.com" }),
+      };
+
+      const res = await extractHandler(event);
+      expect(res.status).toBe("processing");
+      expect(res.kit_id).toBe("mock-kit-uuid-123");
+      expect(res.source_url).toBe("https://stripe.com");
     });
   });
 
@@ -81,7 +122,7 @@ describe("Developer REST API Endpoints Integration", () => {
   });
 
   describe("GET /api/v1/kits/:id/css", () => {
-    it("returns 400 if kitId is missing from path", async () => {
+    it("returns error comment if kitId is missing from path", async () => {
       const event = {
         req: new Request("https://api.brandmuse.io/api/v1/kits//css"),
       };
