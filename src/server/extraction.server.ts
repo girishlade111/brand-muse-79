@@ -19,7 +19,7 @@ import { probeLogos } from "./logo-probe.server";
 // fragment, trailing slash, host case, default port) collapse to the same key.
 // Also collapses the file basename so `/images/logo.svg` and `/cdn/logo.svg`
 // dedupe within the same `kind`.
-function assetDedupKey(kind: string, url: string): string {
+export function assetDedupKey(kind: string, url: string): string {
   let key = url;
   try {
     const u = new URL(url);
@@ -44,7 +44,7 @@ function assetDedupKey(kind: string, url: string): string {
   return `${kind}::${key}::${basename}`;
 }
 
-function dedupAssetsByKey<T extends { kind: string; url: string }>(items: T[]): T[] {
+export function dedupAssetsByKey<T extends { kind: string; url: string }>(items: T[]): T[] {
   const seenFull = new Set<string>();
   const seenBasename = new Set<string>();
   const out: T[] = [];
@@ -64,7 +64,7 @@ function dedupAssetsByKey<T extends { kind: string; url: string }>(items: T[]): 
 
 // Scan raw HTML for additional logo-ish images (logomarks, alternate logos, SVGs).
 // Returns absolute URLs classified as logo / logo-mark / wordmark.
-function harvestLogosFromHtml(html: string, baseUrl: string): Array<{ kind: string; url: string }> {
+export function harvestLogosFromHtml(html: string, baseUrl: string): Array<{ kind: string; url: string }> {
   const out: Array<{ kind: string; url: string }> = [];
   const seen = new Set<string>();
   const base = (() => {
@@ -283,7 +283,7 @@ const ExtractionSchema = {
   required: ["name", "colors", "fonts", "tokens", "voice", "assets"],
 };
 
-type Extraction = {
+export type Extraction = {
   name: string;
   summary?: string;
   colors: Array<{ hex: string; role: string; name: string }>;
@@ -326,7 +326,7 @@ type Extraction = {
   };
 };
 
-function fallbackExtraction(input: {
+export function fallbackExtraction(input: {
   url?: string;
   manual?: { brandName?: string; hexColors?: string[]; fontFamilies?: string[] };
   cssColors?: ColorObservation[];
