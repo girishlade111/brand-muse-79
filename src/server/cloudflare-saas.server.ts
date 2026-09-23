@@ -50,6 +50,12 @@ export function normalizeCustomDomain(rawDomain: string): string {
   domain = domain.replace(/\/.*$/, "");
   domain = domain.replace(/:\d+$/, "");
 
+  // Prevent reserving system domains
+  const reserved = ["localhost", "branddna.app", "lovable.app", "brandmuse.app"];
+  if (reserved.some((r) => domain === r || domain.endsWith("." + r))) {
+    throw new Error(`Domain "${domain}" cannot be used as a custom domain.`);
+  }
+
   // Domain regex: must have at least one dot, valid labels
   const domainRegex = /^(?!-)[a-z0-9-]{1,63}(?<!-)(\.[a-z0-9-]{1,63})+$/;
   if (!domainRegex.test(domain)) {
@@ -58,11 +64,7 @@ export function normalizeCustomDomain(rawDomain: string): string {
     );
   }
 
-  // Prevent reserving system domains
-  const reserved = ["localhost", "branddna.app", "lovable.app", "brandmuse.app"];
-  if (reserved.some((r) => domain === r || domain.endsWith("." + r))) {
-    throw new Error(`Domain "${domain}" cannot be used as a custom domain.`);
-  }
+  return domain;
 
   return domain;
 }
