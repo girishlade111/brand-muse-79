@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeftRight, Check, Loader2, Minus, Trophy } from "lucide-react";
+import { ArrowLeftRight, Check, FileDown, Loader2, Minus, Trophy } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import {
   HueStrip,
@@ -11,11 +11,18 @@ import {
   VoiceSpectrumRow,
   WarmCoolBar,
 } from "@/components/intelligence-charts";
+import { ColorWheelChart, type ColorWheelSeries } from "@/components/color-wheel-chart";
+import {
+  CompetitorRadarChart,
+  BrandToneScatterQuadrant,
+  TypographyClassificationGrid,
+  type CompetitorKitProfile,
+} from "@/components/competitor-charts";
 import { getAnonToken, getAnonTokenHistory } from "@/lib/anon";
 import { readKitsCache, writeKitsCache } from "@/lib/kits-cache";
 import { useAutoImportFonts, renderFamilyFor } from "@/lib/font-loader";
 import { getKit, listKitsByOwner } from "@/lib/kits.functions";
-import { analyzeMarketNiche } from "@/lib/intelligence.functions";
+import { analyzeMarketNiche, analyzeMarketWhitespace } from "@/lib/intelligence.functions";
 import { contrastRatio, isValidHex, normalizeHex, relativeLuminance } from "@/lib/color";
 import {
   SERIES_INK,
@@ -25,7 +32,7 @@ import {
   buildComparisonMatrix,
   type ComparedKit,
 } from "@/lib/intelligence";
-import type { MarketNiche } from "@/server/ai.server";
+import type { MarketNiche, MarketWhitespaceAnalysis } from "@/server/ai.server";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
@@ -351,6 +358,7 @@ function ComparePage() {
   const list = useServerFn(listKitsByOwner);
   const fetchKit = useServerFn(getKit);
   const runNiche = useServerFn(analyzeMarketNiche);
+  const runWhitespaceFn = useServerFn(analyzeMarketWhitespace);
 
   const [kits, setKits] = useState<KitSummary[]>([]);
   const [loadingKits, setLoadingKits] = useState(true);
@@ -360,6 +368,9 @@ function ComparePage() {
   const [dId, setDId] = useState<string | undefined>(search.d);
   const [niche, setNiche] = useState<MarketNiche | null>(null);
   const [nicheBusy, setNicheBusy] = useState(false);
+  const [whitespace, setWhitespace] = useState<MarketWhitespaceAnalysis | null>(null);
+  const [whitespaceBusy, setWhitespaceBusy] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const slotA = useKitSlot(aId, ownerToken, fetchKit);
   const slotB = useKitSlot(bId, ownerToken, fetchKit);
@@ -455,9 +466,10 @@ function ComparePage() {
   const activeIds = useMemo(() => activeKits.map((k) => k.kit.id), [activeKits]);
   const activeKey = activeIds.join("|");
 
-  // Reset the white-space report whenever the cohort changes.
+  // Reset all AI reports whenever the cohort changes.
   useEffect(() => {
     setNiche(null);
+    setWhitespace(null);
   }, [activeKey]);
 
   const compared: ComparedKit[] = useMemo(
@@ -524,13 +536,78 @@ function ComparePage() {
     }
   }
 
+  async function runStrategicWhitespace() {
+    if (whitespaceBusy || activeIds.length < 2) return;
+    setWhitespaceBusy(true);
+    try {
+      const res = await runWhitespaceFn({ data: { kitIds: activeIds.slice(0, 4) } });
+      setWhitespace(res);
+      toast.success("Strategic analysis complete");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Strategic analysis failed");
+    } finally {
+      setWhitespaceBusy(false);
+    }
+  }
+
+  function exportPdf() {
+    const style = document.createElement("style");
+    style.id = "brand-muse-print-style";
+    style.innerHTML = `
+      @media print {
+        body * { visibility: hidden !important; }
+        #bm-report-root, #bm-report-root * { visibility: visible !important; }
+        #bm-report-root { position: absolute; inset: 0; padding: 32px; background: #F4EFE6; }
+        .no-print { display: none !important; }
+        @page { margin: 12mm; size: A4 landscape; }
+      }
+    `;
+    document.head.appendChild(style);
+    window.print();
+    setTimeout(() => {
+      document.getElementById("brand-muse-print-style")?.remove();
+    }, 1000);
+  }
+
   const comparing = activeKits.length >= 2;
   const pairwise = !!(aKit && bKit && aId !== bId);
+
+  // Derive processing / partial kit badges
+  const kitStatusMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const k of activeKits) m.set(k.kit.id, k.kit.status ?? "ready");
+    return m;
+  }, [activeKits]);
+
+  // Build CompetitorKitProfile[] for new visualizations
+  const competitorProfiles: CompetitorKitProfile[] = useMemo(
+    () =>
+      activeKits.map((k, i) => ({
+        id: k.kit.id,
+        name: k.kit.name,
+        colorProfile: colorProfiles[i]?.profile ?? analyzeKitColors([]),
+        typeProfile: typeProfiles[i]?.profile ?? analyzeKitType([]),
+        voiceProfile: voiceProfiles[i]?.profile ?? analyzeKitVoice(null),
+        rawFonts: k.fonts,
+      })),
+    [activeKits, colorProfiles, typeProfiles, voiceProfiles],
+  );
+
+  // Build ColorWheelSeries[] for the 360° color wheel
+  const colorWheelSeries: ColorWheelSeries[] = useMemo(
+    () =>
+      activeKits.map((k) => ({
+        id: k.kit.id,
+        name: k.kit.name,
+        colors: k.colors,
+      })),
+    [activeKits],
+  );
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-6 py-16">
+      <main className="mx-auto max-w-7xl px-6 py-16" id="bm-report-root" ref={reportRef}>
         <div className="mb-10">
           <p className={eyebrow}>{"// compare"}</p>
           <h1
@@ -546,8 +623,8 @@ function ComparePage() {
             Two to four kits, side by side.
           </h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-            Pick up to four kits from your library — color temperature and vibrancy radar,
-            typography DNA, voice spectrum, and AI white-space discovery, with accessibility
+            Pick up to four kits from your library — 360° color wheel, typography DNA, brand
+            tone quadrant, voice spectrum, AI strategic white-space discovery, with accessibility
             contrast checks and a per-section verdict.
           </p>
         </div>
@@ -629,6 +706,27 @@ function ComparePage() {
               )
             )}
 
+            {/* Kit status badges for processing/partial kits */}
+            {activeKits.some((k) => k.kit.status !== "ready") && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                {activeKits
+                  .filter((k) => k.kit.status !== "ready")
+                  .map((k, i) => (
+                    <span
+                      key={k.kit.id}
+                      className="inline-flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em]"
+                      style={{
+                        borderColor: "rgba(10,10,10,0.30)",
+                        color: SERIES_INK[i % SERIES_INK.length],
+                      }}
+                    >
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                      {k.kit.name} [{(k.kit.status ?? "processing").toUpperCase()}]
+                    </span>
+                  ))}
+              </div>
+            )}
+
             <IntelligenceSections
               activeKits={activeKits}
               matrix={matrix}
@@ -638,6 +736,13 @@ function ComparePage() {
               niche={niche}
               nicheBusy={nicheBusy}
               onRunWhiteSpace={runWhiteSpace}
+              whitespace={whitespace}
+              whitespaceBusy={whitespaceBusy}
+              onRunStrategicWhitespace={runStrategicWhitespace}
+              onExportPdf={exportPdf}
+              competitorProfiles={competitorProfiles}
+              colorWheelSeries={colorWheelSeries}
+              kitStatusMap={kitStatusMap}
             />
 
             {pairwise && aKit && bKit && (
@@ -1388,6 +1493,13 @@ function IntelligenceSections({
   niche,
   nicheBusy,
   onRunWhiteSpace,
+  whitespace,
+  whitespaceBusy,
+  onRunStrategicWhitespace,
+  onExportPdf,
+  competitorProfiles,
+  colorWheelSeries,
+  kitStatusMap,
 }: {
   activeKits: FullKit[];
   matrix: ReturnType<typeof buildComparisonMatrix>;
@@ -1397,6 +1509,13 @@ function IntelligenceSections({
   niche: MarketNiche | null;
   nicheBusy: boolean;
   onRunWhiteSpace: () => void;
+  whitespace: MarketWhitespaceAnalysis | null;
+  whitespaceBusy: boolean;
+  onRunStrategicWhitespace: () => void;
+  onExportPdf: () => void;
+  competitorProfiles: CompetitorKitProfile[];
+  colorWheelSeries: ColorWheelSeries[];
+  kitStatusMap: Map<string, string>;
 }) {
   return (
     <>
@@ -1450,14 +1569,15 @@ function IntelligenceSections({
         </section>
       </div>
 
+      {/* ── 02 Typography DNA + Classification Grid ────────────────── */}
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
         style={{ borderColor: "rgba(10,10,10,0.20)" }}
       >
         <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
-          02 — Typography DNA
+          02 — Typography DNA &amp; classification
         </h2>
-        <span className={`${mono} text-muted-foreground`}>serif / sans / mono</span>
+        <span className={`${mono} text-muted-foreground`}>serif / sans / mono / display</span>
       </div>
       <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
         <div className="grid gap-6 md:grid-cols-2">
@@ -1474,6 +1594,9 @@ function IntelligenceSections({
           ))}
         </div>
       </section>
+      <div className="mt-6">
+        <TypographyClassificationGrid competitors={competitorProfiles} />
+      </div>
 
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
@@ -1526,6 +1649,7 @@ function IntelligenceSections({
         </div>
       </section>
 
+      {/* ── 04 Market Niche (legacy) ──────────────────────────────────── */}
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
         style={{ borderColor: "rgba(10,10,10,0.20)" }}
@@ -1619,6 +1743,155 @@ function IntelligenceSections({
             >
               {nicheBusy ? "Re-analyzing…" : "Re-analyze"}
             </button>
+          </div>
+        )}
+      </section>
+
+      {/* ── 05 Strategic White-Space Discovery ────────────────────────── */}
+      <div
+        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+      >
+        <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
+          05 — Strategic white-space discovery
+        </h2>
+        <span className={`${mono} text-muted-foreground`}>Color · Tone · 3 Strategic Pivots</span>
+      </div>
+      <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
+        {!whitespace ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className={`${mono} text-muted-foreground`}>
+              Gemini will evaluate {activeKits.length} brand identities for under-utilized
+              hues, untapped tone archetypes, and 3 strategic identity pivots.
+            </p>
+            <button
+              type="button"
+              onClick={onRunStrategicWhitespace}
+              disabled={whitespaceBusy}
+              className="border border-[#8B1A1A] bg-[#8B1A1A] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#F4EFE6] hover:opacity-90 disabled:opacity-50"
+              style={{ borderRadius: 0 }}
+            >
+              {whitespaceBusy ? "[ ANALYZING… ]" : "[ RUN STRATEGIC ANALYSIS ]"}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Executive Summary */}
+            <div className="border-l-2 border-[#8B1A1A] pl-4">
+              <p className={`${mono} mb-1 text-[#8B1A1A]`}>Executive Summary</p>
+              <p className="text-sm leading-relaxed text-foreground">{whitespace.executiveSummary}</p>
+            </div>
+
+            {/* Color White Space */}
+            <div>
+              <p className={`${mono} mb-3 text-foreground`}>Color White Space — Under-Utilized Hues</p>
+              <p className={`${mono} mb-3 text-muted-foreground text-xs`}>{whitespace.colorWhiteSpace.sectorDominance}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {whitespace.colorWhiteSpace.underutilizedHues.map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-3 border p-3"
+                    style={{ borderColor: "rgba(10,10,10,0.15)" }}
+                  >
+                    <span
+                      className="mt-0.5 h-8 w-8 shrink-0 border"
+                      style={{ background: h.exemplarHex, borderColor: "rgba(10,10,10,0.20)" }}
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <p className={`${mono} text-foreground`}>{h.hue}</p>
+                        <p className={`${mono} text-muted-foreground`}>{h.rangeDegrees}</p>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{h.rationale}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>{whitespace.colorWhiteSpace.gapOpportunity}</p>
+            </div>
+
+            {/* Tone Differentiation */}
+            <div>
+              <p className={`${mono} mb-3 text-foreground`}>Tone Differentiation — Voice Archetypes</p>
+              <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                {whitespace.toneDifferentiation.competitorArchetypes.map((a, i) => (
+                  <div
+                    key={i}
+                    className="border p-3"
+                    style={{
+                      borderColor: "rgba(10,10,10,0.15)",
+                      borderLeft: `3px solid ${SERIES_INK[i % SERIES_INK.length]}`,
+                    }}
+                  >
+                    <p className={`${mono} text-foreground`}>{a.kitName}</p>
+                    <p className={`${mono} text-xs text-muted-foreground`}>{a.archetype}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{a.toneSummary}</p>
+                  </div>
+                ))}
+              </div>
+              <p className={`${mono} mb-2 text-foreground`}>Untapped Archetypes</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {whitespace.toneDifferentiation.untappedArchetypes.map((a, i) => (
+                  <div
+                    key={i}
+                    className="border border-dashed p-3"
+                    style={{ borderColor: "rgba(10,10,10,0.20)" }}
+                  >
+                    <p className={`${mono} text-foreground`}>[ OPEN ] {a.archetype}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{a.description}</p>
+                    <p className={`${mono} mt-2 text-xs text-[#8B1A1A]`}>↳ {a.whyItWorks}</p>
+                  </div>
+                ))}
+              </div>
+              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>{whitespace.toneDifferentiation.voiceOpportunity}</p>
+            </div>
+
+            {/* 3 Actionable Pivots */}
+            <div>
+              <p className={`${mono} mb-3 text-foreground`}>3 Actionable Strategic Pivots</p>
+              <div className="space-y-4">
+                {whitespace.actionableRecommendations.slice(0, 3).map((rec, i) => (
+                  <div
+                    key={i}
+                    className="border p-4"
+                    style={{ borderColor: "rgba(10,10,10,0.20)" }}
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`${mono} inline-flex h-5 w-5 items-center justify-center bg-[#0A0A0A] text-[#F4EFE6]`}
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <p className="font-mono text-[12px] font-semibold text-foreground">
+                          {rec.title}
+                        </p>
+                      </div>
+                      <span
+                        className={`${mono} border px-2 py-0.5 text-[9px] text-muted-foreground`}
+                        style={{ borderColor: "rgba(10,10,10,0.20)" }}
+                      >
+                        {rec.pillar}
+                      </span>
+                    </div>
+                    <p className="mb-1.5 text-sm text-foreground">{rec.strategicPivot}</p>
+                    <p className={`${mono} text-xs text-[#8B1A1A]`}>↳ {rec.competitiveAdvantage}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Re-analyze */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onRunStrategicWhitespace}
+                disabled={whitespaceBusy}
+                className={ghostBtn}
+              >
+                {whitespaceBusy ? "Re-analyzing…" : "Re-analyze"}
+              </button>
+            </div>
           </div>
         )}
       </section>
