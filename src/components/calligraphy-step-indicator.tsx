@@ -8,7 +8,7 @@ import {
   type ExtractionStepName,
   type ExtractionStatus,
   type StepMilestone,
-} from "@/server/job-queue.server";
+} from "@/lib/extraction-milestones";
 
 export interface CalligraphyStepIndicatorProps {
   kitId?: string | null;
