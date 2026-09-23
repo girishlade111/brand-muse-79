@@ -165,12 +165,11 @@ export function resolveMobilePalette(colors: MobileColorToken[]): ResolvedMobile
     });
   };
 
-  const primaryToken =
-    findRole(["primary", "brand", "main"]) ?? colors[0] ?? { hex: "#0A0A0A", role: "primary" };
+  const primaryToken = findRole(["primary", "brand", "main"]) ??
+    colors[0] ?? { hex: "#0A0A0A", role: "primary" };
   const primary = cleanHex(primaryToken.hex, "#0A0A0A");
 
-  const secondaryToken =
-    findRole(["secondary", "sub", "alt"]) ??
+  const secondaryToken = findRole(["secondary", "sub", "alt"]) ??
     colors.find((c) => cleanHex(c.hex) !== primary) ?? { hex: "#5F5A52", role: "secondary" };
   const secondary = cleanHex(secondaryToken.hex, "#5F5A52");
 
@@ -242,17 +241,18 @@ export function getFontFamilies(fonts: MobileFontToken[]): {
   body: string;
   mono: string;
 } {
-  const displayFont =
-    fonts.find((f) => /display|heading|header|title/i.test(`${f.role ?? ""} ${f.family}`)) ??
+  const displayFont = fonts.find((f) =>
+    /display|heading|header|title/i.test(`${f.role ?? ""} ${f.family}`),
+  ) ??
     fonts[0] ?? { family: "Cormorant Garamond" };
 
-  const bodyFont =
-    fonts.find((f) => /body|text|sans|content/i.test(`${f.role ?? ""} ${f.family}`)) ??
+  const bodyFont = fonts.find((f) =>
+    /body|text|sans|content/i.test(`${f.role ?? ""} ${f.family}`),
+  ) ??
     fonts.find((f) => f.family !== displayFont.family) ??
     fonts[0] ?? { family: "Libre Baskerville" };
 
-  const monoFont =
-    fonts.find((f) => /mono|code|terminal/i.test(`${f.role ?? ""} ${f.family}`)) ??
+  const monoFont = fonts.find((f) => /mono|code|terminal/i.test(`${f.role ?? ""} ${f.family}`)) ??
     fonts.find((f) => /courier|fira|mono|source code|jet/i.test(f.family)) ?? {
       family: "Courier Prime",
     };
