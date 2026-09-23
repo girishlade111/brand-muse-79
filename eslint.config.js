@@ -18,6 +18,12 @@ export default tseslint.config(
       ".wrangler",
       "test-results",
       "e2e",
+      // Generated shadcn/ui component files — intentionally export both
+      // components and utility fns (e.g. buttonVariants). Restructuring them
+      // would break the shadcn import pattern.
+      "src/components/ui/**",
+      // Framework entry / router bootstrap — not a component module.
+      "src/router.tsx",
     ],
   },
   {

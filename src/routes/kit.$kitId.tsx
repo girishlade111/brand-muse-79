@@ -82,7 +82,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { toast } from "sonner";
 import { ExtractionProgress } from "@/components/extraction-progress";
 import { QuietLoader } from "@/components/quiet-loader";
-import { smoothScrollTo } from "@/components/smooth-scroll";
+import { smoothScrollTo } from "@/lib/smooth-scroll";
 import { StudioSection } from "@/components/studio/studio-section";
 import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";

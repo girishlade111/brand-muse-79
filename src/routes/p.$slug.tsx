@@ -71,7 +71,7 @@ function copyToClipboard(text: string, label: string = "Copied") {
   }
 }
 
-function PublishedPortalPage(props?: { overrideSlug?: string }) {
+export function PublishedPortalPage(props?: { overrideSlug?: string }) {
   let routeSlug = "";
   try {
     const params = (Route as any).useParams();
