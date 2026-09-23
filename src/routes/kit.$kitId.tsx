@@ -88,6 +88,7 @@ import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";
 import { MockupsStudio } from "@/components/mockups/mockups-studio";
 import { BrandComponentLibrary } from "@/components/brand-components/brand-component-library";
+import { LogoVectorizerStudio } from "@/components/vectorizer/logo-vectorizer-studio";
 import { GitHubSyncBadge } from "@/components/github-sync-badge";
 import { PortalPublishDialog } from "@/components/portal-publish-dialog";
 

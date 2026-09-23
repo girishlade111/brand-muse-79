@@ -712,13 +712,14 @@ export const verifyCustomDomainDns = createServerFn({ method: "POST" })
       .where(eq(publishedPortals.kitId, data.kitId))
       .limit(1);
 
-    if (!portals.length || !portals[0].customDomain) {
+    const p = portals[0];
+    const customDomain = p.customDomain;
+    if (!customDomain) {
       throw new Error("No custom domain configured for this kit.");
     }
 
-    const p = portals[0];
-    const hostnameId = p.cfCustomHostnameId || p.customDomain;
-    const cfStatus = await getCustomHostnameStatus(hostnameId, p.customDomain);
+    const hostnameId = p.cfCustomHostnameId || customDomain;
+    const cfStatus = await getCustomHostnameStatus(hostnameId, customDomain);
 
     // Update DB with latest status
     await db
@@ -774,7 +775,9 @@ export const removeCustomDomain = createServerFn({ method: "POST" })
       );
     }
 
-    await purgePortalEdgeCache(p.customDomain);
+    if (p.customDomain) {
+      await purgePortalEdgeCache(p.customDomain);
+    }
 
     await db
       .update(publishedPortals)
