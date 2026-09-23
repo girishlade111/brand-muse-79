@@ -701,3 +701,357 @@ export async function analyzeMarketNicheServerFn(input: {
     return fallback;
   }
 }
+
+// ============================================================================
+// AI Strategic White-Space Discovery & Competitor Matrix Analyzer
+// Evaluates up to 4 competitor kits via Gemini 3 Flash for:
+// 1. Color White Space (underutilized hues)
+// 2. Tone Differentiation (untapped voice archetypes)
+// 3. Actionable Strategic Recommendations (3 high-impact pivots)
+// ============================================================================
+
+export type MarketWhitespaceAnalysis = {
+  colorWhiteSpace: {
+    underutilizedHues: Array<{
+      hue: string;
+      rangeDegrees: string;
+      exemplarHex: string;
+      rationale: string;
+    }>;
+    sectorDominance: string;
+    gapOpportunity: string;
+  };
+  toneDifferentiation: {
+    competitorArchetypes: Array<{
+      kitName: string;
+      archetype: string;
+      toneSummary: string;
+    }>;
+    untappedArchetypes: Array<{
+      archetype: string;
+      description: string;
+      whyItWorks: string;
+    }>;
+    voiceOpportunity: string;
+  };
+  actionableRecommendations: Array<{
+    title: string;
+    pillar: "Color" | "Typography" | "Tone" | "Visual Strategy";
+    strategicPivot: string;
+    competitiveAdvantage: string;
+  }>;
+  executiveSummary: string;
+};
+
+export async function analyzeMarketWhitespaceFn(input: {
+  kitIds: string[];
+}): Promise<MarketWhitespaceAnalysis> {
+  const ids = [...new Set((input.kitIds ?? []).map((s) => String(s)).filter(Boolean))].slice(0, 4);
+  if (ids.length < 2) {
+    throw new Error("Select at least two brand kits to analyze market whitespace.");
+  }
+
+  const { db, brandKits, kitColors, kitFonts, kitVoice } = await import("@/db/index.server");
+  const { calculateColorWheelCoordinates, analyzeKitVoice, analyzeKitType, HUE_BUCKETS, BUCKET_EXEMPLARS } =
+    await import("../lib/intelligence");
+  const { asc, inArray } = await import("drizzle-orm");
+
+  // Query database for all competitors simultaneously
+  const [kits, colors, fonts, voices] = await Promise.all([
+    db
+      .select({
+        id: brandKits.id,
+        name: brandKits.name,
+        status: brandKits.status,
+        brandPositioning: brandKits.brandPositioning,
+      })
+      .from(brandKits)
+      .where(inArray(brandKits.id, ids)),
+    db
+      .select({
+        kitId: kitColors.kitId,
+        hex: kitColors.hex,
+        role: kitColors.role,
+        name: kitColors.name,
+      })
+      .from(kitColors)
+      .where(inArray(kitColors.kitId, ids))
+      .orderBy(asc(kitColors.position)),
+    db
+      .select({
+        kitId: kitFonts.kitId,
+        family: kitFonts.family,
+        role: kitFonts.role,
+        weights: kitFonts.weights,
+      })
+      .from(kitFonts)
+      .where(inArray(kitFonts.kitId, ids))
+      .orderBy(asc(kitFonts.position)),
+    db
+      .select({
+        kitId: kitVoice.kitId,
+        tone: kitVoice.tone,
+        vocabulary: kitVoice.vocabulary,
+        dos: kitVoice.dos,
+        donts: kitVoice.donts,
+        samples: kitVoice.samples,
+        summary: kitVoice.summary,
+      })
+      .from(kitVoice)
+      .where(inArray(kitVoice.kitId, ids)),
+  ]);
+
+  if (!kits || kits.length < 2) {
+    throw new Error("Could not find the requested brand kits in the library.");
+  }
+
+  // Group by kit ID, gracefully handling processing or partial kits
+  const byKit = <T extends { kitId: string }>(rows: T[] | null) => {
+    const map = new Map<string, Array<Record<string, unknown>>>();
+    for (const r of rows ?? []) {
+      const list = map.get(r.kitId) ?? [];
+      list.push(r as Record<string, unknown>);
+      map.set(r.kitId, list);
+    }
+    return map;
+  };
+
+  const colorMap = byKit(colors);
+  const fontMap = byKit(fonts);
+  const voiceMap = new Map((voices ?? []).map((v) => [v.kitId, v]));
+
+  const competitors = kits.map((k) => {
+    const kitCols = (colorMap.get(k.id) ?? []) as Array<{ hex: string; role?: string | null; name?: string | null }>;
+    const kitFnts = (fontMap.get(k.id) ?? []) as Array<{ family?: string | null; role?: string | null; weights?: unknown }>;
+    const kitVc = voiceMap.get(k.id) as any;
+
+    return {
+      id: k.id,
+      name: String(k.name ?? "Competitor"),
+      status: String(k.status ?? "ready"),
+      colors: kitCols,
+      fonts: kitFnts,
+      voice: kitVc ?? null,
+      positioning: k.brandPositioning ?? null,
+      wheel: calculateColorWheelCoordinates(kitCols),
+      voiceProfile: analyzeKitVoice(kitVc),
+      typeProfile: analyzeKitType(kitFnts),
+    };
+  });
+
+  // Calculate combined color wheel occupied sectors across all competitors
+  const allColors = competitors.flatMap((c) => c.colors);
+  const combinedWheel = calculateColorWheelCoordinates(allColors);
+
+  // Synthesize deterministic fallback baseline
+  const fallbackUnderutilized = combinedWheel.whiteSpaceArcs.slice(0, 3).map((arc) => ({
+    hue: arc.label,
+    rangeDegrees: `${Math.round(arc.startAngle)}° - ${Math.round(arc.endAngle)}°`,
+    exemplarHex: arc.exemplarHex,
+    rationale: `Unoccupied ${Math.round(arc.spanDegrees)}° chromatic sector. No competing brand utilizes this hue spectrum.`,
+  }));
+
+  if (fallbackUnderutilized.length === 0) {
+    fallbackUnderutilized.push({
+      hue: "Warm Ochre / Amber",
+      rangeDegrees: "35° - 55°",
+      exemplarHex: "#D97706",
+      rationale: "Natural warmth creates distinctive energetic contrast against cold tech palettes.",
+    });
+  }
+
+  const fallback: MarketWhitespaceAnalysis = {
+    colorWhiteSpace: {
+      underutilizedHues: fallbackUnderutilized,
+      sectorDominance: `Competitors are concentrated heavily in ${allColors.length > 0 ? "cool slate, tech blue, and monochrome" : "neutral tones"}, leaving vibrant warm midtones completely open.`,
+      gapOpportunity: `Establish immediate shelf and screen standout by anchoring your brand in the unoccupied ${fallbackUnderutilized[0]?.hue || "warm chromatic"} hue band.`,
+    },
+    toneDifferentiation: {
+      competitorArchetypes: competitors.map((c) => ({
+        kitName: c.name,
+        archetype: c.voiceProfile.formalCasual > 0.1 ? "The Rigorous Authority" : "The Casual Companion",
+        toneSummary: `${c.voiceProfile.formalLabel} (${c.voiceProfile.playfulSeriousLabel.toLowerCase()}), ${c.voiceProfile.technicalLabel.toLowerCase()} delivery.`,
+      })),
+      untappedArchetypes: [
+        {
+          archetype: "The Empathetic Maverick",
+          description: "Warm, deeply human storytelling combined with unapologetic visual confidence.",
+          whyItWorks: "All competitors sound clinical and corporate; adopting an empathetic, human tone instantly builds consumer trust.",
+        },
+        {
+          archetype: "The Artisanal Specialist",
+          description: "Obsessively crafted, editorial, and tactile precision.",
+          whyItWorks: "Differentiates from utilitarian SaaS competitors by projecting bespoke craftsmanship.",
+        },
+      ],
+      voiceOpportunity: "Shift from transactional feature announcements to evocative, human-centered conviction statements.",
+    },
+    actionableRecommendations: [
+      {
+        title: "Claim the Chromatic Gap",
+        pillar: "Color",
+        strategicPivot: `Adopt an anchor primary in ${fallbackUnderutilized[0]?.exemplarHex || "#D97706"} (${fallbackUnderutilized[0]?.hue || "Ochre"}) rather than conforming to the saturated tech blue/slate spectrum.`,
+        competitiveAdvantage: "Instantly recognizable in competitive matrix slides, app stores, and partner marketing.",
+      },
+      {
+        title: "Deploy Editorial Typographic Tension",
+        pillar: "Typography",
+        strategicPivot: "Pair a high-contrast editorial Display or Serif headline with a crisp geometric sans for UI body copy.",
+        competitiveAdvantage: "Elevates perceived price point and brand maturity above utilitarian rival products.",
+      },
+      {
+        title: "Pivot to Radical Empathy & Plainspoken Clarity",
+        pillar: "Tone",
+        strategicPivot: "Eliminate generic tech buzzwords in favor of punchy, relatable, and authentic micro-copy.",
+        competitiveAdvantage: "Converts skeptical buyers who are fatigued by boilerplate corporate claims.",
+      },
+    ],
+    executiveSummary: `Across the competitive set of ${competitors.map((c) => c.name).join(", ")}, visual and tonal crowding is evident. Most brands occupy the safe, clinical quadrant of modern corporate aesthetics. A high-leverage market white-space exists by claiming underutilized chromatic hues and adopting an empathetic, story-driven brand persona.`,
+  };
+
+  // Build AI Prompt for Gemini 3 Flash structured tool call
+  const competitorBriefs = competitors
+    .map((c) => {
+      const hexList = c.colors.map((col) => col.hex).slice(0, 10).join(", ");
+      const fontList = c.fonts.map((f) => f.family).filter(Boolean).join(", ");
+      return `- Competitor: "${c.name}"
+  Status: ${c.status}
+  Colors: [${hexList || "none"}]
+  Fonts: [${fontList || "none"}] (${c.typeProfile.dominant} dominant)
+  Tone Profile: ${c.voiceProfile.formalLabel} / ${c.voiceProfile.playfulSeriousLabel} / ${c.voiceProfile.modernTraditionalLabel}
+  Positioning: ${JSON.stringify(c.positioning || "general")}`;
+    })
+    .join("\n\n");
+
+  const systemPrompt = [
+    "You are a Principal Brand Strategist and Competitive Market Intelligence Director.",
+    "Evaluate the provided competitive cohort of brands to discover strategic market white-space.",
+    "Deliver rigorous, highly actionable brand differentiation insights with zero fluff or generic marketing clichés.",
+    "Specifically evaluate:",
+    "1. Color White Space: Identify exact under-utilized hue bands with exemplar hex codes that none of the rivals own.",
+    "2. Tone Differentiation: Detect where competitors sound identical, and propose 2 untapped voice archetypes that will break through market noise.",
+    "3. Actionable Recommendations: Provide exactly 3 strategic identity pivots (Pillars: Color, Typography, Tone, or Visual Strategy).",
+    "4. Executive Summary: A crisp, confident briefing suitable for a venture pitch deck.",
+  ].join("\n");
+
+  const userPrompt = `COMPETITOR COHORT ANALYSIS:\n${competitorBriefs}\n\nOccupied Sectors / Hue Data: ${JSON.stringify(fallbackUnderutilized)}`;
+
+  try {
+    const raw = await callAIStructured<MarketWhitespaceAnalysis>({
+      system: systemPrompt,
+      user: userPrompt,
+      toolName: "save_market_whitespace_analysis",
+      toolDescription: "Saves strategic competitor whitespace analysis including color whitespace, tone archetypes, and 3 actionable pivots.",
+      parameters: {
+        type: "object",
+        properties: {
+          colorWhiteSpace: {
+            type: "object",
+            properties: {
+              underutilizedHues: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    hue: { type: "string" },
+                    rangeDegrees: { type: "string" },
+                    exemplarHex: { type: "string" },
+                    rationale: { type: "string" },
+                  },
+                  required: ["hue", "rangeDegrees", "exemplarHex", "rationale"],
+                },
+              },
+              sectorDominance: { type: "string" },
+              gapOpportunity: { type: "string" },
+            },
+            required: ["underutilizedHues", "sectorDominance", "gapOpportunity"],
+          },
+          toneDifferentiation: {
+            type: "object",
+            properties: {
+              competitorArchetypes: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    kitName: { type: "string" },
+                    archetype: { type: "string" },
+                    toneSummary: { type: "string" },
+                  },
+                  required: ["kitName", "archetype", "toneSummary"],
+                },
+              },
+              untappedArchetypes: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    archetype: { type: "string" },
+                    description: { type: "string" },
+                    whyItWorks: { type: "string" },
+                  },
+                  required: ["archetype", "description", "whyItWorks"],
+                },
+              },
+              voiceOpportunity: { type: "string" },
+            },
+            required: ["competitorArchetypes", "untappedArchetypes", "voiceOpportunity"],
+          },
+          actionableRecommendations: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                pillar: { type: "string", enum: ["Color", "Typography", "Tone", "Visual Strategy"] },
+                strategicPivot: { type: "string" },
+                competitiveAdvantage: { type: "string" },
+              },
+              required: ["title", "pillar", "strategicPivot", "competitiveAdvantage"],
+            },
+            minItems: 3,
+            maxItems: 3,
+          },
+          executiveSummary: { type: "string" },
+        },
+        required: [
+          "colorWhiteSpace",
+          "toneDifferentiation",
+          "actionableRecommendations",
+          "executiveSummary",
+        ],
+      },
+    });
+
+    if (!raw || typeof raw !== "object" || !raw.actionableRecommendations) {
+      return fallback;
+    }
+
+    return {
+      colorWhiteSpace: {
+        underutilizedHues: Array.isArray(raw.colorWhiteSpace?.underutilizedHues) && raw.colorWhiteSpace.underutilizedHues.length > 0
+          ? raw.colorWhiteSpace.underutilizedHues
+          : fallback.colorWhiteSpace.underutilizedHues,
+        sectorDominance: String(raw.colorWhiteSpace?.sectorDominance || fallback.colorWhiteSpace.sectorDominance),
+        gapOpportunity: String(raw.colorWhiteSpace?.gapOpportunity || fallback.colorWhiteSpace.gapOpportunity),
+      },
+      toneDifferentiation: {
+        competitorArchetypes: Array.isArray(raw.toneDifferentiation?.competitorArchetypes) && raw.toneDifferentiation.competitorArchetypes.length > 0
+          ? raw.toneDifferentiation.competitorArchetypes
+          : fallback.toneDifferentiation.competitorArchetypes,
+        untappedArchetypes: Array.isArray(raw.toneDifferentiation?.untappedArchetypes) && raw.toneDifferentiation.untappedArchetypes.length > 0
+          ? raw.toneDifferentiation.untappedArchetypes
+          : fallback.toneDifferentiation.untappedArchetypes,
+        voiceOpportunity: String(raw.toneDifferentiation?.voiceOpportunity || fallback.toneDifferentiation.voiceOpportunity),
+      },
+      actionableRecommendations: Array.isArray(raw.actionableRecommendations) && raw.actionableRecommendations.length === 3
+        ? raw.actionableRecommendations
+        : fallback.actionableRecommendations,
+      executiveSummary: String(raw.executiveSummary || fallback.executiveSummary),
+    };
+  } catch (err) {
+    console.warn("[analyzeMarketWhitespaceFn] AI call failed or timed out, returning rich deterministic analysis:", err);
+    return fallback;
+  }
+}
+

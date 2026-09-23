@@ -187,11 +187,34 @@ const MONO_HINTS = [
   "ui-monospace",
 ];
 
-export type TypeClass = "serif" | "sans-serif" | "monospace";
+const DISPLAY_HINTS = [
+  "display",
+  "cormorant",
+  "syne",
+  "clash",
+  "playfair",
+  "bebas",
+  "oswald",
+  "cinzel",
+  "fraunces",
+  "abril",
+  "righteous",
+  "lobster",
+  "bungee",
+  "monoton",
+  "decorative",
+  "headline",
+];
 
-export function classifyFontFamily(family: string): TypeClass {
+export type TypeClass = "serif" | "sans-serif" | "monospace" | "display";
+
+export function classifyFontFamily(family: string, role?: string | null): TypeClass {
   const f = String(family ?? "").toLowerCase();
+  const r = String(role ?? "").toLowerCase();
   if (MONO_HINTS.some((h) => f.includes(h))) return "monospace";
+  if (r.includes("display") || r.includes("headline") || DISPLAY_HINTS.some((h) => f.includes(h))) {
+    return "display";
+  }
   if (SERIF_HINTS.some((h) => f.includes(h))) return "serif";
   return "sans-serif";
 }
@@ -201,6 +224,7 @@ export type KitTypeProfile = {
   serif: number;
   sans: number;
   mono: number;
+  display: number;
   dominant: TypeClass;
   weightCount: number;
   weights: number[];
@@ -210,11 +234,13 @@ export function analyzeKitType(fonts: KitFontLike[]): KitTypeProfile {
   const usable = (fonts ?? []).filter((f) => f && typeof f.family === "string" && f.family.trim());
   let serif = 0;
   let mono = 0;
+  let display = 0;
   const weightSet = new Set<number>();
   for (const f of usable) {
-    const cls = classifyFontFamily(f.family ?? "");
+    const cls = classifyFontFamily(f.family ?? "", f.role);
     if (cls === "serif") serif += 1;
     else if (cls === "monospace") mono += 1;
+    else if (cls === "display") display += 1;
     const weights = Array.isArray(f.weights) ? f.weights : [];
     for (const w of weights) {
       const num = parseInt(String(w).replace(/[^0-9]/g, ""), 10);
@@ -224,18 +250,24 @@ export function analyzeKitType(fonts: KitFontLike[]): KitTypeProfile {
   const n = Math.max(1, usable.length);
   const serifShare = serif / n;
   const monoShare = mono / n;
-  const sansShare = Math.max(0, 1 - serifShare - monoShare);
-  const dominant: TypeClass =
-    serifShare >= sansShare && serifShare >= monoShare
-      ? "serif"
-      : monoShare > sansShare
-        ? "monospace"
-        : "sans-serif";
+  const displayShare = display / n;
+  const sansShare = Math.max(0, 1 - serifShare - monoShare - displayShare);
+
+  const shares: Array<{ type: TypeClass; share: number }> = [
+    { type: "serif", share: serifShare },
+    { type: "sans-serif", share: sansShare },
+    { type: "monospace", share: monoShare },
+    { type: "display", share: displayShare },
+  ];
+  shares.sort((a, b) => b.share - a.share);
+  const dominant: TypeClass = shares[0]?.type ?? "sans-serif";
+
   return {
     count: usable.length,
     serif: serifShare,
     sans: sansShare,
     mono: monoShare,
+    display: displayShare,
     dominant,
     weightCount: weightSet.size,
     weights: [...weightSet].sort((a, b) => a - b),
@@ -326,6 +358,86 @@ const AXIS_LEXICONS: Record<string, { pos: string[]; neg: string[] }> = {
       "ornate",
     ],
   },
+  playfulSerious: {
+    pos: [
+      "serious",
+      "authoritative",
+      "corporate",
+      "rigorous",
+      "sober",
+      "formal",
+      "institutional",
+      "grave",
+      "dignified",
+      "disciplined",
+    ],
+    neg: [
+      "playful",
+      "fun",
+      "whimsical",
+      "humorous",
+      "witty",
+      "quirky",
+      "cheerful",
+      "lighthearted",
+      "cheeky",
+      "irreverent",
+      "joyful",
+    ],
+  },
+  modernTraditional: {
+    pos: [
+      "traditional",
+      "heritage",
+      "classic",
+      "timeless",
+      "established",
+      "vintage",
+      "legacy",
+      "historical",
+      "canonical",
+      "orthodox",
+    ],
+    neg: [
+      "modern",
+      "futuristic",
+      "contemporary",
+      "cutting-edge",
+      "forward-looking",
+      "progressive",
+      "experimental",
+      "disruptive",
+      "novel",
+      "fresh",
+    ],
+  },
+  budgetLuxury: {
+    pos: [
+      "luxury",
+      "premium",
+      "prestige",
+      "exclusive",
+      "bespoke",
+      "high-end",
+      "refined",
+      "sumptuous",
+      "opulent",
+      "elite",
+      "artisanal",
+    ],
+    neg: [
+      "budget",
+      "accessible",
+      "affordable",
+      "democratic",
+      "everyday",
+      "utilitarian",
+      "practical",
+      "value-driven",
+      "economical",
+      "mass-market",
+    ],
+  },
 };
 
 function voiceCorpus(voice: KitVoiceLike | null | undefined): { labels: string; body: string } {
@@ -364,15 +476,21 @@ export type KitVoiceProfile = {
   formalCasual: number;
   technicalConversational: number;
   minimalExpressive: number;
+  playfulSerious: number;
+  modernTraditional: number;
+  budgetLuxury: number;
   signal: number;
   formalLabel: string;
   technicalLabel: string;
   minimalLabel: string;
+  playfulSeriousLabel: string;
+  modernTraditionalLabel: string;
+  budgetLuxuryLabel: string;
 };
 
 function axisLabel(v: number, pos: string, neg: string): string {
-  if (v >= 0.4) return pos;
-  if (v <= -0.4) return neg;
+  if (v >= 0.3) return pos;
+  if (v <= -0.3) return neg;
   return "Balanced";
 }
 
@@ -396,17 +514,155 @@ export function analyzeKitVoice(voice: KitVoiceLike | null | undefined): KitVoic
     AXIS_LEXICONS.minimalExpressive.pos,
     AXIS_LEXICONS.minimalExpressive.neg,
   );
+  const playfulSerious = scoreAxis(
+    labels,
+    body,
+    AXIS_LEXICONS.playfulSerious.pos,
+    AXIS_LEXICONS.playfulSerious.neg,
+  );
+  const modernTraditional = scoreAxis(
+    labels,
+    body,
+    AXIS_LEXICONS.modernTraditional.pos,
+    AXIS_LEXICONS.modernTraditional.neg,
+  );
+  const budgetLuxury = scoreAxis(
+    labels,
+    body,
+    AXIS_LEXICONS.budgetLuxury.pos,
+    AXIS_LEXICONS.budgetLuxury.neg,
+  );
+
   const signal =
-    Math.abs(formalCasual) + Math.abs(technicalConversational) + Math.abs(minimalExpressive);
+    Math.abs(formalCasual) +
+    Math.abs(technicalConversational) +
+    Math.abs(minimalExpressive) +
+    Math.abs(playfulSerious) +
+    Math.abs(modernTraditional) +
+    Math.abs(budgetLuxury);
+
   return {
     formalCasual,
     technicalConversational,
     minimalExpressive,
+    playfulSerious,
+    modernTraditional,
+    budgetLuxury,
     signal,
     formalLabel: axisLabel(formalCasual, "Formal", "Casual"),
     technicalLabel: axisLabel(technicalConversational, "Technical", "Conversational"),
     minimalLabel: axisLabel(minimalExpressive, "Minimal", "Expressive"),
+    playfulSeriousLabel: axisLabel(playfulSerious, "Serious", "Playful"),
+    modernTraditionalLabel: axisLabel(modernTraditional, "Traditional", "Modern"),
+    budgetLuxuryLabel: axisLabel(budgetLuxury, "Luxury", "Budget"),
   };
+}
+
+// ============================================================================
+// 360-Degree Color Wheel & Chromaticity Mapper
+// ============================================================================
+
+export type ColorWheelPoint = {
+  hex: string;
+  role?: string | null;
+  name?: string | null;
+  hue: number; // 0 - 360 degrees
+  saturation: number; // 0 - 1
+  lightness: number; // 0 - 1
+  x: number; // -1 to 1 Cartesian
+  y: number; // -1 to 1 Cartesian
+  temperature: "warm" | "cool" | "neutral";
+};
+
+export type ColorWheelData = {
+  points: ColorWheelPoint[];
+  occupiedSectors: number[]; // 16 buckets with counts
+  whiteSpaceArcs: Array<{
+    startAngle: number;
+    endAngle: number;
+    spanDegrees: number;
+    exemplarHex: string;
+    label: string;
+  }>;
+};
+
+export function calculateColorWheelCoordinates(colors: KitColorLike[]): ColorWheelData {
+  const points: ColorWheelPoint[] = [];
+  const occupiedSectors = new Array<number>(16).fill(0);
+
+  for (const c of colors ?? []) {
+    if (!c || !c.hex) continue;
+    const norm = normalizeHex(c.hex);
+    if (!isValidHex(norm)) continue;
+
+    const { h, s, l } = hexToHsl(norm);
+    const rad = (h * Math.PI) / 180;
+    const r = Math.max(0.05, Math.min(1, s));
+    const x = r * Math.cos(rad);
+    const y = r * Math.sin(rad);
+
+    const bucketIdx = hueBucket(h);
+    occupiedSectors[bucketIdx]++;
+
+    points.push({
+      hex: norm,
+      role: c.role ?? null,
+      name: c.name ?? null,
+      hue: Math.round(h),
+      saturation: Math.round(s * 100) / 100,
+      lightness: Math.round(l * 100) / 100,
+      x: Math.round(x * 1000) / 1000,
+      y: Math.round(y * 1000) / 1000,
+      temperature: temperatureOf(norm),
+    });
+  }
+
+  // Detect white-space arcs: contiguous spans of 0-count buckets (each bucket is 22.5 deg)
+  const whiteSpaceArcs: Array<{
+    startAngle: number;
+    endAngle: number;
+    spanDegrees: number;
+    exemplarHex: string;
+    label: string;
+  }> = [];
+
+  let runStart = -1;
+  for (let i = 0; i < 16; i++) {
+    if (occupiedSectors[i] === 0) {
+      if (runStart === -1) runStart = i;
+    } else {
+      if (runStart !== -1) {
+        const count = i - runStart;
+        if (count >= 2) {
+          const startAngle = runStart * 22.5;
+          const endAngle = i * 22.5;
+          const midIdx = Math.floor((runStart + i) / 2);
+          whiteSpaceArcs.push({
+            startAngle,
+            endAngle,
+            spanDegrees: count * 22.5,
+            exemplarHex: BUCKET_EXEMPLARS[midIdx],
+            label: `${HUE_BUCKETS[runStart]} to ${HUE_BUCKETS[i - 1]}`,
+          });
+        }
+        runStart = -1;
+      }
+    }
+  }
+  if (runStart !== -1) {
+    const count = 16 - runStart;
+    if (count >= 2) {
+      whiteSpaceArcs.push({
+        startAngle: runStart * 22.5,
+        endAngle: 360,
+        spanDegrees: count * 22.5,
+        exemplarHex: BUCKET_EXEMPLARS[Math.floor((runStart + 16) / 2) % 16],
+        label: `${HUE_BUCKETS[runStart]} to ${HUE_BUCKETS[15]}`,
+      });
+    }
+  }
+
+  return { points, occupiedSectors, whiteSpaceArcs };
 }
 
 // ============================================================================
