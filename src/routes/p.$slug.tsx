@@ -1,38 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  AlertCircle,
-  ArrowDownToLine,
-  Check,
-  CheckCircle2,
-  Copy,
-  Download,
-  ExternalLink,
-  Eye,
-  FileCode,
-  Globe,
-  KeyRound,
-  Layers,
-  Lock,
-  Moon,
-  Search,
-  SlidersHorizontal,
-  Sun,
-  Type,
-  X,
-  XCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { getPortalData, verifyPortalPassword } from "@/lib/portal.functions";
-import { contrastRatio, hexToRgb, wcag } from "@/lib/color";
-import { buildCSS, buildTailwindTheme, buildTokensJSON } from "@/lib/exports";
-import { isHttpUrl } from "@/lib/utils";
-import JSZip from "jszip";
 
-export const Route = createFileRoute("/p/$slug" as any)({
+export const Route = createFileRoute("/p/$slug")({
   component: PublishedPortalPage,
 });
 
