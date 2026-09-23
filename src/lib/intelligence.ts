@@ -212,10 +212,10 @@ export function classifyFontFamily(family: string, role?: string | null): TypeCl
   const f = String(family ?? "").toLowerCase();
   const r = String(role ?? "").toLowerCase();
   if (MONO_HINTS.some((h) => f.includes(h))) return "monospace";
+  if (SERIF_HINTS.some((h) => f.includes(h))) return "serif";
   if (r.includes("display") || r.includes("headline") || DISPLAY_HINTS.some((h) => f.includes(h))) {
     return "display";
   }
-  if (SERIF_HINTS.some((h) => f.includes(h))) return "serif";
   return "sans-serif";
 }
 
