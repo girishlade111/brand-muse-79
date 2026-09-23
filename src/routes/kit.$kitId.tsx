@@ -78,6 +78,7 @@ import { smoothScrollTo } from "@/components/smooth-scroll";
 import { StudioSection } from "@/components/studio/studio-section";
 import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";
+import { MockupsStudio } from "@/components/mockups/mockups-studio";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -345,6 +346,39 @@ function KitPage() {
                 assets={data.assets}
                 voice={data.voice}
               />
+
+              {/* Dedicated Workbench Navigation Tabs */}
+              <div
+                className="flex items-center overflow-x-auto border-y border-[#0A0A0A] bg-background py-2.5"
+                style={{ borderRadius: 0 }}
+              >
+                <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em]">
+                  <span className="mr-2 text-[10px] text-muted-foreground">// JUMP TO:</span>
+                  {KIT_SECTIONS.map((sec) => (
+                    <a
+                      key={sec.id}
+                      href={`#${sec.id}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const el = document.getElementById(sec.id);
+                        if (el) {
+                          smoothScrollTo(el, -96);
+                          history.replaceState(null, "", `#${sec.id}`);
+                        }
+                      }}
+                      className={`whitespace-nowrap px-3 py-1.5 transition-colors ${
+                        sec.id === "mockups"
+                          ? "border border-[#8B1A1A] bg-[#8B1A1A] font-bold text-[#F4EFE6]"
+                          : "border border-[rgba(10,10,10,0.18)] bg-transparent text-muted-foreground hover:border-[#0A0A0A] hover:text-foreground"
+                      }`}
+                      style={{ borderRadius: 0 }}
+                    >
+                      {sec.id === "mockups" ? `[ ★ ${sec.label.toUpperCase()} ]` : `[ ${sec.label.toUpperCase()} ]`}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
               <SectionAnchor id="overview" label="Overview">
                 <OverviewSection assets={data.assets} colors={data.colors} fonts={data.fonts} />
               </SectionAnchor>
@@ -392,16 +426,18 @@ function KitPage() {
               <SectionAnchor id="voice" label="Voice">
                 <VoiceSection voice={data.voice} kitId={kit.id} />
               </SectionAnchor>
-              <SectionAnchor id="studio" label="// 07. STUDIO">
-                <StudioSection
+              <SectionAnchor id="mockups" label="// 07. LIVE AI BRAND MOCKUPS STUDIO">
+                <MockupsStudio
                   kitId={kit.id}
                   kitName={kit.name}
                   colors={data.colors}
                   fonts={data.fonts}
                   assets={data.assets}
                   defaultHeadline={data.voice?.samples?.headline}
-                  defaultBody={data.voice?.summary ?? undefined}
+                  defaultTagline={data.voice?.summary ?? ((kit as any).brandPositioning as string | undefined)}
                   defaultCta={data.voice?.samples?.cta}
+                  brandPositioning={(kit as any).brandPositioning as string | null}
+                  onMockupSaved={() => setReloadKey((k) => k + 1)}
                 />
               </SectionAnchor>
               <SectionAnchor id="sandbox" label="// 08. SANDBOX">
