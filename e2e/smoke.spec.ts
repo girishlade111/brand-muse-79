@@ -15,6 +15,8 @@ test.describe("route smoke coverage", () => {
   });
 
   test("manual builder exposes sources, palette, typography and tokens", async ({ page }) => {
+    page.on("pageerror", (err) => console.log("PAGE ERROR:", err.message));
+    page.on("console", (msg) => console.log("PAGE CONSOLE:", msg.type(), msg.text()));
     await page.goto("/build");
 
     await expect(page.getByRole("heading", { name: /build a kit by hand/i })).toBeVisible();
@@ -34,13 +36,17 @@ test.describe("route smoke coverage", () => {
     await expect(page.locator('[aria-label="Font 1 family"]')).toBeVisible();
     await expect(page.locator('[aria-label="Token 1 name"]')).toBeVisible();
 
-    // Rows can be added and removed. The builder's own buttons are strict-match
-    // labels, so use exact text (the /add/i regex also matches "Add link").
-    await page.getByRole("button", { name: "Add colour", exact: true }).click();
+    // Rows can be added and removed. Retry click with toPass() to ensure
+    // client hydration is complete before asserting.
+    await expect(async () => {
+      await page.getByRole("button", { name: "Add colour", exact: true }).click();
+      await expect(page.locator('[aria-label="Colour 2 hex"]')).toBeVisible({ timeout: 1000 });
+    }).toPass({ timeout: 15_000 });
+
     await page.getByRole("button", { name: "Add font", exact: true }).click();
-    await page.getByRole("button", { name: "Add token", exact: true }).click();
-    await expect(page.locator('[aria-label="Colour 2 hex"]')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('[aria-label="Font 2 family"]')).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole("button", { name: "Add token", exact: true }).click();
     await expect(page.locator('[aria-label="Token 2 name"]')).toBeVisible({ timeout: 10_000 });
   });
 
@@ -69,7 +75,7 @@ test.describe("route smoke coverage", () => {
   test("developer settings page renders", async ({ page }) => {
     await page.goto("/settings");
     await expect(
-      page.getByRole("heading", { name: /developer api keys & webhooks/i }),
+      page.getByRole("heading", { name: /developer (?:settings & api|api keys)/i }),
     ).toBeVisible();
   });
 

@@ -15,14 +15,16 @@ export function SiteHeader() {
       style={{ borderBottom: "1px solid #0A0A0A" }}
     >
       <div className="relative mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-        <Link
-          to="/"
-          className="truncate font-mono text-[12px] uppercase tracking-[0.2em] text-foreground sm:text-[13px]"
-        >
-          Brand Kit
-        </Link>
-        <div className="absolute left-1/2 -translate-x-1/2">
-          <StartHereButton />
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            className="truncate font-mono text-[12px] uppercase tracking-[0.2em] text-foreground sm:text-[13px]"
+          >
+            Brand Kit
+          </Link>
+          <div className="hidden md:inline-flex">
+            <StartHereButton />
+          </div>
         </div>
         <nav className="flex shrink-0 items-center gap-4 sm:gap-8">
           <Link to="/build" className={navLinkClass}>
