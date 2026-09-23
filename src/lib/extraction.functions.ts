@@ -19,3 +19,10 @@ export const generateSampleCopy = createServerFn({ method: "POST" })
 export const harvestMoreAssets = createServerFn({ method: "POST" })
   .validator((data) => HarvestMoreAssetsInputSchema.parse(data))
   .handler(async ({ data }) => harvestMoreAssetsImpl(data));
+
+export const startAsyncExtractKit = createServerFn({ method: "POST" })
+  .validator((data) => ExtractKitInputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { startAsyncExtraction } = await import("@/server/async-extraction.server");
+    return startAsyncExtraction(data);
+  });
