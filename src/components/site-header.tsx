@@ -37,6 +37,10 @@ export function SiteHeader() {
             <ArrowLeftRight className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
             Compare
           </Link>
+          <Link to="/settings" className={`${navLinkClass} hidden sm:inline-flex`}>
+            <Key className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+            API &amp; Webhooks
+          </Link>
           <Link to="/" className={`${ctaClass} whitespace-nowrap`}>
             New kit
           </Link>
