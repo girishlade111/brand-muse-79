@@ -285,46 +285,49 @@ function looksLikeDocument(url: string) {
 }
 
 export async function firecrawlScrape(url: string) {
-  const req = firecrawlRequest("/v2/scrape");
-  if (!req) return directScrape(url);
-  const isDoc = looksLikeDocument(url);
+  const { cacheScrapedUrl } = await import("./cache.server");
+  return cacheScrapedUrl(url, async () => {
+    const req = firecrawlRequest("/v2/scrape");
+    if (!req) return directScrape(url);
+    const isDoc = looksLikeDocument(url);
 
-  async function apiScrape() {
-    const timeout = timeoutSignal(isDoc ? 60000 : SCRAPE_TIMEOUT_MS);
-    try {
-      const res = await fetch(req!.url, {
-        method: "POST",
-        headers: req!.headers,
-        body: JSON.stringify({
-          url,
-          formats: isDoc ? ["markdown"] : ["markdown", "rawHtml", "links", "branding", "summary"],
-          onlyMainContent: false,
-          timeout: isDoc ? 55000 : 7000,
-        }),
-        signal: timeout.signal,
-      });
+    async function apiScrape() {
+      const timeout = timeoutSignal(isDoc ? 60000 : SCRAPE_TIMEOUT_MS);
+      try {
+        const res = await fetch(req!.url, {
+          method: "POST",
+          headers: req!.headers,
+          body: JSON.stringify({
+            url,
+            formats: isDoc ? ["markdown"] : ["markdown", "rawHtml", "links", "branding", "summary"],
+            onlyMainContent: false,
+            timeout: isDoc ? 55000 : 7000,
+          }),
+          signal: timeout.signal,
+        });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Firecrawl scrape failed [${res.status}]: ${text.slice(0, 300)}`);
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Firecrawl scrape failed [${res.status}]: ${text.slice(0, 300)}`);
+        }
+        return res.json();
+      } finally {
+        timeout.clear();
       }
-      return res.json();
-    } finally {
-      timeout.clear();
     }
-  }
 
-  // Documents (PDFs etc.) can't be parsed by the direct HTML fetch fallback.
-  if (isDoc) return apiScrape();
+    // Documents (PDFs etc.) can't be parsed by the direct HTML fetch fallback.
+    if (isDoc) return apiScrape();
 
-  try {
-    return await Promise.any([directScrape(url), apiScrape()]);
-  } catch (e: any) {
-    const errors = Array.isArray(e?.errors) ? e.errors : [];
-    const best =
-      errors.find((err: any) => err?.message && err.name !== "AbortError") ?? errors[0] ?? e;
-    throw best;
-  }
+    try {
+      return await Promise.any([directScrape(url), apiScrape()]);
+    } catch (e: any) {
+      const errors = Array.isArray(e?.errors) ? e.errors : [];
+      const best =
+        errors.find((err: any) => err?.message && err.name !== "AbortError") ?? errors[0] ?? e;
+      throw best;
+    }
+  });
 }
 
 // Map a site to discover URLs. Returns up to `limit` links.

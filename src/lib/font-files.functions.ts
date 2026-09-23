@@ -61,35 +61,39 @@ const GoogleInputSchema = z.object({
 
 // Resolve actual woff2 file URLs for a Google Font family by fetching its
 // css2 stylesheet (with a modern UA so Google returns woff2 instead of ttf).
+// Cached for 7 days (ttl: 604800) in the multi-tier edge cache.
 export const resolveGoogleFontFiles = createServerFn({ method: "POST" })
   .validator((d) => GoogleInputSchema.parse(d))
   .handler(async ({ data }): Promise<{ urls: string[] }> => {
-    try {
-      const weights = (
-        data.weights && data.weights.length ? data.weights : ["300", "400", "500", "600", "700"]
-      )
-        .map((w) => String(w).replace(/[^0-9]/g, ""))
-        .filter(Boolean);
-      const familyParam = encodeURIComponent(data.family).replace(/%20/g, "+");
-      const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:wght@${weights.join(";")}&display=swap`;
-      const ctrl = new AbortController();
-      const t = setTimeout(() => ctrl.abort(), 6000);
-      const res = await fetch(cssUrl, {
-        signal: ctrl.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-        },
-      });
-      clearTimeout(t);
-      if (!res.ok) return { urls: [] };
-      const css = await res.text();
-      const urls = new Set<string>();
-      const re = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.woff2)\)/g;
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(css))) urls.add(m[1]);
-      return { urls: Array.from(urls).slice(0, 40) };
-    } catch {
-      return { urls: [] };
-    }
+    const { cacheGoogleFontCatalog } = await import("@/server/cache.server");
+    return cacheGoogleFontCatalog(data.family, data.weights, async () => {
+      try {
+        const weights = (
+          data.weights && data.weights.length ? data.weights : ["300", "400", "500", "600", "700"]
+        )
+          .map((w) => String(w).replace(/[^0-9]/g, ""))
+          .filter(Boolean);
+        const familyParam = encodeURIComponent(data.family).replace(/%20/g, "+");
+        const cssUrl = `https://fonts.googleapis.com/css2?family=${familyParam}:wght@${weights.join(";")}&display=swap`;
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 6000);
+        const res = await fetch(cssUrl, {
+          signal: ctrl.signal,
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+          },
+        });
+        clearTimeout(t);
+        if (!res.ok) return { urls: [] };
+        const css = await res.text();
+        const urls = new Set<string>();
+        const re = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+\.woff2)\)/g;
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(css))) urls.add(m[1]);
+        return { urls: Array.from(urls).slice(0, 40) };
+      } catch {
+        return { urls: [] };
+      }
+    });
   });

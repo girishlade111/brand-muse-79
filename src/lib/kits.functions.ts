@@ -76,38 +76,47 @@ export const getKit = createServerFn({ method: "POST" })
       k = { ...k, status: "error", error_code: "timeout", error_message: message };
     }
 
-    const [colors, fonts, tokens, assets, voiceRows] = await Promise.all([
-      db
-        .select()
-        .from(kitColors)
-        .where(eq(kitColors.kitId, data.kitId))
-        .orderBy(asc(kitColors.position)),
-      db
-        .select()
-        .from(kitFonts)
-        .where(eq(kitFonts.kitId, data.kitId))
-        .orderBy(asc(kitFonts.position)),
-      db
-        .select()
-        .from(kitTokens)
-        .where(eq(kitTokens.kitId, data.kitId))
-        .orderBy(asc(kitTokens.position)),
-      db
-        .select()
-        .from(kitAssets)
-        .where(eq(kitAssets.kitId, data.kitId))
-        .orderBy(asc(kitAssets.position)),
-      db.select().from(kitVoice).where(eq(kitVoice.kitId, data.kitId)).limit(1),
-    ]);
+    const fetchNormalized = async () => {
+      const [colors, fonts, tokens, assets, voiceRows] = await Promise.all([
+        db
+          .select()
+          .from(kitColors)
+          .where(eq(kitColors.kitId, data.kitId))
+          .orderBy(asc(kitColors.position)),
+        db
+          .select()
+          .from(kitFonts)
+          .where(eq(kitFonts.kitId, data.kitId))
+          .orderBy(asc(kitFonts.position)),
+        db
+          .select()
+          .from(kitTokens)
+          .where(eq(kitTokens.kitId, data.kitId))
+          .orderBy(asc(kitTokens.position)),
+        db
+          .select()
+          .from(kitAssets)
+          .where(eq(kitAssets.kitId, data.kitId))
+          .orderBy(asc(kitAssets.position)),
+        db.select().from(kitVoice).where(eq(kitVoice.kitId, data.kitId)).limit(1),
+      ]);
 
-    return {
-      kit: k,
-      colors,
-      fonts,
-      tokens,
-      assets,
-      voice: voiceRows[0] ?? null,
+      return {
+        kit: k,
+        colors,
+        fonts,
+        tokens,
+        assets,
+        voice: voiceRows[0] ?? null,
+      };
     };
+
+    if (k.status === "ready") {
+      const { cacheNormalizedKit } = await import("@/server/cache.server");
+      return cacheNormalizedKit(data.kitId, fetchNormalized);
+    }
+
+    return fetchNormalized();
   });
 
 // Helper: verify ownership of a kit
@@ -130,6 +139,8 @@ export const renameKit = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await loadOwnedKit(data.kitId, data.ownerToken);
     await db.update(brandKits).set({ name: data.name }).where(eq(brandKits.id, data.kitId));
+    const { invalidateKitCache } = await import("@/server/cache.server");
+    await invalidateKitCache(data.kitId);
     return { ok: true };
   });
 
@@ -154,6 +165,8 @@ export const deleteKit = createServerFn({ method: "POST" })
       ]);
       await tx.delete(brandKits).where(eq(brandKits.id, data.kitId));
     });
+    const { invalidateKitCache } = await import("@/server/cache.server");
+    await invalidateKitCache(data.kitId);
     return { ok: true };
   });
 

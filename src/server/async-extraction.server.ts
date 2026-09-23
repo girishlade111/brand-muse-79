@@ -664,6 +664,11 @@ async function executeStep5_PersistAndFinalize(
     summary: extraction.summary ?? null,
   });
 
+  try {
+    const { invalidateKitCache } = await import("./cache.server");
+    await invalidateKitCache(kitId);
+  } catch {}
+
   appendLog("Final seal established. Kit ready for studio editing.");
 }
 

@@ -133,6 +133,11 @@ export async function saveManualKitImpl(data: SaveManualKitInput) {
       );
     }
 
-    return { ok: true, kitId: data.kitId };
+    const res = { ok: true, kitId: data.kitId };
+    try {
+      const { invalidateKitCache } = await import("./cache.server");
+      await invalidateKitCache(data.kitId);
+    } catch {}
+    return res;
   });
 }

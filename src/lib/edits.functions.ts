@@ -14,6 +14,13 @@ async function assertOwner(kitId: string, _ownerToken: string) {
   if (!rows.length) throw new Error("Kit not found");
 }
 
+async function invalidateKit(kitId: string) {
+  try {
+    const { invalidateKitCache } = await import("@/server/cache.server");
+    await invalidateKitCache(kitId);
+  } catch {}
+}
+
 const HEX = /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
 
 const DeleteAssetSchema = z.object({
@@ -38,6 +45,7 @@ export const deleteKitAsset = createServerFn({ method: "POST" })
     await db
       .delete(kitAssets)
       .where(and(eq(kitAssets.id, data.assetId), eq(kitAssets.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -54,6 +62,7 @@ export const deleteKitColor = createServerFn({ method: "POST" })
     await db
       .delete(kitColors)
       .where(and(eq(kitColors.id, data.colorId), eq(kitColors.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -79,6 +88,7 @@ export const updateKitColor = createServerFn({ method: "POST" })
       .update(kitColors)
       .set(patch)
       .where(and(eq(kitColors.id, data.colorId), eq(kitColors.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -112,6 +122,7 @@ export const addKitColor = createServerFn({ method: "POST" })
         position,
       })
       .returning({ id: kitColors.id });
+    await invalidateKit(data.kitId);
     return { ok: true, id: rows[0]?.id as string };
   });
 
@@ -144,6 +155,7 @@ export const updateKitFont = createServerFn({ method: "POST" })
       .update(kitFonts)
       .set(patch)
       .where(and(eq(kitFonts.id, data.fontId), eq(kitFonts.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 const DeleteFontSchema = z.object({
@@ -159,6 +171,7 @@ export const deleteKitFont = createServerFn({ method: "POST" })
     await db
       .delete(kitFonts)
       .where(and(eq(kitFonts.id, data.fontId), eq(kitFonts.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -191,6 +204,7 @@ export const addKitFont = createServerFn({ method: "POST" })
         position,
       })
       .returning({ id: kitFonts.id });
+    await invalidateKit(data.kitId);
     return { ok: true, id: rows[0]?.id as string };
   });
 
@@ -218,6 +232,7 @@ export const updateKitToken = createServerFn({ method: "POST" })
       .update(kitTokens)
       .set(patch)
       .where(and(eq(kitTokens.id, data.tokenId), eq(kitTokens.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -237,6 +252,7 @@ export const deleteKitToken = createServerFn({ method: "POST" })
     await db
       .delete(kitTokens)
       .where(and(eq(kitTokens.id, data.tokenId), eq(kitTokens.kitId, data.kitId)));
+    await invalidateKit(data.kitId);
     return { ok: true };
   });
 
@@ -267,5 +283,6 @@ export const addKitToken = createServerFn({ method: "POST" })
         position,
       })
       .returning({ id: kitTokens.id });
+    await invalidateKit(data.kitId);
     return { ok: true, id: rows[0]?.id as string };
   });
