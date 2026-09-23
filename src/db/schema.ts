@@ -176,6 +176,51 @@ export const webhookSubscriptions = pgTable("webhook_subscriptions", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// ---------------------------------------------------------------------------
+// published_portals — live, public-facing, white-labeled Brand Guidelines sites.
+// Supports custom subdomains, custom domains (Cloudflare SSL for SaaS),
+// password protection, expiring access, and enterprise whitelabeling.
+// ---------------------------------------------------------------------------
+export const publishedPortals = pgTable("published_portals", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  kitId: uuid("kit_id")
+    .notNull()
+    .unique()
+    .references(() => brandKits.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull().unique(),
+  customDomain: text("custom_domain").unique(),
+  customDomainStatus: text("custom_domain_status").notNull().default("unconfigured"), // unconfigured | pending | active | error
+  customDomainSslStatus: text("custom_domain_ssl_status").notNull().default("pending"), // pending | active | error
+  customDomainCnameTarget: text("custom_domain_cname_target").notNull().default("cname.branddna.app"),
+  cfCustomHostnameId: text("cf_custom_hostname_id"),
+  cfVerificationData: jsonb("cf_verification_data").$type<{
+    ownershipVerification?: { type: string; name: string; value: string };
+    sslValidationRecords?: Array<{ status: string; txtName?: string; txtValue?: string; httpUrl?: string; httpBody?: string }>;
+    verificationErrors?: string[];
+  }>(),
+  isPublished: boolean("is_published").notNull().default(true),
+  isPasswordProtected: boolean("is_password_protected").notNull().default(false),
+  passwordHash: text("password_hash"),
+  passwordHint: text("password_hint"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  whitelabelRemoveBadge: boolean("whitelabel_remove_badge").notNull().default(false),
+  whitelabelTitle: text("whitelabel_title"),
+  whitelabelMetaDescription: text("whitelabel_meta_description"),
+  whitelabelFaviconUrl: text("whitelabel_favicon_url"),
+  whitelabelSocialImageUrl: text("whitelabel_social_image_url"),
+  customCss: text("custom_css"),
+  allowedDownloadFormats: jsonb("allowed_download_formats").$type<string[]>().default([
+    "svg",
+    "png",
+    "tokens",
+    "css",
+    "pdf",
+  ]),
+  viewCount: integer("view_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type BrandKit = typeof brandKits.$inferSelect;
 export type NewBrandKit = typeof brandKits.$inferInsert;
 export type KitColor = typeof kitColors.$inferSelect;
@@ -192,3 +237,5 @@ export type NewWebhookSubscription = typeof webhookSubscriptions.$inferInsert;
 export type DesignDocVersion = typeof designDocVersions.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type UserRole = typeof userRoles.$inferSelect;
+export type PublishedPortal = typeof publishedPortals.$inferSelect;
+export type NewPublishedPortal = typeof publishedPortals.$inferInsert;
