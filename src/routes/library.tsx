@@ -523,6 +523,8 @@ function LibraryPage() {
             })}
           </ul>
         )}
+          </>
+        )}
       </main>
     </div>
   );
