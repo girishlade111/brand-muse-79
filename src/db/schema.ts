@@ -34,6 +34,19 @@ export const brandKits = pgTable("brand_kits", {
   errorMessage: text("error_message"),
   errorStatus: integer("error_status"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
+  extractionStep: text("extraction_step"), // scrape_homepage | crawl_companion_pages | probe_fonts_and_assets | ai_synthesis | persist_and_finalize | completed
+  extractionProgress: integer("extraction_progress").notNull().default(0), // 0 to 100
+  extractionStatus: text("extraction_status").notNull().default("pending"), // pending | crawling | analyzing_colors | resolving_fonts | synthesizing_voice | completed | failed
+  stepDetails: jsonb("step_details").$type<{
+    currentStep?: string;
+    message?: string;
+    attemptedRetries?: number;
+    completedSteps?: string[];
+    error?: string;
+    intermediateData?: any;
+  }>(),
+  jobId: text("job_id"),
+  jobProvider: text("job_provider").default("qstash"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
