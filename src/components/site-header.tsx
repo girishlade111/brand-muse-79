@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeftRight, BookOpen, PenLine } from "lucide-react";
+import { ArrowLeftRight, BookOpen, PenLine, Key } from "lucide-react";
 import { StartHereButton } from "@/components/start-here-button";
 
 const navLinkClass =
