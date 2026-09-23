@@ -88,8 +88,8 @@ import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";
 import { MockupsStudio } from "@/components/mockups/mockups-studio";
 import { BrandComponentLibrary } from "@/components/brand-components/brand-component-library";
-import { LogoVectorizerStudio } from "@/components/vectorizer/logo-vectorizer-studio";
 import { GitHubSyncBadge } from "@/components/github-sync-badge";
+import { PortalPublishDialog } from "@/components/portal-publish-dialog";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -110,6 +110,7 @@ function KitPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [editingUrl, setEditingUrl] = useState(false);
   const [urlDraft, setUrlDraft] = useState("");
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
   const ownerToken = user?.id ?? getAnonToken();
   const autoExtractionStarted = useRef(false);
 
@@ -278,6 +279,16 @@ function KitPage() {
               )}
             </div>
             <div className="flex flex-wrap items-center gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPublishModalOpen(true)}
+                className="border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+                style={{ borderRadius: 0 }}
+              >
+                <Globe className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+                Publish Website
+              </Button>
               <GitHubSyncBadge kitId={kit.id} kitName={kit.name} />
               <span
                 className="font-mono text-[11px] uppercase tracking-[0.22em]"
@@ -503,12 +514,23 @@ function KitPage() {
                   tokens={data.tokens}
                   assets={data.assets}
                   voice={data.voice}
+                  onOpenPublish={() => setPublishModalOpen(true)}
                 />
               </SectionAnchor>
             </div>
           </div>
         )}
       </main>
+
+      {kit && (
+        <PortalPublishDialog
+          open={publishModalOpen}
+          onOpenChange={setPublishModalOpen}
+          kitId={kit.id}
+          kitName={kit.name}
+          ownerToken={ownerToken}
+        />
+      )}
     </div>
   );
 }
@@ -2961,6 +2983,7 @@ function ExportSection(props: {
   tokens: any[];
   assets: any[];
   voice: any;
+  onOpenPublish?: () => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<"all" | "mobile" | "web">("all");
   const tokensJson = buildTokensJSON(props);
@@ -3195,6 +3218,36 @@ function ExportSection(props: {
           <Download className="mr-2 h-4 w-4" /> Brand guide (.pdf)
         </Button>
       </div>
+
+      {props.isOwner && (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-emerald-600">
+                <span>// CLOUD INFRASTRUCTURE</span>
+                <span>·</span>
+                <span>EDGE MICROSITE</span>
+              </div>
+              <h3 className="mt-1 flex items-center gap-2 font-semibold text-lg">
+                <Globe className="h-5 w-5 text-emerald-600" /> Hosted Brand Guidelines Website
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Publish a standalone, white-labeled web guide with interactive swatches, SVG/PNG downloads, and custom domain support (SSL for SaaS).
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={props.onOpenPublish}
+                className="font-mono text-xs uppercase tracking-wider"
+              >
+                <Globe className="mr-1.5 h-3.5 w-3.5" />
+                Configure Website & Domains
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {props.isOwner && (
         <div className="rounded-xl border border-border bg-card p-6">
