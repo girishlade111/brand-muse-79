@@ -1,507 +1,526 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Brand Muse · Token Sync</title>
-  <style>
-    :root {
-      --bg: #F4EFE6;
-      --card: #FFFFFF;
-      --ink: #0A0A0A;
-      --muted: #6B6760;
-      --border: #0A0A0A;
-      --border-subtle: rgba(10, 10, 10, 0.15);
-      --accent: #8B1A1A;
-      --accent-fg: #F4EFE6;
-      --success: #1B5E20;
-      --warning: #B78103;
-      --font-mono: "Courier Prime", "SF Mono", Menlo, Consolas, monospace;
-      --font-serif: "Cormorant Garamond", Georgia, serif;
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      border-radius: 0 !important; /* Strict Invisible Instrument standard */
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: var(--font-sans);
-      font-size: 12px;
-      line-height: 1.5;
-      padding: 16px;
-      user-select: none;
-    }
-
-    /* Monospace Headings & Eyebrows */
-    .eyebrow {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    h1 {
-      font-family: var(--font-serif);
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      line-height: 1.1;
-      margin-bottom: 2px;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    /* Container Card */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    /* Form Fields */
-    .field-group {
-      margin-bottom: 12px;
-    }
-
-    label {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    input[type="text"] {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border-subtle);
-      color: var(--ink);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 8px 10px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--border);
-      background: #FFFFFF;
-    }
-
-    /* Diff Notification Banner */
-    .diff-banner {
-      padding: 10px 12px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      line-height: 1.4;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .diff-banner.synced {
-      background: #E8F5E9;
-      border-color: var(--success);
-      color: var(--success);
-    }
-
-    .diff-banner.outdated {
-      background: #FFF8E1;
-      border-color: var(--warning);
-      color: #6D4C00;
-    }
-
-    .diff-banner.unlinked {
-      background: var(--card);
-      border-color: var(--border-subtle);
-      color: var(--muted);
-    }
-
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      margin-top: 2px;
-      flex-shrink: 0;
-    }
-
-    .synced .status-dot { background: var(--success); }
-    .outdated .status-dot { background: var(--warning); }
-    .unlinked .status-dot { background: var(--muted); }
-
-    /* Action Buttons */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 10px 14px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      transition: all 0.15s;
-      margin-bottom: 8px;
-    }
-
-    .btn-primary {
-      background: var(--ink);
-      color: var(--bg);
-      font-weight: 700;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--ink);
-    }
-
-    .btn-outline:hover:not(:disabled) {
-      background: rgba(10, 10, 10, 0.05);
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    /* Stats Breakdown */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin-top: 10px;
-      border-top: 1px solid var(--border-subtle);
-      padding-top: 10px;
-      text-align: center;
-    }
-
-    .stat-val {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: bold;
-      color: var(--ink);
-    }
-
-    .stat-lbl {
-      font-family: var(--font-mono);
-      font-size: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-    }
-
-    /* Console Log */
-    .console {
-      background: var(--card);
-      border: 1px solid var(--border-subtle);
-      padding: 8px 10px;
-      font-family: var(--font-mono);
-      font-size: 9px;
-      color: var(--muted);
-      max-height: 80px;
-      overflow-y: auto;
-      line-height: 1.4;
-    }
-
-    .console p { margin-bottom: 2px; }
-    .console .highlight { color: var(--accent); font-weight: bold; }
-    .console .success { color: var(--success); font-weight: bold; }
-  </style>
-</head>
-<body>
-
-  <div class="eyebrow">// OFFICIAL FIGMA BRIDGE</div>
-  <h1>Brand Muse Sync</h1>
-  <p class="subtitle">Direct Local Variables &amp; Token Synchronizer</p>
-
-  <!-- Diff Notification Banner -->
-  <div id="diffBanner" class="diff-banner unlinked">
-    <span class="status-dot"></span>
-    <div id="diffMessage">
-      <strong>[ UNLINKED ]</strong> Enter Kit ID &amp; Sync Token to inspect cloud state.
-    </div>
-  </div>
-
-  <!-- Credentials Form -->
-  <div class="card">
-    <div class="field-group">
-      <label for="kitId">// BRAND KIT ID</label>
-      <input type="text" id="kitId" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" />
-    </div>
-
-    <div class="field-group">
-      <label for="shareToken">// SYNC ACCESS TOKEN (SHARE TOKEN)</label>
-      <input type="text" id="shareToken" placeholder="Leave empty if kit is public" />
-    </div>
-
-    <div class="field-group" style="margin-bottom: 0;">
-      <label for="apiUrl">// API HOST URL</label>
-      <input type="text" id="apiUrl" value="http://localhost:5173" />
-    </div>
-  </div>
-
-  <!-- Action Controls -->
-  <button id="btnSync" class="btn btn-primary" disabled>
-    [ SYNC FIGMA VARIABLES ]
-  </button>
-
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-    <button id="btnInsertLogos" class="btn btn-outline" disabled>
-      [ INSERT LOGOS ]
-    </button>
-    <button id="btnCheckStatus" class="btn btn-outline">
-      [ CHECK CLOUD ]
-    </button>
-  </div>
-
-  <!-- Stats Grid -->
-  <div class="card" id="statsCard" style="display: none;">
-    <div class="eyebrow" style="margin-bottom: 0;">// CLOUD TOKENS MANIFEST</div>
-    <div class="stats-grid">
-      <div>
-        <div class="stat-val" id="statColors">0</div>
-        <div class="stat-lbl">Colors</div>
-      </div>
-      <div>
-        <div class="stat-val" id="statSpacing">0</div>
-        <div class="stat-lbl">Spacing</div>
-      </div>
-      <div>
-        <div class="stat-val" id="statRadius">0</div>
-        <div class="stat-lbl">Radius</div>
-      </div>
-      <div>
-        <div class="stat-val" id="statStyles">0</div>
-        <div class="stat-lbl">Styles</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Activity Console -->
-  <div class="console" id="consoleLog">
-    <p>// Ready. Connect to Brand Muse kit.</p>
-  </div>
-
-  <script>
-    const elKitId = document.getElementById("kitId");
-    const elShareToken = document.getElementById("shareToken");
-    const elApiUrl = document.getElementById("apiUrl");
-    const elDiffBanner = document.getElementById("diffBanner");
-    const elDiffMessage = document.getElementById("diffMessage");
-    const elBtnSync = document.getElementById("btnSync");
-    const elBtnInsertLogos = document.getElementById("btnInsertLogos");
-    const elBtnCheck = document.getElementById("btnCheckStatus");
-    const elStatsCard = document.getElementById("statsCard");
-    const elStatColors = document.getElementById("statColors");
-    const elStatSpacing = document.getElementById("statSpacing");
-    const elStatRadius = document.getElementById("statRadius");
-    const elStatStyles = document.getElementById("statStyles");
-    const elConsole = document.getElementById("consoleLog");
-
-    let cachedPayload = null;
-    let localLastHash = null;
-    let localLastSync = null;
-
-    function log(msg, cls = "") {
-      const p = document.createElement("p");
-      if (cls) p.className = cls;
-      p.textContent = `> ${msg}`;
-      elConsole.appendChild(p);
-      elConsole.scrollTop = elConsole.scrollHeight;
-    }
-
-    // Initialize state from Plugin Controller
-    window.addEventListener("message", (event) => {
-      const msg = event.data.pluginMessage;
-      if (!msg) return;
-
-      if (msg.type === "init-config") {
-        if (msg.kitId) elKitId.value = msg.kitId;
-        if (msg.shareToken) elShareToken.value = msg.shareToken;
-        if (msg.apiUrl) elApiUrl.value = msg.apiUrl;
-        localLastHash = msg.lastHash;
-        localLastSync = msg.lastSync;
-
-        if (msg.kitId) {
-          log(`Loaded saved credentials for kit ${msg.kitId.slice(0, 8)}…`);
-          checkCloudStatus();
-        }
-      } else if (msg.type === "sync-success") {
-        localLastHash = msg.hash;
-        localLastSync = msg.lastSync;
-        updateDiffBanner(false);
-        log(msg.summary, "success");
-        elBtnSync.disabled = false;
-        elBtnSync.textContent = "[ SYNC FIGMA VARIABLES ]";
-      } else if (msg.type === "logos-inserted") {
-        log(`Placed ${msg.count} logo variants on canvas.`, "success");
-        elBtnInsertLogos.disabled = false;
-      } else if (msg.type === "error") {
-        log(`Error: ${msg.message}`, "highlight");
-        elBtnSync.disabled = false;
-        elBtnSync.textContent = "[ SYNC FIGMA VARIABLES ]";
-      }
-    });
-
-    // Request initial state on mount
-    parent.postMessage({ pluginMessage: { type: "init" } }, "*");
-
-    // Check Cloud Status & 2-Way Diffing
-    async function checkCloudStatus() {
-      const kitId = elKitId.value.trim();
-      const shareToken = elShareToken.value.trim();
-      const apiUrl = elApiUrl.value.trim().replace(/\/+$/, "");
-
-      if (!kitId) {
-        log("Please provide a valid Brand Kit ID.");
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <title>Brand Muse · Token Sync</title>
+    <style>
+      :root {
+        --bg: #f4efe6;
+        --card: #ffffff;
+        --ink: #0a0a0a;
+        --muted: #6b6760;
+        --border: #0a0a0a;
+        --border-subtle: rgba(10, 10, 10, 0.15);
+        --accent: #8b1a1a;
+        --accent-fg: #f4efe6;
+        --success: #1b5e20;
+        --warning: #b78103;
+        --font-mono: "Courier Prime", "SF Mono", Menlo, Consolas, monospace;
+        --font-serif: "Cormorant Garamond", Georgia, serif;
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
 
-      // Save credentials locally
-      parent.postMessage({
-        pluginMessage: {
-          type: "save-config",
-          kitId,
-          shareToken,
-          apiUrl,
-        }
-      }, "*");
-
-      elBtnCheck.textContent = "Checking…";
-      log(`Checking cloud endpoint at ${apiUrl}…`);
-
-      try {
-        const tokenQuery = shareToken ? `?token=${encodeURIComponent(shareToken)}` : "";
-        const endpoint = `${apiUrl}/api/v1/kits/${kitId}/tokens${tokenQuery}`;
-
-        const res = await fetch(endpoint, {
-          headers: shareToken ? { "Authorization": `Bearer ${shareToken}` } : {},
-        });
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `HTTP ${res.status}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        cachedPayload = data;
-
-        // Calculate Diff
-        const isOutdated = Boolean(localLastHash && data.hash && localLastHash !== data.hash);
-        updateDiffBanner(isOutdated);
-
-        // Update Stats
-        const collections = data.figmaVariables?.collections || [];
-        const colors = collections.find(c => c.name.includes("Colors"))?.variables?.length || 0;
-        const spacing = collections.find(c => c.name.includes("Spacing"))?.variables?.length || 0;
-        const radius = collections.find(c => c.name.includes("Radius"))?.variables?.length || 0;
-        const styles = data.figmaVariables?.textStyles?.length || 0;
-
-        elStatColors.textContent = colors;
-        elStatSpacing.textContent = spacing;
-        elStatRadius.textContent = radius;
-        elStatStyles.textContent = styles;
-        elStatsCard.style.display = "block";
-
-        elBtnSync.disabled = false;
-        elBtnInsertLogos.disabled = !data.figmaVariables?.logos?.length;
-
-        log(`Connected to "${data.kitName}" (Hash: ${data.hash}).`, "success");
-      } catch (err) {
-        log(`Sync check failed: ${err.message}`, "highlight");
-        elDiffBanner.className = "diff-banner unlinked";
-        elDiffMessage.innerHTML = `<strong>[ CONNECTION ERROR ]</strong> ${err.message}`;
-      } finally {
-        elBtnCheck.textContent = "[ CHECK CLOUD ]";
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        border-radius: 0 !important; /* Strict Invisible Instrument standard */
       }
-    }
 
-    function updateDiffBanner(isOutdated) {
-      if (!cachedPayload) return;
-
-      if (!localLastHash) {
-        elDiffBanner.className = "diff-banner unlinked";
-        elDiffMessage.innerHTML = `<strong>[ READY TO SYNC ]</strong> Cloud Brand Kit "${cachedPayload.kitName}" ready for first sync.`;
-      } else if (isOutdated) {
-        elDiffBanner.className = "diff-banner outdated";
-        elDiffMessage.innerHTML = `<strong>▲ [ UPDATE AVAILABLE ]</strong> Cloud Brand Kit has changed since last sync! Click Sync Variables to update.`;
-      } else {
-        elDiffBanner.className = "diff-banner synced";
-        const syncDate = localLastSync ? new Date(localLastSync).toLocaleTimeString() : "just now";
-        elDiffMessage.innerHTML = `<strong>● [ SYNCHRONIZED ]</strong> Local Figma variables match cloud Brand Kit (Last: ${syncDate}).`;
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 12px;
+        line-height: 1.5;
+        padding: 16px;
+        user-select: none;
       }
-    }
 
-    // Sync Action
-    elBtnSync.addEventListener("click", () => {
-      if (!cachedPayload) return;
-      elBtnSync.disabled = true;
-      elBtnSync.textContent = "SYNCHRONIZING…";
-      log("Deploying Local Variables and Text Styles to Figma…");
+      /* Monospace Headings & Eyebrows */
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
 
-      parent.postMessage({
-        pluginMessage: {
-          type: "sync-variables",
-          payload: cachedPayload,
-          hash: cachedPayload.hash,
-        }
-      }, "*");
-    });
+      h1 {
+        font-family: var(--font-serif);
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+        margin-bottom: 2px;
+      }
 
-    // Insert Logos Action
-    elBtnInsertLogos.addEventListener("click", async () => {
-      if (!cachedPayload || !cachedPayload.figmaVariables?.logos) return;
-      elBtnInsertLogos.disabled = true;
-      log("Preparing vector logo nodes for canvas…");
+      .subtitle {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
 
-      const logosWithSvg = [];
-      for (const logo of cachedPayload.figmaVariables.logos) {
-        try {
-          const res = await fetch(logo.url);
-          if (res.ok) {
-            const svgText = await res.text();
-            if (svgText.includes("<svg")) {
-              logosWithSvg.push({ ...logo, svg: svgText });
-            }
+      /* Container Card */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+
+      /* Form Fields */
+      .field-group {
+        margin-bottom: 12px;
+      }
+
+      label {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border-subtle);
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 8px 10px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      input[type="text"]:focus {
+        border-color: var(--border);
+        background: #ffffff;
+      }
+
+      /* Diff Notification Banner */
+      .diff-banner {
+        padding: 10px 12px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        line-height: 1.4;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .diff-banner.synced {
+        background: #e8f5e9;
+        border-color: var(--success);
+        color: var(--success);
+      }
+
+      .diff-banner.outdated {
+        background: #fff8e1;
+        border-color: var(--warning);
+        color: #6d4c00;
+      }
+
+      .diff-banner.unlinked {
+        background: var(--card);
+        border-color: var(--border-subtle);
+        color: var(--muted);
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+
+      .synced .status-dot {
+        background: var(--success);
+      }
+      .outdated .status-dot {
+        background: var(--warning);
+      }
+      .unlinked .status-dot {
+        background: var(--muted);
+      }
+
+      /* Action Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px 14px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        transition: all 0.15s;
+        margin-bottom: 8px;
+      }
+
+      .btn-primary {
+        background: var(--ink);
+        color: var(--bg);
+        font-weight: 700;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: var(--ink);
+      }
+
+      .btn-outline:hover:not(:disabled) {
+        background: rgba(10, 10, 10, 0.05);
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      /* Stats Breakdown */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-top: 10px;
+        border-top: 1px solid var(--border-subtle);
+        padding-top: 10px;
+        text-align: center;
+      }
+
+      .stat-val {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--ink);
+      }
+
+      .stat-lbl {
+        font-family: var(--font-mono);
+        font-size: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      /* Console Log */
+      .console {
+        background: var(--card);
+        border: 1px solid var(--border-subtle);
+        padding: 8px 10px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--muted);
+        max-height: 80px;
+        overflow-y: auto;
+        line-height: 1.4;
+      }
+
+      .console p {
+        margin-bottom: 2px;
+      }
+      .console .highlight {
+        color: var(--accent);
+        font-weight: bold;
+      }
+      .console .success {
+        color: var(--success);
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="eyebrow">// OFFICIAL FIGMA BRIDGE</div>
+    <h1>Brand Muse Sync</h1>
+    <p class="subtitle">Direct Local Variables &amp; Token Synchronizer</p>
+
+    <!-- Diff Notification Banner -->
+    <div id="diffBanner" class="diff-banner unlinked">
+      <span class="status-dot"></span>
+      <div id="diffMessage">
+        <strong>[ UNLINKED ]</strong> Enter Kit ID &amp; Sync Token to inspect cloud state.
+      </div>
+    </div>
+
+    <!-- Credentials Form -->
+    <div class="card">
+      <div class="field-group">
+        <label for="kitId">// BRAND KIT ID</label>
+        <input type="text" id="kitId" placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000" />
+      </div>
+
+      <div class="field-group">
+        <label for="shareToken">// SYNC ACCESS TOKEN (SHARE TOKEN)</label>
+        <input type="text" id="shareToken" placeholder="Leave empty if kit is public" />
+      </div>
+
+      <div class="field-group" style="margin-bottom: 0">
+        <label for="apiUrl">// API HOST URL</label>
+        <input type="text" id="apiUrl" value="http://localhost:5173" />
+      </div>
+    </div>
+
+    <!-- Action Controls -->
+    <button id="btnSync" class="btn btn-primary" disabled>[ SYNC FIGMA VARIABLES ]</button>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+      <button id="btnInsertLogos" class="btn btn-outline" disabled>[ INSERT LOGOS ]</button>
+      <button id="btnCheckStatus" class="btn btn-outline">[ CHECK CLOUD ]</button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="card" id="statsCard" style="display: none">
+      <div class="eyebrow" style="margin-bottom: 0">// CLOUD TOKENS MANIFEST</div>
+      <div class="stats-grid">
+        <div>
+          <div class="stat-val" id="statColors">0</div>
+          <div class="stat-lbl">Colors</div>
+        </div>
+        <div>
+          <div class="stat-val" id="statSpacing">0</div>
+          <div class="stat-lbl">Spacing</div>
+        </div>
+        <div>
+          <div class="stat-val" id="statRadius">0</div>
+          <div class="stat-lbl">Radius</div>
+        </div>
+        <div>
+          <div class="stat-val" id="statStyles">0</div>
+          <div class="stat-lbl">Styles</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Console -->
+    <div class="console" id="consoleLog">
+      <p>// Ready. Connect to Brand Muse kit.</p>
+    </div>
+
+    <script>
+      const elKitId = document.getElementById("kitId");
+      const elShareToken = document.getElementById("shareToken");
+      const elApiUrl = document.getElementById("apiUrl");
+      const elDiffBanner = document.getElementById("diffBanner");
+      const elDiffMessage = document.getElementById("diffMessage");
+      const elBtnSync = document.getElementById("btnSync");
+      const elBtnInsertLogos = document.getElementById("btnInsertLogos");
+      const elBtnCheck = document.getElementById("btnCheckStatus");
+      const elStatsCard = document.getElementById("statsCard");
+      const elStatColors = document.getElementById("statColors");
+      const elStatSpacing = document.getElementById("statSpacing");
+      const elStatRadius = document.getElementById("statRadius");
+      const elStatStyles = document.getElementById("statStyles");
+      const elConsole = document.getElementById("consoleLog");
+
+      let cachedPayload = null;
+      let localLastHash = null;
+      let localLastSync = null;
+
+      function log(msg, cls = "") {
+        const p = document.createElement("p");
+        if (cls) p.className = cls;
+        p.textContent = `> ${msg}`;
+        elConsole.appendChild(p);
+        elConsole.scrollTop = elConsole.scrollHeight;
+      }
+
+      // Initialize state from Plugin Controller
+      window.addEventListener("message", (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === "init-config") {
+          if (msg.kitId) elKitId.value = msg.kitId;
+          if (msg.shareToken) elShareToken.value = msg.shareToken;
+          if (msg.apiUrl) elApiUrl.value = msg.apiUrl;
+          localLastHash = msg.lastHash;
+          localLastSync = msg.lastSync;
+
+          if (msg.kitId) {
+            log(`Loaded saved credentials for kit ${msg.kitId.slice(0, 8)}…`);
+            checkCloudStatus();
           }
-        } catch (e) {
-          console.warn("Could not fetch SVG for logo:", logo.url);
+        } else if (msg.type === "sync-success") {
+          localLastHash = msg.hash;
+          localLastSync = msg.lastSync;
+          updateDiffBanner(false);
+          log(msg.summary, "success");
+          elBtnSync.disabled = false;
+          elBtnSync.textContent = "[ SYNC FIGMA VARIABLES ]";
+        } else if (msg.type === "logos-inserted") {
+          log(`Placed ${msg.count} logo variants on canvas.`, "success");
+          elBtnInsertLogos.disabled = false;
+        } else if (msg.type === "error") {
+          log(`Error: ${msg.message}`, "highlight");
+          elBtnSync.disabled = false;
+          elBtnSync.textContent = "[ SYNC FIGMA VARIABLES ]";
+        }
+      });
+
+      // Request initial state on mount
+      parent.postMessage({ pluginMessage: { type: "init" } }, "*");
+
+      // Check Cloud Status & 2-Way Diffing
+      async function checkCloudStatus() {
+        const kitId = elKitId.value.trim();
+        const shareToken = elShareToken.value.trim();
+        const apiUrl = elApiUrl.value.trim().replace(/\/+$/, "");
+
+        if (!kitId) {
+          log("Please provide a valid Brand Kit ID.");
+          return;
+        }
+
+        // Save credentials locally
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "save-config",
+              kitId,
+              shareToken,
+              apiUrl,
+            },
+          },
+          "*",
+        );
+
+        elBtnCheck.textContent = "Checking…";
+        log(`Checking cloud endpoint at ${apiUrl}…`);
+
+        try {
+          const tokenQuery = shareToken ? `?token=${encodeURIComponent(shareToken)}` : "";
+          const endpoint = `${apiUrl}/api/v1/kits/${kitId}/tokens${tokenQuery}`;
+
+          const res = await fetch(endpoint, {
+            headers: shareToken ? { Authorization: `Bearer ${shareToken}` } : {},
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${res.status}: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          cachedPayload = data;
+
+          // Calculate Diff
+          const isOutdated = Boolean(localLastHash && data.hash && localLastHash !== data.hash);
+          updateDiffBanner(isOutdated);
+
+          // Update Stats
+          const collections = data.figmaVariables?.collections || [];
+          const colors = collections.find((c) => c.name.includes("Colors"))?.variables?.length || 0;
+          const spacing =
+            collections.find((c) => c.name.includes("Spacing"))?.variables?.length || 0;
+          const radius = collections.find((c) => c.name.includes("Radius"))?.variables?.length || 0;
+          const styles = data.figmaVariables?.textStyles?.length || 0;
+
+          elStatColors.textContent = colors;
+          elStatSpacing.textContent = spacing;
+          elStatRadius.textContent = radius;
+          elStatStyles.textContent = styles;
+          elStatsCard.style.display = "block";
+
+          elBtnSync.disabled = false;
+          elBtnInsertLogos.disabled = !data.figmaVariables?.logos?.length;
+
+          log(`Connected to "${data.kitName}" (Hash: ${data.hash}).`, "success");
+        } catch (err) {
+          log(`Sync check failed: ${err.message}`, "highlight");
+          elDiffBanner.className = "diff-banner unlinked";
+          elDiffMessage.innerHTML = `<strong>[ CONNECTION ERROR ]</strong> ${err.message}`;
+        } finally {
+          elBtnCheck.textContent = "[ CHECK CLOUD ]";
         }
       }
 
-      parent.postMessage({
-        pluginMessage: {
-          type: "insert-logos",
-          logos: logosWithSvg,
-        }
-      }, "*");
-    });
+      function updateDiffBanner(isOutdated) {
+        if (!cachedPayload) return;
 
-    elBtnCheck.addEventListener("click", checkCloudStatus);
-    elKitId.addEventListener("change", checkCloudStatus);
-  </script>
-</body>
+        if (!localLastHash) {
+          elDiffBanner.className = "diff-banner unlinked";
+          elDiffMessage.innerHTML = `<strong>[ READY TO SYNC ]</strong> Cloud Brand Kit "${cachedPayload.kitName}" ready for first sync.`;
+        } else if (isOutdated) {
+          elDiffBanner.className = "diff-banner outdated";
+          elDiffMessage.innerHTML = `<strong>▲ [ UPDATE AVAILABLE ]</strong> Cloud Brand Kit has changed since last sync! Click Sync Variables to update.`;
+        } else {
+          elDiffBanner.className = "diff-banner synced";
+          const syncDate = localLastSync
+            ? new Date(localLastSync).toLocaleTimeString()
+            : "just now";
+          elDiffMessage.innerHTML = `<strong>● [ SYNCHRONIZED ]</strong> Local Figma variables match cloud Brand Kit (Last: ${syncDate}).`;
+        }
+      }
+
+      // Sync Action
+      elBtnSync.addEventListener("click", () => {
+        if (!cachedPayload) return;
+        elBtnSync.disabled = true;
+        elBtnSync.textContent = "SYNCHRONIZING…";
+        log("Deploying Local Variables and Text Styles to Figma…");
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "sync-variables",
+              payload: cachedPayload,
+              hash: cachedPayload.hash,
+            },
+          },
+          "*",
+        );
+      });
+
+      // Insert Logos Action
+      elBtnInsertLogos.addEventListener("click", async () => {
+        if (!cachedPayload || !cachedPayload.figmaVariables?.logos) return;
+        elBtnInsertLogos.disabled = true;
+        log("Preparing vector logo nodes for canvas…");
+
+        const logosWithSvg = [];
+        for (const logo of cachedPayload.figmaVariables.logos) {
+          try {
+            const res = await fetch(logo.url);
+            if (res.ok) {
+              const svgText = await res.text();
+              if (svgText.includes("<svg")) {
+                logosWithSvg.push({ ...logo, svg: svgText });
+              }
+            }
+          } catch (e) {
+            console.warn("Could not fetch SVG for logo:", logo.url);
+          }
+        }
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "insert-logos",
+              logos: logosWithSvg,
+            },
+          },
+          "*",
+        );
+      });
+
+      elBtnCheck.addEventListener("click", checkCloudStatus);
+      elKitId.addEventListener("change", checkCloudStatus);
+    </script>
+  </body>
 </html>

@@ -22,19 +22,23 @@
 ## Running in Figma Developer Mode
 
 ### Prerequisites
+
 - Figma Desktop App (Mac or Windows).
 
 ### Step 1: Import the Plugin Manifest
+
 1. Open the **Figma Desktop App**.
-2. Go to **Plugins** -> **Development** -> **Import plugin from manifest...** (or right-click canvas -> *Plugins* -> *Development* -> *Import plugin from manifest...*).
+2. Go to **Plugins** -> **Development** -> **Import plugin from manifest...** (or right-click canvas -> _Plugins_ -> _Development_ -> _Import plugin from manifest..._).
 3. Select the [`figma-plugin/manifest.json`](manifest.json) file in this directory.
 
 ### Step 2: Obtain Credentials from Brand Muse
+
 1. Open your Brand Kit in Brand Muse (`/kit/:kitId`).
 2. Scroll to the **Export** section and find the **Figma Plugin Bridge** card.
 3. Copy your **Brand Kit ID** and **Sync Access Token** (or make the kit public).
 
 ### Step 3: Synchronize Tokens
+
 1. In Figma, run **Brand Muse · Token Sync** from the Plugins menu.
 2. Paste your **Brand Kit ID** and **Sync Access Token**.
 3. Set your API Host URL (defaults to `http://localhost:5173` for local development, or your production deployment URL).
@@ -52,10 +56,12 @@ GET /api/v1/kits/:kitId/tokens?token=:shareToken
 ```
 
 ### Headers
+
 - `Content-Type: application/json`
 - `Authorization: Bearer <shareToken>` (optional if `token` query param is provided)
 
 ### Response Payload Structure
+
 ```json
 {
   "version": "1.0.0",

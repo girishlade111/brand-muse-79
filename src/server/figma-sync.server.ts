@@ -45,11 +45,7 @@ export async function executeGetFigmaTokens(
   let assets = overrides?.assets;
 
   if (!kit) {
-    const kitRows = await db
-      .select()
-      .from(brandKits)
-      .where(eq(brandKits.id, data.kitId))
-      .limit(1);
+    const kitRows = await db.select().from(brandKits).where(eq(brandKits.id, data.kitId)).limit(1);
 
     kit = kitRows[0];
   }
@@ -71,10 +67,18 @@ export async function executeGetFigmaTokens(
   // Fetch children if not passed as overrides
   if (!colors || !fonts || !tokens || !assets) {
     const [colorRows, fontRows, tokenRows, assetRows] = await Promise.all([
-      colors ? Promise.resolve(colors) : db.select().from(kitColors).where(eq(kitColors.kitId, data.kitId)),
-      fonts ? Promise.resolve(fonts) : db.select().from(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
-      tokens ? Promise.resolve(tokens) : db.select().from(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
-      assets ? Promise.resolve(assets) : db.select().from(kitAssets).where(eq(kitAssets.kitId, data.kitId)),
+      colors
+        ? Promise.resolve(colors)
+        : db.select().from(kitColors).where(eq(kitColors.kitId, data.kitId)),
+      fonts
+        ? Promise.resolve(fonts)
+        : db.select().from(kitFonts).where(eq(kitFonts.kitId, data.kitId)),
+      tokens
+        ? Promise.resolve(tokens)
+        : db.select().from(kitTokens).where(eq(kitTokens.kitId, data.kitId)),
+      assets
+        ? Promise.resolve(assets)
+        : db.select().from(kitAssets).where(eq(kitAssets.kitId, data.kitId)),
     ]);
 
     colors = colorRows;

@@ -32,9 +32,7 @@ describe("Figma Token Synchronization Server Engine", () => {
       updatedAt: new Date("2026-09-23T00:00:00Z"),
     };
 
-    const sampleColors = [
-      { hex: "#0A0A0A", role: "primary", name: "Sumi Black" },
-    ];
+    const sampleColors = [{ hex: "#0A0A0A", role: "primary", name: "Sumi Black" }];
 
     it("rejects unauthorized requests when private kit is missing valid token", async () => {
       await expect(

@@ -19,8 +19,7 @@ figma.ui.onmessage = async (msg) => {
         const kitId = (await figma.clientStorage.getAsync(STORAGE_KEY_KIT_ID)) || "";
         const shareToken = (await figma.clientStorage.getAsync(STORAGE_KEY_TOKEN)) || "";
         const apiUrl =
-          (await figma.clientStorage.getAsync(STORAGE_KEY_API_URL)) ||
-          "http://localhost:5173";
+          (await figma.clientStorage.getAsync(STORAGE_KEY_API_URL)) || "http://localhost:5173";
         const lastHash = (await figma.clientStorage.getAsync(STORAGE_KEY_LAST_HASH)) || null;
         const lastSync = (await figma.clientStorage.getAsync(STORAGE_KEY_LAST_SYNC)) || null;
 
@@ -36,9 +35,12 @@ figma.ui.onmessage = async (msg) => {
       }
 
       case "save-config": {
-        if (msg.kitId !== undefined) await figma.clientStorage.setAsync(STORAGE_KEY_KIT_ID, msg.kitId);
-        if (msg.shareToken !== undefined) await figma.clientStorage.setAsync(STORAGE_KEY_TOKEN, msg.shareToken);
-        if (msg.apiUrl !== undefined) await figma.clientStorage.setAsync(STORAGE_KEY_API_URL, msg.apiUrl);
+        if (msg.kitId !== undefined)
+          await figma.clientStorage.setAsync(STORAGE_KEY_KIT_ID, msg.kitId);
+        if (msg.shareToken !== undefined)
+          await figma.clientStorage.setAsync(STORAGE_KEY_TOKEN, msg.shareToken);
+        if (msg.apiUrl !== undefined)
+          await figma.clientStorage.setAsync(STORAGE_KEY_API_URL, msg.apiUrl);
         figma.notify("Configuration saved locally.");
         break;
       }

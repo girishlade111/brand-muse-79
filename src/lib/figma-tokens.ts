@@ -249,8 +249,7 @@ export function buildFigmaVariablesPayload(p: {
     p.fonts.find((f) => /display|heading/i.test(f.role ?? ""))?.family || "Cormorant Garamond";
   const bodyFont =
     p.fonts.find((f) => /body|text|sans/i.test(f.role ?? ""))?.family || "Libre Baskerville";
-  const monoFont =
-    p.fonts.find((f) => /mono|code/i.test(f.role ?? ""))?.family || "Courier Prime";
+  const monoFont = p.fonts.find((f) => /mono|code/i.test(f.role ?? ""))?.family || "Courier Prime";
 
   const textStyles: FigmaTextStyle[] = [
     {
