@@ -2299,16 +2299,30 @@ function AssetsSection({
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
           // {assets.length} asset{assets.length === 1 ? "" : "s"}
         </div>
-        <button
-          type="button"
-          onClick={findMore}
-          disabled={harvesting}
-          title="Re-scan the source URL for additional logos, marks, and icons"
-          className="glass inline-flex items-center gap-2 rounded-full px-5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-opacity hover:opacity-80 disabled:opacity-50"
-        >
-          {harvesting && <Loader2 className="h-3 w-3 animate-spin" />}
-          {harvesting ? "Scanning…" : "Find more"}
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="#vectorizer"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById("vectorizer");
+              if (el) smoothScrollTo(el, -96);
+            }}
+            className="border border-[#8B1A1A] bg-[#8B1A1A] text-[#F4EFE6] px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] font-bold hover:opacity-90 transition-opacity"
+            style={{ borderRadius: 0 }}
+          >
+            ★ Vectorizer Studio
+          </a>
+          <button
+            type="button"
+            onClick={findMore}
+            disabled={harvesting}
+            title="Re-scan the source URL for additional logos, marks, and icons"
+            className="glass inline-flex items-center gap-2 rounded-full px-5 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-foreground transition-opacity hover:opacity-80 disabled:opacity-50"
+          >
+            {harvesting && <Loader2 className="h-3 w-3 animate-spin" />}
+            {harvesting ? "Scanning…" : "Find more"}
+          </button>
+        </div>
       </div>
       {sourceLogo && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--surface-raised)] p-5">
@@ -2432,15 +2446,30 @@ function AssetsSection({
                   {a.kind}
                 </span>
                 {primary ? (
-                  <a
-                    href={primary}
-                    download
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
-                  >
-                    Download
-                  </a>
+                  <div className="flex items-center gap-3">
+                    {/logo|mark|favicon|wordmark|icon/i.test(a.kind) && (
+                      <a
+                        href="#vectorizer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const el = document.getElementById("vectorizer");
+                          if (el) smoothScrollTo(el, -96);
+                        }}
+                        className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#8B1A1A] font-bold hover:underline"
+                      >
+                        [ Vectorize ]
+                      </a>
+                    )}
+                    <a
+                      href={primary}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent hover:underline"
+                    >
+                      Download
+                    </a>
+                  </div>
                 ) : null}
               </div>
             </div>
