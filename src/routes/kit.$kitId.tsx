@@ -3089,6 +3089,8 @@ function ExportSection(props: {
             </div>
           )}
         </div>
+      )}
+
       {/* Official Figma Plugin Bridge Card */}
       <div
         className="border border-[#0A0A0A] bg-card p-6 text-foreground"
