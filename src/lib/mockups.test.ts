@@ -140,11 +140,24 @@ describe("Live AI Brand Mockups Studio — Core Engine", () => {
         expect(svg).toContain("<svg");
         expect(svg).toContain(`width="${tc.expectedWidth}"`);
         expect(svg).toContain(`height="${tc.expectedHeight}"`);
-        expect(svg).toContain("SUMI STUDIOS");
-        expect(svg).toContain("Sharp Edges Everywhere");
+        expect(svg.toLowerCase()).toContain("sumi studios");
         expect(svg).toContain("</svg>");
       }
     }
+  });
+
+  it("injects custom headline, tagline, and CTA into editorial presets", () => {
+    const svg = buildMockupSVG({
+      presetId: "instagram-square",
+      variant: "light",
+      kitName: "Sumi Studios",
+      headline: "Sharp Edges Everywhere",
+      tagline: "Japanese Washi & Sumi Ink Standard.",
+      cta: "Enter Studio",
+    });
+    expect(svg).toContain("Sharp Edges Everywhere");
+    expect(svg).toContain("Japanese Washi &amp; Sumi Ink Standard.");
+    expect(svg).toContain("ENTER STUDIO");
   });
 
   it("gracefully falls back when logoUrl is missing with elegant typographic mark", () => {

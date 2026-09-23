@@ -440,7 +440,7 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
 
         <!-- Labeling -->
         <text x="80" y="80" font-family="${monoFont}" font-size="12" font-weight="700" fill="${inkColor}" letter-spacing="3">
-          // STATIONERY SUITE · 350GSM COTTON BUSINESS CARDS
+          // STATIONERY SUITE · ${kitNameEsc.toUpperCase()} · 350GSM COTTON BUSINESS CARDS
         </text>
 
         <!-- Front Card (Dark/Primary Foil) with Cast Shadow -->
@@ -672,7 +672,7 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
           <g transform="translate(130, 240)">
             ${renderLogo(0, 0, 220, 60, printColor)}
             <text x="110" y="110" font-family="${displayFont}" font-size="28" font-weight="700" fill="${printColor}" text-anchor="middle">
-              ${kitNameEsc}
+              ${kitNameEsc.toUpperCase()}
             </text>
             <text x="110" y="136" font-family="${monoFont}" font-size="10" font-weight="700" fill="${accent}" text-anchor="middle" letter-spacing="2">
               COFFEE · CODE · CRAFT
@@ -682,7 +682,7 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
 
         <!-- Spec Caption -->
         <text x="80" y="80" font-family="${monoFont}" font-size="12" font-weight="700" fill="${isDark ? washi : sumi}" letter-spacing="3">
-          // CERAMIC OBJECT 01 · 12OZ MATTE GLAZE MUG
+          // CERAMIC OBJECT 01 · ${kitNameEsc.toUpperCase()} · 12OZ MATTE GLAZE MUG
         </text>
       `;
       break;
@@ -723,7 +723,7 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
           <!-- Massive Headline & Content Layout -->
           <g transform="translate(100, 140)">
             <text x="0" y="0" font-family="${monoFont}" font-size="14" font-weight="700" fill="${accent}" letter-spacing="4">
-              // METROPOLITAN CAMPAIGN · NATIVE DISPLAY
+              // METROPOLITAN CAMPAIGN · ${kitNameEsc.toUpperCase()} · NATIVE DISPLAY
             </text>
             
             <text x="0" y="90" font-family="${displayFont}" font-size="88" font-weight="700" fill="${inkColor}" letter-spacing="-2">
@@ -770,7 +770,7 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
           <!-- Top Kiosk Header -->
           <g transform="translate(80, 100)">
             <text x="0" y="0" font-family="${monoFont}" font-size="13" font-weight="700" fill="${accent}" letter-spacing="3">
-              // URBAN TRANSIT DISPLAY · 01
+              // URBAN TRANSIT DISPLAY · ${kitNameEsc.toUpperCase()}
             </text>
             <text x="${832 - 160}" y="0" font-family="${monoFont}" font-size="12" fill="${inkColor}" opacity="0.5" text-anchor="end">
               LOC: SOHO ARCHIVE
@@ -866,8 +866,11 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
             <rect width="260" height="912" fill="${saasSurface}" stroke="${saasBorder}" stroke-width="1" />
             
             <!-- Sidebar Logo -->
-            <g transform="translate(24, 30)">
+            <g transform="translate(24, 25)">
               ${renderLogo(0, 0, 210, 44, saasInk)}
+              <text x="0" y="62" font-family="${monoFont}" font-size="10" font-weight="700" fill="${saasInk}" opacity="0.8" letter-spacing="2">
+                ${kitNameEsc.toUpperCase()}
+              </text>
             </g>
 
             <!-- Nav Items (0px radius) -->
