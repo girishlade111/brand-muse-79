@@ -12,11 +12,7 @@ export type WasmVectorizerEngine = {
     bgB: number,
     tolerance: number, // 0 to 1
   ) => void;
-  denoiseMask: (
-    mask: Uint8Array,
-    width: number,
-    height: number,
-  ) => Uint8Array;
+  denoiseMask: (mask: Uint8Array, width: number, height: number) => Uint8Array;
 };
 
 // ---------------------------------------------------------------------------

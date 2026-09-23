@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  SaveVectorizedLogoInputSchema,
-  VectorizeLogoServerInputSchema,
-} from "./vectorizer.server";
+import { SaveVectorizedLogoInputSchema, VectorizeLogoServerInputSchema } from "./vectorizer.server";
 
 describe("Logo Vectorizer Server Engine", () => {
   const validUuid = "123e4567-e89b-12d3-a456-426614174000";

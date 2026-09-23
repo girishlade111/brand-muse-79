@@ -8,11 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import {
-  vectorizeRaster,
-  type VectorizerOptions,
-  type VectorizedResult,
-} from "@/lib/vectorizer";
+import { vectorizeRaster, type VectorizerOptions, type VectorizedResult } from "@/lib/vectorizer";
 import { saveVectorizedLogoFn } from "@/server/vectorizer.server";
 import {
   Sparkles,
@@ -532,7 +528,8 @@ export function LogoVectorizerStudio({
                 className="cursor-pointer"
               />
               <p className="font-mono text-[9px] text-muted-foreground">
-                Fits smooth cubic Bézier curves (0 = rigid sharp polygons, 100 = aerodynamic curvature).
+                Fits smooth cubic Bézier curves (0 = rigid sharp polygons, 100 = aerodynamic
+                curvature).
               </p>
             </div>
 

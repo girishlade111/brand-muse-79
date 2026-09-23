@@ -34,7 +34,10 @@ export type Point = { x: number; y: number };
 // ---------------------------------------------------------------------------
 
 export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  const toHex = (n: number) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
 }
 
@@ -113,11 +116,7 @@ export function simplifyPolygon(points: Point[], epsilon: number): Point[] {
 // Contour Loop Extraction (Marching Squares / Boundary Following)
 // ---------------------------------------------------------------------------
 
-export function extractContourLoops(
-  mask: Uint8Array,
-  width: number,
-  height: number,
-): Point[][] {
+export function extractContourLoops(mask: Uint8Array, width: number, height: number): Point[][] {
   // Visited horizontal and vertical boundary edges
   const hEdges = new Uint8Array((width + 1) * (height + 1));
   const vEdges = new Uint8Array((width + 1) * (height + 1));
@@ -295,10 +294,7 @@ export function fitBezierPath(points: Point[], smoothness: number): string {
 
 type ColorCluster = { r: number; g: number; b: number; count: number };
 
-function quantizeColors(
-  data: Uint8Array | Uint8ClampedArray,
-  k: number,
-): ColorCluster[] {
+function quantizeColors(data: Uint8Array | Uint8ClampedArray, k: number): ColorCluster[] {
   // Collect non-transparent pixels
   const samples: Array<[number, number, number]> = [];
   const len = data.length;
@@ -459,9 +455,7 @@ export function vectorizeRaster(
     }
 
     if (pathStrings.length > 0) {
-      pathElements.push(
-        `<path fill="${hex}" fill-rule="evenodd" d="${pathStrings.join(" ")}" />`,
-      );
+      pathElements.push(`<path fill="${hex}" fill-rule="evenodd" d="${pathStrings.join(" ")}" />`);
     }
   }
 
