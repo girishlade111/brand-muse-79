@@ -71,7 +71,7 @@ export type FigmaSyncResponsePayload = {
   kitName: string;
   updatedAt: string;
   hash: string;
-  dtcg: Record<string, unknown>;
+  dtcg: Record<string, any>;
   figmaVariables: FigmaVariablesPayload;
 };
 
