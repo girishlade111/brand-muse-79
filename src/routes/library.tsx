@@ -192,9 +192,40 @@ function LibraryPage() {
           >
             Your brand kits.
           </h1>
+
+          <div className="mt-8 flex items-center gap-2 border-b border-[color:var(--border-subtle)] pb-2 font-mono text-[11px] uppercase tracking-[0.16em]">
+            <button
+              type="button"
+              onClick={() => setViewMode("kits")}
+              className={`px-3 py-1.5 transition-colors ${
+                viewMode === "kits"
+                  ? "border border-[#0A0A0A] bg-foreground text-background font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              style={{ borderRadius: 0 }}
+            >
+              [ Brand Kits ({kits.length}) ]
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("developer")}
+              className={`px-3 py-1.5 transition-colors ${
+                viewMode === "developer"
+                  ? "border border-[#0A0A0A] bg-foreground text-background font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              style={{ borderRadius: 0 }}
+            >
+              [ Developer Settings &amp; API ]
+            </button>
+          </div>
         </div>
 
-        {kits.length > 0 && (
+        {viewMode === "developer" ? (
+          <DeveloperSettings userId={ownerToken} />
+        ) : (
+          <>
+            {kits.length > 0 && (
           <div
             className="mb-6 flex items-center justify-between border-y py-3"
             style={{ borderColor: "rgba(10,10,10,0.20)" }}
