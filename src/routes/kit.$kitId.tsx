@@ -79,6 +79,7 @@ import { StudioSection } from "@/components/studio/studio-section";
 import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";
 import { MockupsStudio } from "@/components/mockups/mockups-studio";
+import { BrandComponentLibrary } from "@/components/brand-components/brand-component-library";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -367,13 +368,13 @@ function KitPage() {
                         }
                       }}
                       className={`whitespace-nowrap px-3 py-1.5 transition-colors ${
-                        sec.id === "mockups"
+                        sec.id === "mockups" || sec.id === "components"
                           ? "border border-[#8B1A1A] bg-[#8B1A1A] font-bold text-[#F4EFE6]"
                           : "border border-[rgba(10,10,10,0.18)] bg-transparent text-muted-foreground hover:border-[#0A0A0A] hover:text-foreground"
                       }`}
                       style={{ borderRadius: 0 }}
                     >
-                      {sec.id === "mockups"
+                      {sec.id === "mockups" || sec.id === "components"
                         ? `[ ★ ${sec.label.toUpperCase()} ]`
                         : `[ ${sec.label.toUpperCase()} ]`}
                     </a>
@@ -444,7 +445,15 @@ function KitPage() {
                   onMockupSaved={() => setReloadKey((k) => k + 1)}
                 />
               </SectionAnchor>
-              <SectionAnchor id="sandbox" label="// 08. SANDBOX">
+              <SectionAnchor id="components" label="// 08. INTERACTIVE BRAND UI COMPONENT LIBRARY">
+                <BrandComponentLibrary
+                  kitId={kit.id}
+                  kitName={kit.name}
+                  colors={data.colors}
+                  fonts={data.fonts}
+                />
+              </SectionAnchor>
+              <SectionAnchor id="sandbox" label="// 09. SANDBOX">
                 <SandboxSection
                   kitName={kit.name}
                   colors={data.colors}
@@ -495,6 +504,7 @@ const KIT_SECTIONS = [
   { id: "tokens", label: "Tokens" },
   { id: "voice", label: "Voice" },
   { id: "mockups", label: "Mockups" },
+  { id: "components", label: "Components" },
   { id: "sandbox", label: "Sandbox" },
   { id: "text", label: "Source Text" },
   { id: "export", label: "Export" },
