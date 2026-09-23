@@ -1519,19 +1519,33 @@ function IntelligenceSections({
 }) {
   return (
     <>
+      {/* ── Export Button ─────────────────────────────────────────────── */}
+      <div className="no-print mb-6 flex items-center justify-end">
+        <button
+          type="button"
+          onClick={onExportPdf}
+          className="inline-flex items-center gap-2 border border-[#0A0A0A] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#0A0A0A] transition-colors hover:bg-[#0A0A0A] hover:text-[#F4EFE6]"
+          style={{ borderRadius: 0 }}
+        >
+          <FileDown className="h-3.5 w-3.5" strokeWidth={1.5} />
+          Export Pitch Deck PDF
+        </button>
+      </div>
+
+      {/* ── 01 360° Color Wheel ───────────────────────────────────────── */}
       <div
-        className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
+        className="mb-4 mt-10 flex items-baseline justify-between border-b pb-3"
         style={{ borderColor: "rgba(10,10,10,0.20)" }}
       >
         <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
-          01 — Color temperature & vibrancy
+          01 — Color chromaticity &amp; hue distribution
         </h2>
-        <span className={`${mono} text-muted-foreground`}>{activeKits.length} kits</span>
+        <span className={`${mono} text-muted-foreground`}>{activeKits.length} kits · 360° wheel</span>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
-          <p className={`${mono} mb-4 text-muted-foreground`}>Radar — hue psychology at a glance</p>
-          <RadarChart axes={matrix.axes} series={matrix.series} />
+          <p className={`${mono} mb-4 text-muted-foreground`}>360° polar hue wheel — white-space arcs highlighted</p>
+          <ColorWheelChart series={colorWheelSeries} />
         </section>
         <section className="space-y-5 border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
           <div className="space-y-4">
@@ -1569,6 +1583,11 @@ function IntelligenceSections({
         </section>
       </div>
 
+      {/* ── 01b Recharts Multi-Series Capability Radar ───────────────── */}
+      <div className="mt-6">
+        <CompetitorRadarChart competitors={competitorProfiles} />
+      </div>
+
       {/* ── 02 Typography DNA + Classification Grid ────────────────── */}
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
@@ -1598,12 +1617,13 @@ function IntelligenceSections({
         <TypographyClassificationGrid competitors={competitorProfiles} />
       </div>
 
+      {/* ── 03 Voice Spectrum + Brand Tone Quadrant ───────────────────── */}
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
         style={{ borderColor: "rgba(10,10,10,0.20)" }}
       >
         <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
-          03 — Voice & sentiment spectrum
+          03 — Voice spectrum &amp; brand tone quadrant
         </h2>
         <span className={`${mono} text-muted-foreground`}>-1 → +1 per axis</span>
       </div>
@@ -1648,8 +1668,10 @@ function IntelligenceSections({
           ))}
         </div>
       </section>
+      <div className="mt-6">
+        <BrandToneScatterQuadrant competitors={competitorProfiles} />
+      </div>
 
-      {/* ── 04 Market Niche (legacy) ──────────────────────────────────── */}
       <div
         className="mb-4 mt-14 flex items-baseline justify-between border-b pb-3"
         style={{ borderColor: "rgba(10,10,10,0.20)" }}
