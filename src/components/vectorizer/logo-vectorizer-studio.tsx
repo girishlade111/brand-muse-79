@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { vectorizeRaster, type VectorizerOptions, type VectorizedResult } from "@/lib/vectorizer";
-import { saveVectorizedLogoFn } from "@/server/vectorizer.server";
+import { saveVectorizedLogoFn } from "@/lib/vectorizer.functions";
 import {
   Sparkles,
   Download,

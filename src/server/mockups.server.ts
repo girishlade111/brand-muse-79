@@ -87,12 +87,10 @@ export const SaveMockupInputSchema = z.object({
 export type SaveMockupInput = z.infer<typeof SaveMockupInputSchema>;
 
 // ---------------------------------------------------------------------------
-// TanStack Start Server Function: generateBrandMockupFn
+// Core Business Logic: executeGenerateBrandMockup
 // ---------------------------------------------------------------------------
 
-export const generateBrandMockupFn = createServerFn({ method: "POST" })
-  .validator((d: unknown) => GenerateMockupInputSchema.parse(d))
-  .handler(async ({ data }) => {
+export async function executeGenerateBrandMockup(data: GenerateMockupInput) {
     // 1. Fetch kit and brand tokens from Drizzle
     const [kitRows, colorRows, fontRows, voiceRows, assetRows] = await Promise.all([
       db.select().from(brandKits).where(eq(brandKits.id, data.kitId)).limit(1),
@@ -312,16 +310,20 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
         prompt,
       };
     }
+}
+
+export const generateBrandMockupFn = createServerFn({ method: "POST" })
+  .validator((d: unknown) => GenerateMockupInputSchema.parse(d))
+  .handler(async ({ data }) => {
+    return executeGenerateBrandMockup(data);
   });
 
 // ---------------------------------------------------------------------------
-// TanStack Start Server Function: saveMockupAssetFn
+// Core Business Logic: executeSaveMockupAsset
 // Saves client-composed deterministic mockups into kit_assets and storage.
 // ---------------------------------------------------------------------------
 
-export const saveMockupAssetFn = createServerFn({ method: "POST" })
-  .validator((d: unknown) => SaveMockupInputSchema.parse(d))
-  .handler(async ({ data }) => {
+export async function executeSaveMockupAsset(data: SaveMockupInput) {
     const kitRows = await db
       .select({ id: brandKits.id })
       .from(brandKits)
@@ -367,15 +369,19 @@ export const saveMockupAssetFn = createServerFn({ method: "POST" })
       .returning();
 
     return { ok: true, asset: saved };
+}
+
+export const saveMockupAssetFn = createServerFn({ method: "POST" })
+  .validator((d: unknown) => SaveMockupInputSchema.parse(d))
+  .handler(async ({ data }) => {
+    return executeSaveMockupAsset(data);
   });
 
 // ---------------------------------------------------------------------------
-// TanStack Start Server Function: getKitMockupsFn
+// Core Business Logic: executeGetKitMockups
 // ---------------------------------------------------------------------------
 
-export const getKitMockupsFn = createServerFn({ method: "POST" })
-  .validator(z.object({ kitId: z.string().uuid() }).parse)
-  .handler(async ({ data }) => {
+export async function executeGetKitMockups(data: { kitId: string }) {
     const rows = await db
       .select()
       .from(kitAssets)
@@ -388,15 +394,19 @@ export const getKitMockupsFn = createServerFn({ method: "POST" })
         url: r.storagePath ? publicUrlFor(r.storagePath) : r.url,
       })),
     };
+}
+
+export const getKitMockupsFn = createServerFn({ method: "POST" })
+  .validator(z.object({ kitId: z.string().uuid() }).parse)
+  .handler(async ({ data }) => {
+    return executeGetKitMockups(data);
   });
 
 // ---------------------------------------------------------------------------
-// TanStack Start Server Function: deleteKitMockupFn
+// Core Business Logic: executeDeleteKitMockup
 // ---------------------------------------------------------------------------
 
-export const deleteKitMockupFn = createServerFn({ method: "POST" })
-  .validator(z.object({ kitId: z.string().uuid(), assetId: z.string().uuid() }).parse)
-  .handler(async ({ data }) => {
+export async function executeDeleteKitMockup(data: { kitId: string; assetId: string }) {
     const rows = await db
       .select()
       .from(kitAssets)
@@ -415,4 +425,11 @@ export const deleteKitMockupFn = createServerFn({ method: "POST" })
 
     await db.delete(kitAssets).where(eq(kitAssets.id, data.assetId));
     return { ok: true };
+}
+
+export const deleteKitMockupFn = createServerFn({ method: "POST" })
+  .validator(z.object({ kitId: z.string().uuid(), assetId: z.string().uuid() }).parse)
+  .handler(async ({ data }) => {
+    return executeDeleteKitMockup(data);
   });
+

@@ -3,15 +3,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { generateApiKeyFn, listApiKeysFn, revokeApiKeyFn } from "@/server/api-auth.server";
 import {
+  generateApiKeyFn,
+  listApiKeysFn,
+  revokeApiKeyFn,
   createWebhookSubscriptionFn,
   listWebhookSubscriptionsFn,
   deleteWebhookSubscriptionFn,
   testPingWebhookFn,
   WEBHOOK_EVENTS,
   type WebhookEventName,
-} from "@/server/webhooks.server";
+} from "@/lib/developer-settings.functions";
 import {
   Key,
   Webhook,

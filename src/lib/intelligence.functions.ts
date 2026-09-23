@@ -7,6 +7,8 @@ import {
   type MarketWhitespaceAnalysis,
 } from "@/server/ai.server";
 
+export type { MarketNiche, MarketWhitespaceAnalysis };
+
 export const AnalyzeMarketNicheInputSchema = z.object({
   kitIds: z.array(z.string().uuid()).min(2).max(4),
 });

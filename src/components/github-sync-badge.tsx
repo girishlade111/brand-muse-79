@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getKitGitSyncsFn } from "@/server/github-sync.server";
+import { getKitGitSyncsFn } from "@/lib/github-sync.functions";
 import { GitHubSyncModal } from "./github-sync-modal";
 import { GitPullRequest, CheckCircle2, GitBranch } from "lucide-react";
 

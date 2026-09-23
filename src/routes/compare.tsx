@@ -22,7 +22,12 @@ import { getAnonToken, getAnonTokenHistory } from "@/lib/anon";
 import { readKitsCache, writeKitsCache } from "@/lib/kits-cache";
 import { useAutoImportFonts, renderFamilyFor } from "@/lib/font-loader";
 import { getKit, listKitsByOwner } from "@/lib/kits.functions";
-import { analyzeMarketNiche, analyzeMarketWhitespace } from "@/lib/intelligence.functions";
+import {
+  analyzeMarketNiche,
+  analyzeMarketWhitespace,
+  type MarketNiche,
+  type MarketWhitespaceAnalysis,
+} from "@/lib/intelligence.functions";
 import { contrastRatio, isValidHex, normalizeHex, relativeLuminance } from "@/lib/color";
 import {
   SERIES_INK,
@@ -32,7 +37,6 @@ import {
   buildComparisonMatrix,
   type ComparedKit,
 } from "@/lib/intelligence";
-import type { MarketNiche, MarketWhitespaceAnalysis } from "@/server/ai.server";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,

@@ -27,7 +27,7 @@ import {
   saveMockupAssetFn,
   getKitMockupsFn,
   deleteKitMockupFn,
-} from "@/server/mockups.server";
+} from "@/lib/mockups.functions";
 import {
   Share2,
   CreditCard,

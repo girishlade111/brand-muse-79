@@ -17,7 +17,7 @@ import {
   fetchGitHubBranchesFn,
   createTokenPullRequestFn,
   getKitGitSyncsFn,
-} from "@/server/github-sync.server";
+} from "@/lib/github-sync.functions";
 import {
   GitPullRequest,
   Check,
