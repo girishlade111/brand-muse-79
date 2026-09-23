@@ -39,11 +39,7 @@ export interface CompetitorKitProfile {
 // 1. Recharts Competitor Radar Chart
 // ============================================================================
 
-export function CompetitorRadarChart({
-  competitors,
-}: {
-  competitors: CompetitorKitProfile[];
-}) {
+export function CompetitorRadarChart({ competitors }: { competitors: CompetitorKitProfile[] }) {
   const axes = [
     { key: "vibrancy", label: "Color Vibrancy" },
     { key: "warmth", label: "Warmth / Energy" },
@@ -59,8 +55,10 @@ export function CompetitorRadarChart({
       let val = 0.5;
       if (a.key === "vibrancy") val = Math.min(1, c.colorProfile.vibrancy);
       else if (a.key === "warmth") val = Math.min(1, c.colorProfile.warmRatio);
-      else if (a.key === "typeVariety") val = Math.min(1, (c.typeProfile.weightCount + c.typeProfile.count) / 8);
-      else if (a.key === "contrast") val = Math.min(1, c.colorProfile.coolRatio * 0.5 + c.colorProfile.warmRatio * 0.5);
+      else if (a.key === "typeVariety")
+        val = Math.min(1, (c.typeProfile.weightCount + c.typeProfile.count) / 8);
+      else if (a.key === "contrast")
+        val = Math.min(1, c.colorProfile.coolRatio * 0.5 + c.colorProfile.warmRatio * 0.5);
       else if (a.key === "signal") val = Math.min(1, c.voiceProfile.signal / 2);
       row[c.id] = Math.round(val * 100);
     });
@@ -86,7 +84,12 @@ export function CompetitorRadarChart({
               dataKey="axis"
               tick={{ fill: "#0A0A0A", fontSize: 10, fontFamily: "monospace" }}
             />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="rgba(10,10,10,0.15)" tick={false} />
+            <PolarRadiusAxis
+              angle={30}
+              domain={[0, 100]}
+              stroke="rgba(10,10,10,0.15)"
+              tick={false}
+            />
             {competitors.map((c, idx) => {
               const color = SERIES_INK[idx % SERIES_INK.length];
               return (
@@ -124,11 +127,7 @@ export function CompetitorRadarChart({
 // 2. Recharts Brand Tone Quadrant Scatter Plot
 // ============================================================================
 
-export function BrandToneScatterQuadrant({
-  competitors,
-}: {
-  competitors: CompetitorKitProfile[];
-}) {
+export function BrandToneScatterQuadrant({ competitors }: { competitors: CompetitorKitProfile[] }) {
   // Scatter points: x = Playful (-1) to Serious (1), y = Modern (-1) to Traditional (1), z = Luxury (1) to Budget (-1)
   const scatterData = competitors.map((c, idx) => ({
     id: c.id,
@@ -163,27 +162,18 @@ export function BrandToneScatterQuadrant({
         <div className="mt-4 text-right font-mono">↓ Modern · Serious →</div>
       </div>
 
-      <div className="relative h-[320px] w-full border bg-neutral-50/50 dark:bg-neutral-900/20" style={{ borderColor: HAIR }}>
+      <div
+        className="relative h-[320px] w-full border bg-neutral-50/50 dark:bg-neutral-900/20"
+        style={{ borderColor: HAIR }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
             {/* Center Crosshair Axes */}
             <ReferenceLine x={0} stroke="rgba(10,10,10,0.25)" strokeWidth={1.5} />
             <ReferenceLine y={0} stroke="rgba(10,10,10,0.25)" strokeWidth={1.5} />
 
-            <XAxis
-              type="number"
-              dataKey="x"
-              domain={[-100, 100]}
-              tick={false}
-              axisLine={false}
-            />
-            <YAxis
-              type="number"
-              dataKey="y"
-              domain={[-100, 100]}
-              tick={false}
-              axisLine={false}
-            />
+            <XAxis type="number" dataKey="x" domain={[-100, 100]} tick={false} axisLine={false} />
+            <YAxis type="number" dataKey="y" domain={[-100, 100]} tick={false} axisLine={false} />
             <ZAxis type="number" dataKey="z" range={[80, 240]} />
 
             <ReTooltip
@@ -196,7 +186,10 @@ export function BrandToneScatterQuadrant({
                     style={{ borderRadius: "0px", borderColor: "rgba(255,255,255,0.15)" }}
                   >
                     <div className="flex items-center gap-1.5 font-mono text-[10px]">
-                      <span className="inline-block h-2 w-2 rounded-full" style={{ background: d.color }} />
+                      <span
+                        className="inline-block h-2 w-2 rounded-full"
+                        style={{ background: d.color }}
+                      />
                       <span className="font-bold">{d.name}</span>
                     </div>
                     <div className="mt-1 font-mono text-[10px] text-neutral-300">
@@ -221,7 +214,15 @@ export function BrandToneScatterQuadrant({
                   return (
                     <g className="cursor-pointer">
                       <circle cx={cx} cy={cy} r={9} fill={d.color} opacity={0.9} />
-                      <circle cx={cx} cy={cy} r={13} fill="none" stroke={d.color} strokeWidth={1} strokeDasharray="2 2" />
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={13}
+                        fill="none"
+                        stroke={d.color}
+                        strokeWidth={1}
+                        strokeDasharray="2 2"
+                      />
                       <text
                         x={cx}
                         y={cy - 16}
@@ -279,34 +280,51 @@ export function TypographyClassificationGrid({
           const type = c.typeProfile;
 
           return (
-            <div
-              key={c.id}
-              className="border p-4 bg-muted/20"
-              style={{ borderColor: HAIR }}
-            >
-              <div className="flex items-center justify-between border-b pb-2 mb-3" style={{ borderColor: HAIR }}>
+            <div key={c.id} className="border p-4 bg-muted/20" style={{ borderColor: HAIR }}>
+              <div
+                className="flex items-center justify-between border-b pb-2 mb-3"
+                style={{ borderColor: HAIR }}
+              >
                 <span className="font-mono text-xs font-bold truncate text-foreground flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full" style={{ background: color }} />
                   {c.name}
                 </span>
-                <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 border" style={{ borderColor: HAIR }}>
+                <span
+                  className="font-mono text-[9px] uppercase px-1.5 py-0.5 border"
+                  style={{ borderColor: HAIR }}
+                >
                   {type.dominant}
                 </span>
               </div>
 
               {/* Stacked Share Bar */}
-              <div className="flex h-3 w-full overflow-hidden border mb-3" style={{ borderColor: HAIR }}>
+              <div
+                className="flex h-3 w-full overflow-hidden border mb-3"
+                style={{ borderColor: HAIR }}
+              >
                 {type.serif > 0 && (
-                  <span style={{ width: pct(type.serif), background: "#0A0A0A" }} title={`Serif ${pct(type.serif)}`} />
+                  <span
+                    style={{ width: pct(type.serif), background: "#0A0A0A" }}
+                    title={`Serif ${pct(type.serif)}`}
+                  />
                 )}
                 {type.sans > 0 && (
-                  <span style={{ width: pct(type.sans), background: "#94A3B8" }} title={`Sans ${pct(type.sans)}`} />
+                  <span
+                    style={{ width: pct(type.sans), background: "#94A3B8" }}
+                    title={`Sans ${pct(type.sans)}`}
+                  />
                 )}
                 {type.mono > 0 && (
-                  <span style={{ width: pct(type.mono), background: "#8B1A1A" }} title={`Mono ${pct(type.mono)}`} />
+                  <span
+                    style={{ width: pct(type.mono), background: "#8B1A1A" }}
+                    title={`Mono ${pct(type.mono)}`}
+                  />
                 )}
                 {type.display > 0 && (
-                  <span style={{ width: pct(type.display), background: "#D97706" }} title={`Display ${pct(type.display)}`} />
+                  <span
+                    style={{ width: pct(type.display), background: "#D97706" }}
+                    title={`Display ${pct(type.display)}`}
+                  />
                 )}
               </div>
 
@@ -344,17 +362,21 @@ export function TypographyClassificationGrid({
                   Active Font Families:
                 </span>
                 <div className="flex flex-wrap gap-1">
-                  {c.rawFonts.filter((f) => f.family).map((f, fIdx) => (
-                    <span
-                      key={fIdx}
-                      className="font-mono text-[10px] border px-1.5 py-0.5 bg-background"
-                      style={{ borderColor: HAIR }}
-                    >
-                      {f.family}
-                    </span>
-                  ))}
+                  {c.rawFonts
+                    .filter((f) => f.family)
+                    .map((f, fIdx) => (
+                      <span
+                        key={fIdx}
+                        className="font-mono text-[10px] border px-1.5 py-0.5 bg-background"
+                        style={{ borderColor: HAIR }}
+                      >
+                        {f.family}
+                      </span>
+                    ))}
                   {c.rawFonts.length === 0 && (
-                    <span className="font-mono text-[10px] text-muted-foreground italic">None extracted</span>
+                    <span className="font-mono text-[10px] text-muted-foreground italic">
+                      None extracted
+                    </span>
                   )}
                 </div>
               </div>

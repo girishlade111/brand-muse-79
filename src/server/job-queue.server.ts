@@ -58,9 +58,7 @@ export async function publishStepJob(options: PublishJobOptions): Promise<Publis
   const qstashToken = process.env.QSTASH_TOKEN?.trim();
   const qstashUrl = process.env.QSTASH_URL?.trim() || "https://qstash.upstash.io/v2/publish";
   const appBaseUrl =
-    process.env.APP_BASE_URL?.trim() ||
-    process.env.VERCEL_URL?.trim() ||
-    "http://localhost:3000";
+    process.env.APP_BASE_URL?.trim() || process.env.VERCEL_URL?.trim() || "http://localhost:3000";
 
   const targetEndpoint = `${appBaseUrl.replace(/\/+$/, "")}/api/jobs/extract-step`;
   const scheduledAt = Date.now() + delaySeconds * 1000;
@@ -89,7 +87,10 @@ export async function publishStepJob(options: PublishJobOptions): Promise<Publis
           scheduledAt,
         };
       }
-      console.warn("[job-queue] QStash publish non-200, falling back to microtask:", await res.text());
+      console.warn(
+        "[job-queue] QStash publish non-200, falling back to microtask:",
+        await res.text(),
+      );
     } catch (err) {
       console.warn("[job-queue] QStash network error, falling back to microtask:", err);
     }
@@ -99,15 +100,21 @@ export async function publishStepJob(options: PublishJobOptions): Promise<Publis
   const jobId = `job_${Buffer.from(`${kitId}:${step}:${attempt}`).toString("hex").slice(0, 16)}`;
 
   // Decouple execution so the caller returns immediately (<200ms)
-  setTimeout(async () => {
-    try {
-      // Dynamic import to avoid circular dependency
-      const { runExtractionStep } = await import("./async-extraction.server");
-      await runExtractionStep({ kitId, step, attempt });
-    } catch (e) {
-      console.error(`[job-queue] Microtask step execution failed for kit ${kitId}, step ${step}:`, e);
-    }
-  }, Math.max(50, delaySeconds * 1000));
+  setTimeout(
+    async () => {
+      try {
+        // Dynamic import to avoid circular dependency
+        const { runExtractionStep } = await import("./async-extraction.server");
+        await runExtractionStep({ kitId, step, attempt });
+      } catch (e) {
+        console.error(
+          `[job-queue] Microtask step execution failed for kit ${kitId}, step ${step}:`,
+          e,
+        );
+      }
+    },
+    Math.max(50, delaySeconds * 1000),
+  );
 
   return {
     jobId,

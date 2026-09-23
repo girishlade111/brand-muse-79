@@ -133,19 +133,40 @@ export function CalligraphyStepIndicator({
   const getStatusBadge = () => {
     switch (currentStatus) {
       case "crawling":
-        return { label: "巡回中 · Crawling", color: "bg-amber-500/10 text-amber-700 border-amber-300 dark:text-amber-400" };
+        return {
+          label: "巡回中 · Crawling",
+          color: "bg-amber-500/10 text-amber-700 border-amber-300 dark:text-amber-400",
+        };
       case "analyzing_colors":
-        return { label: "色相抽出 · Color Alchemy", color: "bg-indigo-500/10 text-indigo-700 border-indigo-300 dark:text-indigo-400" };
+        return {
+          label: "色相抽出 · Color Alchemy",
+          color: "bg-indigo-500/10 text-indigo-700 border-indigo-300 dark:text-indigo-400",
+        };
       case "resolving_fonts":
-        return { label: "書体同定 · Font Probing", color: "bg-emerald-500/10 text-emerald-700 border-emerald-300 dark:text-emerald-400" };
+        return {
+          label: "書体同定 · Font Probing",
+          color: "bg-emerald-500/10 text-emerald-700 border-emerald-300 dark:text-emerald-400",
+        };
       case "synthesizing_voice":
-        return { label: "調合推敲 · AI Synthesis", color: "bg-purple-500/10 text-purple-700 border-purple-300 dark:text-purple-400" };
+        return {
+          label: "調合推敲 · AI Synthesis",
+          color: "bg-purple-500/10 text-purple-700 border-purple-300 dark:text-purple-400",
+        };
       case "completed":
-        return { label: "落款完了 · Ready", color: "bg-emerald-600/15 text-emerald-800 border-emerald-400 dark:text-emerald-300" };
+        return {
+          label: "落款完了 · Ready",
+          color: "bg-emerald-600/15 text-emerald-800 border-emerald-400 dark:text-emerald-300",
+        };
       case "failed":
-        return { label: "中断 · Retrying", color: "bg-rose-500/15 text-rose-800 border-rose-300 dark:text-rose-400" };
+        return {
+          label: "中断 · Retrying",
+          color: "bg-rose-500/15 text-rose-800 border-rose-300 dark:text-rose-400",
+        };
       default:
-        return { label: "準備中 · Ingesting", color: "bg-stone-500/10 text-stone-700 border-stone-300 dark:text-stone-400" };
+        return {
+          label: "準備中 · Ingesting",
+          color: "bg-stone-500/10 text-stone-700 border-stone-300 dark:text-stone-400",
+        };
     }
   };
 
@@ -224,7 +245,8 @@ export function CalligraphyStepIndicator({
       {/* Five-step Calligraphy Progression Stepper */}
       <div className="mt-8 grid grid-cols-5 gap-2 sm:gap-3">
         {EXTRACTION_STEPS.map((m, idx) => {
-          const isDone = idx < activeIndex || (idx === activeIndex && currentStatus === "completed");
+          const isDone =
+            idx < activeIndex || (idx === activeIndex && currentStatus === "completed");
           const isCurrent = idx === activeIndex && currentStatus !== "completed";
           const isUpcoming = idx > activeIndex;
 

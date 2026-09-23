@@ -261,7 +261,6 @@ export async function authenticateApiRequest(
 // Pure Handlers (Directly Testable)
 // ---------------------------------------------------------------------------
 
-
 export async function executeGenerateApiKey(
   input: GenerateApiKeyInput,
   overrides?: { db?: any },

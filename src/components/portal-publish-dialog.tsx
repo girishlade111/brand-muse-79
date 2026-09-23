@@ -295,8 +295,8 @@ export function PortalPublishDialog({
               Publish Brand Guidelines Website
             </DialogTitle>
             <DialogDescription className="text-xs text-neutral-400 font-sans">
-              Host a live, interactive, white-labeled microsite for {kitName} on custom subdomains or your own
-              custom domain with Cloudflare SSL for SaaS and edge caching.
+              Host a live, interactive, white-labeled microsite for {kitName} on custom subdomains
+              or your own custom domain with Cloudflare SSL for SaaS and edge caching.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -317,7 +317,9 @@ export function PortalPublishDialog({
                       isPublished ? "bg-emerald-400 animate-pulse" : "bg-neutral-600"
                     }`}
                   />
-                  <span>Website Status: {isPublished ? "Live & Published" : "Draft / Private"}</span>
+                  <span>
+                    Website Status: {isPublished ? "Live & Published" : "Draft / Private"}
+                  </span>
                 </div>
                 <p className="text-xs text-neutral-400 mt-0.5">
                   {isPublished
@@ -391,7 +393,11 @@ export function PortalPublishDialog({
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
                       <a href={`/p/${slug}`} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="ghost" className="h-7 px-2 text-neutral-400 hover:text-white">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-neutral-400 hover:text-white"
+                        >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>
                       </a>
@@ -407,7 +413,8 @@ export function PortalPublishDialog({
                         Custom Domain (Cloudflare SSL for SaaS)
                       </Label>
                       <p className="text-xs text-neutral-400 mt-0.5">
-                        Point your own domain (e.g. <code>brand.company.com</code>) directly to your guidelines.
+                        Point your own domain (e.g. <code>brand.company.com</code>) directly to your
+                        guidelines.
                       </p>
                     </div>
                     {settings?.customDomain && (
@@ -486,11 +493,16 @@ export function PortalPublishDialog({
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-neutral-500 block text-[9px]">TARGET</span>
-                              <span>{settings.customDomainCnameTarget || "cname.branddna.app"}</span>
+                              <span>
+                                {settings.customDomainCnameTarget || "cname.branddna.app"}
+                              </span>
                             </div>
                             <button
                               onClick={() =>
-                                copy(settings.customDomainCnameTarget || "cname.branddna.app", "CNAME target")
+                                copy(
+                                  settings.customDomainCnameTarget || "cname.branddna.app",
+                                  "CNAME target",
+                                )
                               }
                               className="text-neutral-400 hover:text-white"
                             >
@@ -547,7 +559,8 @@ export function PortalPublishDialog({
                         <span>Passphrase Protection</span>
                       </div>
                       <p className="text-xs text-neutral-400 mt-0.5">
-                        Require an access code to view the guidelines (ideal for pre-launch rebrands).
+                        Require an access code to view the guidelines (ideal for pre-launch
+                        rebrands).
                       </p>
                     </div>
                     <Switch
@@ -675,9 +688,12 @@ export function PortalPublishDialog({
                 <div className="rounded-xl border border-neutral-800 bg-[#141414] p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium text-sm">Remove "Powered by Brand Muse" Badge</span>
+                      <span className="font-medium text-sm">
+                        Remove "Powered by Brand Muse" Badge
+                      </span>
                       <p className="text-xs text-neutral-400">
-                        100% white-label your public guidelines microsite for enterprise brand compliance.
+                        100% white-label your public guidelines microsite for enterprise brand
+                        compliance.
                       </p>
                     </div>
                     <Switch

@@ -26,16 +26,16 @@ describe("Cloudflare Custom Hostnames & SSL for SaaS", () => {
 
   it("rejects illegal domain strings and reserved system domains", () => {
     expect(() => normalizeCustomDomain("localhost")).toThrow(/cannot be used as a custom domain/);
-    expect(() => normalizeCustomDomain("branddna.app")).toThrow(/cannot be used as a custom domain/);
+    expect(() => normalizeCustomDomain("branddna.app")).toThrow(
+      /cannot be used as a custom domain/,
+    );
     expect(() => normalizeCustomDomain("test.lovable.app")).toThrow(
       /cannot be used as a custom domain/,
     );
     expect(() => normalizeCustomDomain("not a valid domain")).toThrow(
       /Invalid custom domain format/,
     );
-    expect(() => normalizeCustomDomain("nodotsinthisname")).toThrow(
-      /Invalid custom domain format/,
-    );
+    expect(() => normalizeCustomDomain("nodotsinthisname")).toThrow(/Invalid custom domain format/);
   });
 
   it("provisions custom hostname in simulation mode when API credentials are absent", async () => {
@@ -120,7 +120,9 @@ describe("Portal Security & Expiration Mechanics", () => {
   });
 
   it("safeTimingSafeEqual handles unequal length buffers safely without throwing", () => {
-    expect(() => safeTimingSafeEqual("short", "much-longer-string-with-different-bytes")).not.toThrow();
+    expect(() =>
+      safeTimingSafeEqual("short", "much-longer-string-with-different-bytes"),
+    ).not.toThrow();
     expect(safeTimingSafeEqual("short", "much-longer-string-with-different-bytes")).toBe(false);
     expect(safeTimingSafeEqual("", "non-empty")).toBe(false);
     expect(safeTimingSafeEqual("abc", "abc")).toBe(true);

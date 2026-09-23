@@ -88,7 +88,8 @@ export const getPortalData = createServerFn({ method: "POST" })
     if (cached) {
       // If cached portal is password protected, verify the user's password token
       if (cached.isPasswordProtected && !cached.isLocked) {
-        const hasAccess = data.passwordToken && verifyPasswordToken(data.passwordToken, cached.portal.slug);
+        const hasAccess =
+          data.passwordToken && verifyPasswordToken(data.passwordToken, cached.portal.slug);
         if (!hasAccess) {
           return {
             isLocked: true,
@@ -117,10 +118,7 @@ export const getPortalData = createServerFn({ method: "POST" })
       .where(
         and(
           eq(publishedPortals.isPublished, true),
-          or(
-            eq(publishedPortals.slug, identifier),
-            eq(publishedPortals.customDomain, identifier),
-          ),
+          or(eq(publishedPortals.slug, identifier), eq(publishedPortals.customDomain, identifier)),
         ),
       )
       .limit(1);
@@ -170,11 +168,7 @@ export const getPortalData = createServerFn({ method: "POST" })
         .from(kitColors)
         .where(eq(kitColors.kitId, kit.id))
         .orderBy(asc(kitColors.position)),
-      db
-        .select()
-        .from(kitFonts)
-        .where(eq(kitFonts.kitId, kit.id))
-        .orderBy(asc(kitFonts.position)),
+      db.select().from(kitFonts).where(eq(kitFonts.kitId, kit.id)).orderBy(asc(kitFonts.position)),
       db
         .select()
         .from(kitTokens)
@@ -370,11 +364,12 @@ export const getPortalSettings = createServerFn({ method: "POST" })
     }
 
     // Default suggested slug based on kit name
-    const baseSlug = k.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 30) || "brand-guide";
+    const baseSlug =
+      k.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 30) || "brand-guide";
 
     return {
       id: null,
@@ -413,7 +408,10 @@ export const checkSlugAvailability = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const slug = data.slug.toLowerCase().trim();
     if (!/^[a-z0-9-]+$/.test(slug)) {
-      return { available: false, reason: "Slug can only contain lowercase letters, numbers, and hyphens." };
+      return {
+        available: false,
+        reason: "Slug can only contain lowercase letters, numbers, and hyphens.",
+      };
     }
     if (slug.startsWith("-") || slug.endsWith("-")) {
       return { available: false, reason: "Slug cannot start or end with a hyphen." };

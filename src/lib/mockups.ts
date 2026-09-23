@@ -2,6 +2,8 @@
 // Provides high-resolution vector mockup templates for 5 core brand categories,
 // responsive canvas rendering, and client-side high-DPI export utilities.
 
+import { z } from "zod";
+
 export const MOCKUP_CATEGORIES = [
   "social-media",
   "stationery",
@@ -11,6 +13,30 @@ export const MOCKUP_CATEGORIES = [
 ] as const;
 
 export type MockupCategory = (typeof MOCKUP_CATEGORIES)[number];
+
+export const GenerateMockupInputSchema = z.object({
+  kitId: z.string().uuid(),
+  category: z.enum(["social-media", "stationery", "merchandise", "outdoor", "saas-dashboard"]),
+  presetId: z.string().min(1).max(80),
+  variant: z.enum(["light", "dark"]).default("light"),
+  customHeadline: z.string().max(200).optional(),
+  customTagline: z.string().max(300).optional(),
+  customCta: z.string().max(100).optional(),
+  forceFallback: z.boolean().optional().default(false),
+});
+
+export type GenerateMockupInput = z.infer<typeof GenerateMockupInputSchema>;
+
+export const SaveMockupInputSchema = z.object({
+  kitId: z.string().uuid(),
+  category: z.string().min(1).max(80),
+  presetId: z.string().min(1).max(80),
+  imageDataUrl: z.string().min(10), // data:image/png;base64,... or data:image/svg+xml,...
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+});
+
+export type SaveMockupInput = z.infer<typeof SaveMockupInputSchema>;
 
 export const MOCKUP_CATEGORY_META: Record<
   MockupCategory,

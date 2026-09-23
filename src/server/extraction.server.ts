@@ -64,7 +64,10 @@ export function dedupAssetsByKey<T extends { kind: string; url: string }>(items:
 
 // Scan raw HTML for additional logo-ish images (logomarks, alternate logos, SVGs).
 // Returns absolute URLs classified as logo / logo-mark / wordmark.
-export function harvestLogosFromHtml(html: string, baseUrl: string): Array<{ kind: string; url: string }> {
+export function harvestLogosFromHtml(
+  html: string,
+  baseUrl: string,
+): Array<{ kind: string; url: string }> {
   const out: Array<{ kind: string; url: string }> = [];
   const seen = new Set<string>();
   const base = (() => {
@@ -603,7 +606,10 @@ export const InventoryZ = z.object({
   industry_signals: z.array(z.string()).default([]),
 });
 
-export async function inventoryPage(args: { url: string; markdown?: string }): Promise<Inventory | null> {
+export async function inventoryPage(args: {
+  url: string;
+  markdown?: string;
+}): Promise<Inventory | null> {
   if (!args.markdown || args.markdown.trim().length < 40) return null;
   try {
     const raw = await callAIStructured<any>({
@@ -726,7 +732,11 @@ export const ExtractKitInputSchema = z.object({
 });
 export type ExtractKitInput = z.infer<typeof ExtractKitInputSchema>;
 
-export async function rehostAsset(kitId: string, kind: string, url: string): Promise<string | null> {
+export async function rehostAsset(
+  kitId: string,
+  kind: string,
+  url: string,
+): Promise<string | null> {
   try {
     const { isBlockedSourceUrl } = await import("./url-guard.server");
     if (isBlockedSourceUrl(url)) return null;

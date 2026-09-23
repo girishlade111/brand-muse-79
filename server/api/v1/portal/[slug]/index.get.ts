@@ -150,26 +150,10 @@ export default async function (event: any) {
 
   // Query child entities
   const [colors, fonts, tokens, assets, voiceRows] = await Promise.all([
-    db
-      .select()
-      .from(kitColors)
-      .where(eq(kitColors.kitId, kit.id))
-      .orderBy(asc(kitColors.position)),
-    db
-      .select()
-      .from(kitFonts)
-      .where(eq(kitFonts.kitId, kit.id))
-      .orderBy(asc(kitFonts.position)),
-    db
-      .select()
-      .from(kitTokens)
-      .where(eq(kitTokens.kitId, kit.id))
-      .orderBy(asc(kitTokens.position)),
-    db
-      .select()
-      .from(kitAssets)
-      .where(eq(kitAssets.kitId, kit.id))
-      .orderBy(asc(kitAssets.position)),
+    db.select().from(kitColors).where(eq(kitColors.kitId, kit.id)).orderBy(asc(kitColors.position)),
+    db.select().from(kitFonts).where(eq(kitFonts.kitId, kit.id)).orderBy(asc(kitFonts.position)),
+    db.select().from(kitTokens).where(eq(kitTokens.kitId, kit.id)).orderBy(asc(kitTokens.position)),
+    db.select().from(kitAssets).where(eq(kitAssets.kitId, kit.id)).orderBy(asc(kitAssets.position)),
     db.select().from(kitVoice).where(eq(kitVoice.kitId, kit.id)).limit(1),
   ]);
 

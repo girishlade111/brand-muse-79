@@ -67,10 +67,10 @@ export default async function (event: any) {
         res.statusCode = 400;
         res.end?.(JSON.stringify({ error: "Missing required fields: kitId and step" }));
       }
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: kitId and step" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Missing required fields: kitId and step" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Execute the step isolated within its serverless time budget

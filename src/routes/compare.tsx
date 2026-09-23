@@ -627,8 +627,8 @@ function ComparePage() {
             Two to four kits, side by side.
           </h1>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-            Pick up to four kits from your library — 360° color wheel, typography DNA, brand
-            tone quadrant, voice spectrum, AI strategic white-space discovery, with accessibility
+            Pick up to four kits from your library — 360° color wheel, typography DNA, brand tone
+            quadrant, voice spectrum, AI strategic white-space discovery, with accessibility
             contrast checks and a per-section verdict.
           </p>
         </div>
@@ -1544,11 +1544,15 @@ function IntelligenceSections({
         <h2 className="font-mono text-[12px] uppercase tracking-[0.18em] text-foreground">
           01 — Color chromaticity &amp; hue distribution
         </h2>
-        <span className={`${mono} text-muted-foreground`}>{activeKits.length} kits · 360° wheel</span>
+        <span className={`${mono} text-muted-foreground`}>
+          {activeKits.length} kits · 360° wheel
+        </span>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
-          <p className={`${mono} mb-4 text-muted-foreground`}>360° polar hue wheel — white-space arcs highlighted</p>
+          <p className={`${mono} mb-4 text-muted-foreground`}>
+            360° polar hue wheel — white-space arcs highlighted
+          </p>
           <ColorWheelChart series={colorWheelSeries} />
         </section>
         <section className="space-y-5 border p-5" style={{ borderColor: "rgba(10,10,10,0.20)" }}>
@@ -1787,8 +1791,8 @@ function IntelligenceSections({
         {!whitespace ? (
           <div className="flex flex-col items-start gap-3">
             <p className={`${mono} text-muted-foreground`}>
-              Gemini will evaluate {activeKits.length} brand identities for under-utilized
-              hues, untapped tone archetypes, and 3 strategic identity pivots.
+              Gemini will evaluate {activeKits.length} brand identities for under-utilized hues,
+              untapped tone archetypes, and 3 strategic identity pivots.
             </p>
             <button
               type="button"
@@ -1805,13 +1809,19 @@ function IntelligenceSections({
             {/* Executive Summary */}
             <div className="border-l-2 border-[#8B1A1A] pl-4">
               <p className={`${mono} mb-1 text-[#8B1A1A]`}>Executive Summary</p>
-              <p className="text-sm leading-relaxed text-foreground">{whitespace.executiveSummary}</p>
+              <p className="text-sm leading-relaxed text-foreground">
+                {whitespace.executiveSummary}
+              </p>
             </div>
 
             {/* Color White Space */}
             <div>
-              <p className={`${mono} mb-3 text-foreground`}>Color White Space — Under-Utilized Hues</p>
-              <p className={`${mono} mb-3 text-muted-foreground text-xs`}>{whitespace.colorWhiteSpace.sectorDominance}</p>
+              <p className={`${mono} mb-3 text-foreground`}>
+                Color White Space — Under-Utilized Hues
+              </p>
+              <p className={`${mono} mb-3 text-muted-foreground text-xs`}>
+                {whitespace.colorWhiteSpace.sectorDominance}
+              </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {whitespace.colorWhiteSpace.underutilizedHues.map((h, i) => (
                   <div
@@ -1833,12 +1843,16 @@ function IntelligenceSections({
                   </div>
                 ))}
               </div>
-              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>{whitespace.colorWhiteSpace.gapOpportunity}</p>
+              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>
+                {whitespace.colorWhiteSpace.gapOpportunity}
+              </p>
             </div>
 
             {/* Tone Differentiation */}
             <div>
-              <p className={`${mono} mb-3 text-foreground`}>Tone Differentiation — Voice Archetypes</p>
+              <p className={`${mono} mb-3 text-foreground`}>
+                Tone Differentiation — Voice Archetypes
+              </p>
               <div className="mb-4 grid gap-3 sm:grid-cols-2">
                 {whitespace.toneDifferentiation.competitorArchetypes.map((a, i) => (
                   <div
@@ -1869,7 +1883,9 @@ function IntelligenceSections({
                   </div>
                 ))}
               </div>
-              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>{whitespace.toneDifferentiation.voiceOpportunity}</p>
+              <p className={`${mono} mt-3 text-muted-foreground text-xs`}>
+                {whitespace.toneDifferentiation.voiceOpportunity}
+              </p>
             </div>
 
             {/* 3 Actionable Pivots */}

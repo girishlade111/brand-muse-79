@@ -23,10 +23,14 @@ const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_
 console.log("==================================================================");
 console.log("   SUPABASE -> NEON SERVERLESS POSTGRESQL MIGRATION UTILITY       ");
 console.log("==================================================================");
-console.log(`[Config] Mode: ${IS_DRY_RUN ? "DRY-RUN (No writes)" : IS_VERIFY_ONLY ? "VERIFY-ONLY" : "LIVE MIGRATION"}`);
+console.log(
+  `[Config] Mode: ${IS_DRY_RUN ? "DRY-RUN (No writes)" : IS_VERIFY_ONLY ? "VERIFY-ONLY" : "LIVE MIGRATION"}`,
+);
 console.log(`[Config] Batch Size: ${BATCH_SIZE}`);
 console.log(`[Config] Supabase Source: ${SUPABASE_URL}`);
-console.log(`[Config] Neon Destination: ${NEON_DATABASE_URL ? NEON_DATABASE_URL.replace(/:[^:@]+@/, ":***@") : "NOT SET (Simulation Mode)"}`);
+console.log(
+  `[Config] Neon Destination: ${NEON_DATABASE_URL ? NEON_DATABASE_URL.replace(/:[^:@]+@/, ":***@") : "NOT SET (Simulation Mode)"}`,
+);
 console.log("------------------------------------------------------------------\n");
 
 // Tables in strict topological foreign-key order
@@ -59,9 +63,11 @@ async function run() {
 
     try {
       // 1. Fetch from Supabase
-      const { data: sourceRows, error: srcErr, count } = await supabase
-        .from(table)
-        .select("*", { count: "exact" });
+      const {
+        data: sourceRows,
+        error: srcErr,
+        count,
+      } = await supabase.from(table).select("*", { count: "exact" });
 
       if (srcErr) {
         // Table might not exist on older Supabase schemas
@@ -75,19 +81,34 @@ async function run() {
 
       if (IS_VERIFY_ONLY) {
         console.log("Verified.");
-        migrationSummary.push({ table, sourceCount: rowCount, migratedCount: 0, status: "VERIFIED" });
+        migrationSummary.push({
+          table,
+          sourceCount: rowCount,
+          migratedCount: 0,
+          status: "VERIFIED",
+        });
         continue;
       }
 
       if (IS_DRY_RUN) {
         console.log("[Dry-Run] Skipped insert.");
-        migrationSummary.push({ table, sourceCount: rowCount, migratedCount: rowCount, status: "DRY-RUN" });
+        migrationSummary.push({
+          table,
+          sourceCount: rowCount,
+          migratedCount: rowCount,
+          status: "DRY-RUN",
+        });
         continue;
       }
 
       if (!neonPool || rowCount === 0) {
         console.log("No rows to migrate or Neon DB unset.");
-        migrationSummary.push({ table, sourceCount: rowCount, migratedCount: 0, status: "SUCCESS" });
+        migrationSummary.push({
+          table,
+          sourceCount: rowCount,
+          migratedCount: 0,
+          status: "SUCCESS",
+        });
         continue;
       }
 
@@ -116,10 +137,21 @@ async function run() {
       }
 
       console.log(`Migrated ${insertedCount} rows into Neon.`);
-      migrationSummary.push({ table, sourceCount: rowCount, migratedCount: insertedCount, status: "SUCCESS" });
+      migrationSummary.push({
+        table,
+        sourceCount: rowCount,
+        migratedCount: insertedCount,
+        status: "SUCCESS",
+      });
     } catch (err) {
       console.log(`\n  [Error on table ${table}]:`, err.message);
-      migrationSummary.push({ table, sourceCount: 0, migratedCount: 0, status: "ERROR", error: err.message });
+      migrationSummary.push({
+        table,
+        sourceCount: 0,
+        migratedCount: 0,
+        status: "ERROR",
+        error: err.message,
+      });
     }
   }
 

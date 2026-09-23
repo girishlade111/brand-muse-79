@@ -21,11 +21,7 @@ export interface ColorWheelSeries {
   colors: KitColorLike[];
 }
 
-export function ColorWheelChart({
-  series,
-}: {
-  series: ColorWheelSeries[];
-}) {
+export function ColorWheelChart({ series }: { series: ColorWheelSeries[] }) {
   const [hoveredPoint, setHoveredPoint] = useState<{
     point: ColorWheelPoint;
     kitName: string;
@@ -59,7 +55,12 @@ export function ColorWheelChart({
   };
 
   // Helper for white space arc path
-  const describeArc = (startAngle: number, endAngle: number, innerR: number, outerR: number): string => {
+  const describeArc = (
+    startAngle: number,
+    endAngle: number,
+    innerR: number,
+    outerR: number,
+  ): string => {
     const [x1, y1] = [
       cx + outerR * Math.cos(((startAngle - 90) * Math.PI) / 180),
       cy + outerR * Math.sin(((startAngle - 90) * Math.PI) / 180),
@@ -133,7 +134,15 @@ export function ColorWheelChart({
               patternUnits="userSpaceOnUse"
               patternTransform="rotate(45)"
             >
-              <line x1="0" y1="0" x2="0" y2="6" stroke="#10B981" strokeWidth="1.5" strokeOpacity="0.4" />
+              <line
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="6"
+                stroke="#10B981"
+                strokeWidth="1.5"
+                strokeOpacity="0.4"
+              />
             </pattern>
           </defs>
 
@@ -154,17 +163,7 @@ export function ColorWheelChart({
           {/* Hue Angle Spokes */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
             const [x, y] = polarToXY(deg, 1.03);
-            return (
-              <line
-                key={deg}
-                x1={cx}
-                y1={cy}
-                x2={x}
-                y2={y}
-                stroke={FAINT}
-                strokeWidth={1}
-              />
-            );
+            return <line key={deg} x1={cx} y1={cy} x2={x} y2={y} stroke={FAINT} strokeWidth={1} />;
           })}
 
           {/* Outer Spectrum Ring */}
@@ -193,12 +192,14 @@ export function ColorWheelChart({
                 <text
                   x={
                     cx +
-                    (R * 0.65) *
+                    R *
+                      0.65 *
                       Math.cos((((arc.startAngle + arc.endAngle) / 2 - 90) * Math.PI) / 180)
                   }
                   y={
                     cy +
-                    (R * 0.65) *
+                    R *
+                      0.65 *
                       Math.sin((((arc.startAngle + arc.endAngle) / 2 - 90) * Math.PI) / 180)
                   }
                   textAnchor="middle"
@@ -326,7 +327,8 @@ export function ColorWheelChart({
               )}
             </div>
             <div className="mt-1 font-mono text-[9px] text-neutral-400">
-              Hue: {hoveredPoint.point.hue}° · Saturation: {Math.round(hoveredPoint.point.saturation * 100)}%
+              Hue: {hoveredPoint.point.hue}° · Saturation:{" "}
+              {Math.round(hoveredPoint.point.saturation * 100)}%
             </div>
           </div>
         )}
@@ -351,7 +353,8 @@ export function ColorWheelChart({
                   <span className="font-medium text-foreground">{arc.label}</span>
                 </div>
                 <span className="font-mono text-[10px] text-muted-foreground">
-                  {Math.round(arc.startAngle)}° - {Math.round(arc.endAngle)}° ({Math.round(arc.spanDegrees)}°)
+                  {Math.round(arc.startAngle)}° - {Math.round(arc.endAngle)}° (
+                  {Math.round(arc.spanDegrees)}°)
                 </span>
               </div>
             ))}

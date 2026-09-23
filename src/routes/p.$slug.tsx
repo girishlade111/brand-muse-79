@@ -95,7 +95,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
   // Theme & interactive state
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAssetBg, setSelectedAssetBg] = useState<Record<string, "grid" | "dark" | "light" | "brand">>({});
+  const [selectedAssetBg, setSelectedAssetBg] = useState<
+    Record<string, "grid" | "dark" | "light" | "brand">
+  >({});
   const [sampleText, setSampleText] = useState("Sphinx of black quartz, judge my vow.");
   const [fontSize, setFontSize] = useState(36);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -218,10 +220,12 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
         guidelinesMd += `## Brand Voice & Tone\n`;
         if (data.voice.summary) guidelinesMd += `${data.voice.summary}\n\n`;
         if (data.voice.dos?.length) {
-          guidelinesMd += `### Do's\n` + data.voice.dos.map((d: string) => `- ${d}`).join("\n") + "\n\n";
+          guidelinesMd +=
+            `### Do's\n` + data.voice.dos.map((d: string) => `- ${d}`).join("\n") + "\n\n";
         }
         if (data.voice.donts?.length) {
-          guidelinesMd += `### Don'ts\n` + data.voice.donts.map((d: string) => `- ${d}`).join("\n") + "\n\n";
+          guidelinesMd +=
+            `### Don'ts\n` + data.voice.donts.map((d: string) => `- ${d}`).join("\n") + "\n\n";
         }
       }
       folder.file("GUIDELINES.md", guidelinesMd);
@@ -390,8 +394,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
               {data.portal.name}
             </h1>
             <p className="mt-2 text-xs font-sans text-neutral-400">
-              This brand guidelines website is protected. Please enter the passphrase to view the live brand
-              specifications.
+              This brand guidelines website is protected. Please enter the passphrase to view the
+              live brand specifications.
             </p>
           </div>
 
@@ -448,7 +452,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       {/* 1. Global Navigation Bar */}
       <header
         className={`sticky top-0 z-40 border-b backdrop-blur-md ${
-          theme === "dark" ? "border-neutral-800 bg-[#0A0A0A]/85" : "border-neutral-200 bg-[#FBF9F5]/85"
+          theme === "dark"
+            ? "border-neutral-800 bg-[#0A0A0A]/85"
+            : "border-neutral-200 bg-[#FBF9F5]/85"
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
@@ -570,7 +576,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       </section>
 
       {/* 3. Section: Logos & Assets */}
-      <section id="logos" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+      <section
+        id="logos"
+        className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+      >
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
@@ -619,7 +628,11 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                   {/* Canvas Preview Area */}
                   <div
                     className={`h-52 p-8 flex items-center justify-center relative overflow-hidden transition-colors ${bgStyle}`}
-                    style={bg === "brand" && primaryColor?.hex ? { backgroundColor: primaryColor.hex } : {}}
+                    style={
+                      bg === "brand" && primaryColor?.hex
+                        ? { backgroundColor: primaryColor.hex }
+                        : {}
+                    }
                   >
                     {isHttpUrl(asset.url) ? (
                       <img
@@ -628,7 +641,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                         className="max-h-full max-w-full object-contain filter drop-shadow-sm select-none"
                       />
                     ) : (
-                      <span className="font-mono text-xs text-neutral-500">Preview Unavailable</span>
+                      <span className="font-mono text-xs text-neutral-500">
+                        Preview Unavailable
+                      </span>
                     )}
 
                     {/* Canvas Background Controls */}
@@ -636,7 +651,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                       <button
                         onClick={() => setSelectedAssetBg((p) => ({ ...p, [asset.id]: "grid" }))}
                         className={`h-5 w-5 rounded text-[9px] font-mono flex items-center justify-center ${
-                          bg === "grid" ? "bg-white/30 text-white" : "text-neutral-400 hover:text-white"
+                          bg === "grid"
+                            ? "bg-white/30 text-white"
+                            : "text-neutral-400 hover:text-white"
                         }`}
                         title="Transparent checkerboard"
                       >
@@ -730,8 +747,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                 Clear Space
               </h4>
               <p className="text-xs leading-relaxed">
-                Always maintain minimum clear space equivalent to 1× the height of the brand logomark around
-                all sides. Do not intrude text, borders, or graphics within this safety margin.
+                Always maintain minimum clear space equivalent to 1× the height of the brand
+                logomark around all sides. Do not intrude text, borders, or graphics within this
+                safety margin.
               </p>
             </div>
             <div>
@@ -739,9 +757,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                 Minimum Digital Display
               </h4>
               <p className="text-xs leading-relaxed">
-                Primary mark: minimum width of <strong className="text-foreground">24px</strong> on screen.
-                Full horizontal lockup: minimum width of <strong className="text-foreground">96px</strong> to
-                ensure legibility on mobile viewports.
+                Primary mark: minimum width of <strong className="text-foreground">24px</strong> on
+                screen. Full horizontal lockup: minimum width of{" "}
+                <strong className="text-foreground">96px</strong> to ensure legibility on mobile
+                viewports.
               </p>
             </div>
             <div>
@@ -759,7 +778,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       </section>
 
       {/* 4. Section: Color System & Swatches */}
-      <section id="colors" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+      <section
+        id="colors"
+        className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+      >
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
@@ -767,7 +789,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
             </span>
             <h2 className="text-3xl font-serif font-bold">Color Palette System</h2>
             <p className="mt-1 text-sm text-neutral-400">
-              Harmonious color swatches with 1-click format copying and WCAG AA/AAA contrast validation.
+              Harmonious color swatches with 1-click format copying and WCAG AA/AAA contrast
+              validation.
             </p>
           </div>
           <Button
@@ -819,7 +842,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                       <span
                         className="font-mono text-[10px] uppercase tracking-[0.2em] font-semibold px-2 py-0.5 rounded backdrop-blur-sm"
                         style={{
-                          color: contrastOnWhite.ratio < contrastOnDark.ratio ? "#FFFFFF" : "#0A0A0A",
+                          color:
+                            contrastOnWhite.ratio < contrastOnDark.ratio ? "#FFFFFF" : "#0A0A0A",
                           backgroundColor:
                             contrastOnWhite.ratio < contrastOnDark.ratio
                               ? "rgba(0,0,0,0.3)"
@@ -835,7 +859,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                             contrastOnWhite.ratio < contrastOnDark.ratio
                               ? "rgba(0,0,0,0.4)"
                               : "rgba(255,255,255,0.5)",
-                          color: contrastOnWhite.ratio < contrastOnDark.ratio ? "#FFFFFF" : "#0A0A0A",
+                          color:
+                            contrastOnWhite.ratio < contrastOnDark.ratio ? "#FFFFFF" : "#0A0A0A",
                         }}
                       >
                         {copiedKey === color.hex ? (
@@ -850,7 +875,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                   {/* Swatch Details */}
                   <div className="p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-serif text-lg font-bold truncate">{color.name || color.hex}</h3>
+                      <h3 className="font-serif text-lg font-bold truncate">
+                        {color.name || color.hex}
+                      </h3>
 
                       {/* 1-Click Values */}
                       <div className="mt-3 space-y-1.5 font-mono text-xs">
@@ -859,7 +886,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                           className="w-full flex items-center justify-between p-1.5 rounded hover:bg-neutral-800/40 text-left transition-colors"
                         >
                           <span className="text-neutral-500 uppercase text-[10px]">HEX</span>
-                          <span className="font-semibold text-foreground">{color.hex.toUpperCase()}</span>
+                          <span className="font-semibold text-foreground">
+                            {color.hex.toUpperCase()}
+                          </span>
                         </button>
                         <button
                           onClick={() => copyToClipboard(rgbStr, "RGB")}
@@ -901,7 +930,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                                 : "text-neutral-500"
                           }`}
                         >
-                          {contrastOnDark.ratio.toFixed(1)}:1 {contrastOnDark.aaa ? "AAA" : contrastOnDark.aa ? "AA" : ""}
+                          {contrastOnDark.ratio.toFixed(1)}:1{" "}
+                          {contrastOnDark.aaa ? "AAA" : contrastOnDark.aa ? "AA" : ""}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -915,7 +945,8 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                                 : "text-neutral-500"
                           }`}
                         >
-                          {contrastOnWhite.ratio.toFixed(1)}:1 {contrastOnWhite.aaa ? "AAA" : contrastOnWhite.aa ? "AA" : ""}
+                          {contrastOnWhite.ratio.toFixed(1)}:1{" "}
+                          {contrastOnWhite.aaa ? "AAA" : contrastOnWhite.aa ? "AA" : ""}
                         </span>
                       </div>
                     </div>
@@ -928,7 +959,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       </section>
 
       {/* 5. Section: Typography & Interactive Specimen */}
-      <section id="typography" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+      <section
+        id="typography"
+        className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+      >
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
@@ -1021,7 +1055,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                   ))}
                 </div>
                 <p className="mt-3 text-xs text-neutral-400 leading-relaxed font-sans">
-                  {f.licenseNote || (f.googleFont ? "Open Font License (OFL) · Free for commercial use." : "Standard Brand License.")}
+                  {f.licenseNote ||
+                    (f.googleFont
+                      ? "Open Font License (OFL) · Free for commercial use."
+                      : "Standard Brand License.")}
                 </p>
               </div>
 
@@ -1047,7 +1084,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                     Download Font <ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 ) : (
-                  <span className="font-mono text-[10px] text-neutral-500 uppercase">System Distributed</span>
+                  <span className="font-mono text-[10px] text-neutral-500 uppercase">
+                    System Distributed
+                  </span>
                 )}
               </div>
             </div>
@@ -1057,14 +1096,18 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
 
       {/* 6. Section: Brand Voice, Tone & Messaging */}
       {voice && (
-        <section id="voice" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+        <section
+          id="voice"
+          className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+        >
           <div className="mb-8">
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
               // SECTION 04
             </span>
             <h2 className="text-3xl font-serif font-bold">Brand Voice & Messaging Guide</h2>
             <p className="mt-1 text-sm text-neutral-400">
-              Core personality, tone spectrum, lexicon guidance, and approved boilerplates for communications.
+              Core personality, tone spectrum, lexicon guidance, and approved boilerplates for
+              communications.
             </p>
           </div>
 
@@ -1080,7 +1123,11 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
                   // BRAND POSITIONING & VOICE
                 </h3>
                 <p className="font-serif text-xl sm:text-2xl leading-relaxed text-foreground italic">
-                  "{voice.summary || kit.brandPositioning || "Bold, thoughtful, and unmistakably authentic."}"
+                  "
+                  {voice.summary ||
+                    kit.brandPositioning ||
+                    "Bold, thoughtful, and unmistakably authentic."}
+                  "
                 </p>
 
                 {/* Tone Spectrum Matrix */}
@@ -1195,7 +1242,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       )}
 
       {/* 7. Section: Rules — Do's & Don'ts */}
-      <section id="guidelines" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+      <section
+        id="guidelines"
+        className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+      >
         <div className="mb-8">
           <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
             // SECTION 05
@@ -1210,7 +1260,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
           {/* DO's Card */}
           <div
             className={`rounded-2xl border p-6 sm:p-8 ${
-              theme === "dark" ? "border-emerald-900/40 bg-emerald-950/10" : "border-emerald-200 bg-emerald-50/50"
+              theme === "dark"
+                ? "border-emerald-900/40 bg-emerald-950/10"
+                : "border-emerald-200 bg-emerald-50/50"
             }`}
           >
             <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs uppercase tracking-[0.2em] mb-4">
@@ -1268,7 +1320,10 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       </section>
 
       {/* 8. Section: Code & Design Tokens */}
-      <section id="tokens" className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30">
+      <section
+        id="tokens"
+        className="mx-auto max-w-7xl px-4 sm:px-8 py-16 border-b border-neutral-800/30"
+      >
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-neutral-400">
@@ -1306,7 +1361,9 @@ export function PublishedPortalPage(props?: { overrideSlug?: string }) {
       {/* 9. Footer & Whitelabeling */}
       <footer className="mx-auto max-w-7xl px-4 sm:px-8 py-12 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-neutral-500">
         <div>
-          <span>© {new Date().getFullYear()} {kit.name}. All Rights Reserved.</span>
+          <span>
+            © {new Date().getFullYear()} {kit.name}. All Rights Reserved.
+          </span>
         </div>
 
         {/* Whitelabel Check: If remove badge is FALSE, display subtle watermark */}

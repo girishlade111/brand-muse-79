@@ -322,8 +322,14 @@ export async function cacheGoogleFontCatalog<T>(
   weights: string[] | undefined,
   fetcher: () => Promise<T>,
 ): Promise<T> {
-  const normalizedFamily = family.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
-  const normalizedWeights = (weights ?? []).map((w) => String(w).trim()).sort().join("_");
+  const normalizedFamily = family
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "_");
+  const normalizedWeights = (weights ?? [])
+    .map((w) => String(w).trim())
+    .sort()
+    .join("_");
   const key = `gfont_catalog:${normalizedFamily}:${normalizedWeights || "default"}`;
   return getOrSet(key, fetcher, {
     ttlSeconds: 604800, // 7 days
@@ -335,10 +341,7 @@ export async function cacheGoogleFontCatalog<T>(
  * Rule 2: Scraped URL raw HTML / Markdown (TTL: 24 Hours / 86,400 seconds)
  * Keyed by deterministic URL hash to avoid duplicate Firecrawl API credits.
  */
-export async function cacheScrapedUrl<T>(
-  url: string,
-  fetcher: () => Promise<T>,
-): Promise<T> {
+export async function cacheScrapedUrl<T>(url: string, fetcher: () => Promise<T>): Promise<T> {
   const hash = hashUrlKey(url.trim().toLowerCase());
   const key = `scraped_url:${hash}`;
   return getOrSet(key, fetcher, {
@@ -351,10 +354,7 @@ export async function cacheScrapedUrl<T>(
  * Rule 3: Normalized Brand Kit Public Reads (TTL: 1 Hour / 3,600 seconds)
  * Instantly invalidated upon edit via invalidateKitCache.
  */
-export async function cacheNormalizedKit<T>(
-  kitId: string,
-  fetcher: () => Promise<T>,
-): Promise<T> {
+export async function cacheNormalizedKit<T>(kitId: string, fetcher: () => Promise<T>): Promise<T> {
   const key = `brand_kit:${kitId}:normalized`;
   return getOrSet(key, fetcher, {
     ttlSeconds: 3600, // 1 hour

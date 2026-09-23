@@ -40,9 +40,7 @@ describe("Multi-Tiered Edge Caching Layer", () => {
           return `item_${hotIdx}`;
         }
         // 20% probability to pick from cold remaining 80%
-        const coldIdx = Math.floor(
-          POPULATION_SIZE * 0.2 + Math.random() * (POPULATION_SIZE * 0.8),
-        );
+        const coldIdx = Math.floor(POPULATION_SIZE * 0.2 + Math.random() * (POPULATION_SIZE * 0.8));
         return `item_${coldIdx}`;
       }
 
@@ -70,7 +68,9 @@ describe("Multi-Tiered Edge Caching Layer", () => {
 
       // Cache hit ratio must strictly exceed 75%
       expect(stats.hitRatio).toBeGreaterThan(0.75);
-      console.log(`[Cache Benchmark] Total: ${stats.totalRequests}, Hits: ${stats.hits}, Misses: ${stats.misses}, Hit Ratio: ${(stats.hitRatio * 100).toFixed(2)}%, Duration: ${elapsedMs.toFixed(2)}ms`);
+      console.log(
+        `[Cache Benchmark] Total: ${stats.totalRequests}, Hits: ${stats.hits}, Misses: ${stats.misses}, Hit Ratio: ${(stats.hitRatio * 100).toFixed(2)}%, Duration: ${elapsedMs.toFixed(2)}ms`,
+      );
 
       // Latency check: L1 memory hits should average well under 1ms per lookup
       const avgLatencyMs = elapsedMs / TOTAL_REQUESTS;
@@ -83,7 +83,10 @@ describe("Multi-Tiered Edge Caching Layer", () => {
       let networkCalls = 0;
       const resolveFontFromGoogle = async () => {
         networkCalls++;
-        return ["https://fonts.gstatic.com/s/inter/v13/normal_400.woff2", "https://fonts.gstatic.com/s/inter/v13/bold_700.woff2"];
+        return [
+          "https://fonts.gstatic.com/s/inter/v13/normal_400.woff2",
+          "https://fonts.gstatic.com/s/inter/v13/bold_700.woff2",
+        ];
       };
 
       // 1. Initial resolution (cache miss -> fetcher called)

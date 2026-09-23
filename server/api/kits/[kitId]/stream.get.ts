@@ -208,7 +208,8 @@ export default async function (event: any) {
           const kit = rows[0];
           const step = (kit.extractionStep as ExtractionStepName) || "scrape_homepage";
           const progress = kit.extractionProgress ?? 10;
-          const status = kit.extractionStatus ?? (kit.status === "ready" ? "completed" : "crawling");
+          const status =
+            kit.extractionStatus ?? (kit.status === "ready" ? "completed" : "crawling");
           const milestone = getStepMilestone(step);
           const details = (kit.stepDetails as any) || {};
 

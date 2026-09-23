@@ -197,11 +197,19 @@ export const publishedPortals = pgTable("published_portals", {
   customDomain: text("custom_domain").unique(),
   customDomainStatus: text("custom_domain_status").notNull().default("unconfigured"), // unconfigured | pending | active | error
   customDomainSslStatus: text("custom_domain_ssl_status").notNull().default("pending"), // pending | active | error
-  customDomainCnameTarget: text("custom_domain_cname_target").notNull().default("cname.branddna.app"),
+  customDomainCnameTarget: text("custom_domain_cname_target")
+    .notNull()
+    .default("cname.branddna.app"),
   cfCustomHostnameId: text("cf_custom_hostname_id"),
   cfVerificationData: jsonb("cf_verification_data").$type<{
     ownershipVerification?: { type: string; name: string; value: string };
-    sslValidationRecords?: Array<{ status: string; txtName?: string; txtValue?: string; httpUrl?: string; httpBody?: string }>;
+    sslValidationRecords?: Array<{
+      status: string;
+      txtName?: string;
+      txtValue?: string;
+      httpUrl?: string;
+      httpBody?: string;
+    }>;
     verificationErrors?: string[];
   }>(),
   isPublished: boolean("is_published").notNull().default(true),
@@ -215,13 +223,9 @@ export const publishedPortals = pgTable("published_portals", {
   whitelabelFaviconUrl: text("whitelabel_favicon_url"),
   whitelabelSocialImageUrl: text("whitelabel_social_image_url"),
   customCss: text("custom_css"),
-  allowedDownloadFormats: jsonb("allowed_download_formats").$type<string[]>().default([
-    "svg",
-    "png",
-    "tokens",
-    "css",
-    "pdf",
-  ]),
+  allowedDownloadFormats: jsonb("allowed_download_formats")
+    .$type<string[]>()
+    .default(["svg", "png", "tokens", "css", "pdf"]),
   viewCount: integer("view_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

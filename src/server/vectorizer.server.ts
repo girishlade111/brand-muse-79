@@ -10,32 +10,19 @@ import { uploadAsset, publicUrlFor } from "@/server/storage.server";
 import { decode as decodePng } from "fast-png";
 import { vectorizeRaster, type VectorizerOptions, type VectorizedResult } from "@/lib/vectorizer";
 
-// ---------------------------------------------------------------------------
-// Schemas
-// ---------------------------------------------------------------------------
+import {
+  SaveVectorizedLogoInputSchema,
+  VectorizeLogoServerInputSchema,
+  type SaveVectorizedLogoInput,
+  type VectorizeLogoServerInput,
+} from "@/lib/vectorizer";
 
-export const SaveVectorizedLogoInputSchema = z.object({
-  kitId: z.string().uuid(),
-  svg: z.string().min(20),
-  variantName: z.string().min(1).max(64).default("logo-vector"),
-  width: z.number().int().positive().optional().default(512),
-  height: z.number().int().positive().optional().default(512),
-});
-
-export type SaveVectorizedLogoInput = z.infer<typeof SaveVectorizedLogoInputSchema>;
-
-export const VectorizeLogoServerInputSchema = z.object({
-  kitId: z.string().uuid(),
-  assetId: z.string().uuid().optional(),
-  imageUrl: z.string().url().optional(),
-  colorCount: z.number().min(1).max(16).default(1),
-  curveSmoothness: z.number().min(0).max(100).default(65),
-  pathPrecision: z.number().min(1).max(100).default(80),
-  bgTolerance: z.number().min(0).max(100).default(15),
-  stripBg: z.boolean().default(true),
-});
-
-export type VectorizeLogoServerInput = z.infer<typeof VectorizeLogoServerInputSchema>;
+export {
+  SaveVectorizedLogoInputSchema,
+  VectorizeLogoServerInputSchema,
+  type SaveVectorizedLogoInput,
+  type VectorizeLogoServerInput,
+};
 
 // ---------------------------------------------------------------------------
 // Pure Handlers (Directly Testable)

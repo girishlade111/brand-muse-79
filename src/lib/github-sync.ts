@@ -38,10 +38,10 @@ export type GetKitGitSyncsInput = z.infer<typeof GetKitGitSyncsInputSchema>;
 
 export type ExecuteCreateTokenPullRequestResult = {
   ok: boolean;
-  prUrl?: string;
-  prNumber?: number;
-  branchName?: string;
-  commitSha?: string;
-  files?: string[];
+  prUrl: string;
+  prNumber: number;
+  branchName: string;
+  commitSha: string;
+  files: string[];
   message: string;
 };

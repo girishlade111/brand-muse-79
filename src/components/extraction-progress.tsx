@@ -57,13 +57,7 @@ export function ExtractionProgress({
   const stage = STAGES[i];
 
   if (kitId && variant === "panel") {
-    return (
-      <CalligraphyStepIndicator
-        kitId={kitId}
-        onCompleted={onCompleted}
-        onFailed={onFailed}
-      />
-    );
+    return <CalligraphyStepIndicator kitId={kitId} onCompleted={onCompleted} onFailed={onFailed} />;
   }
 
   if (variant === "inline") {

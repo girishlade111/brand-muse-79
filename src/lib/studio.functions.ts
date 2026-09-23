@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { generateBrandCopyServerFn } from "@/server/ai.server";
 
 export const GenerateBrandCopyServerInputSchema = z.object({
   kitId: z.string().uuid(),
@@ -28,6 +27,7 @@ export type BrandCopyResult = {
 export const generateBrandCopy = createServerFn({ method: "POST" })
   .validator((data) => GenerateBrandCopyServerInputSchema.parse(data))
   .handler(async ({ data }): Promise<BrandCopyResult> => {
+    const { generateBrandCopyServerFn } = await import("@/server/ai.server");
     return generateBrandCopyServerFn({
       kitId: data.kitId,
       assetType: data.assetType,

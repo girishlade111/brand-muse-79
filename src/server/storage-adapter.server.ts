@@ -78,7 +78,8 @@ class S3StorageAdapter implements StorageAdapter {
   publicUrlFor(path: string): string {
     const base = this.publicBase();
     const clean = String(path).replace(/^\/+/, "");
-    if (!base) return clean.startsWith("http") ? clean : `https://assets.branddna.internal/${clean}`;
+    if (!base)
+      return clean.startsWith("http") ? clean : `https://assets.branddna.internal/${clean}`;
     return `${base}/${clean}`;
   }
 
@@ -153,12 +154,10 @@ class SupabaseStorageAdapter implements StorageAdapter {
     const admin = getAdmin();
     const body = buffer instanceof Buffer ? new Uint8Array(buffer) : buffer;
 
-    const { error } = await admin.storage
-      .from(this.bucketName())
-      .upload(path, body, {
-        contentType: contentType || "application/octet-stream",
-        upsert: true,
-      });
+    const { error } = await admin.storage.from(this.bucketName()).upload(path, body, {
+      contentType: contentType || "application/octet-stream",
+      upsert: true,
+    });
 
     if (error) {
       console.warn("[storage-adapter] Supabase storage upload warning:", error.message);

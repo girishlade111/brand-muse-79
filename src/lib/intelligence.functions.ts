@@ -1,11 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import {
-  analyzeMarketNicheServerFn,
-  analyzeMarketWhitespaceFn,
-  type MarketNiche,
-  type MarketWhitespaceAnalysis,
-} from "@/server/ai.server";
+import type { MarketNiche, MarketWhitespaceAnalysis } from "@/server/ai.server";
 
 export type { MarketNiche, MarketWhitespaceAnalysis };
 
@@ -20,6 +15,7 @@ export type AnalyzeMarketNicheInput = z.infer<typeof AnalyzeMarketNicheInputSche
 export const analyzeMarketNiche = createServerFn({ method: "POST" })
   .validator((data) => AnalyzeMarketNicheInputSchema.parse(data))
   .handler(async ({ data }): Promise<MarketNiche> => {
+    const { analyzeMarketNicheServerFn } = await import("@/server/ai.server");
     return analyzeMarketNicheServerFn({ kitIds: data.kitIds });
   });
 
@@ -33,6 +29,6 @@ export type AnalyzeMarketWhitespaceInput = z.infer<typeof AnalyzeMarketWhitespac
 export const analyzeMarketWhitespace = createServerFn({ method: "POST" })
   .validator((data) => AnalyzeMarketWhitespaceInputSchema.parse(data))
   .handler(async ({ data }): Promise<MarketWhitespaceAnalysis> => {
+    const { analyzeMarketWhitespaceFn } = await import("@/server/ai.server");
     return analyzeMarketWhitespaceFn({ kitIds: data.kitIds });
   });
-

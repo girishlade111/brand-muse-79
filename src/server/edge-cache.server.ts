@@ -16,7 +16,10 @@ const memoryCache = new Map<string, InMemoryCacheEntry>();
  * Normalizes a slug or custom domain into a deterministic edge cache URL key.
  */
 export function buildPortalCacheKey(identifier: string): string {
-  const clean = identifier.trim().toLowerCase().replace(/[^a-z0-9.-]/g, "");
+  const clean = identifier
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9.-]/g, "");
   return `https://edge-cache.branddna.internal/portal/${clean}`;
 }
 

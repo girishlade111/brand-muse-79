@@ -379,16 +379,6 @@ module.exports = require("./${params.files[1]?.path || "tailwind.config.js"}");
 // Automated PR Dispatcher Engine
 // ---------------------------------------------------------------------------
 
-export type ExecuteCreateTokenPullRequestResult = {
-  ok: boolean;
-  prUrl: string;
-  prNumber: number;
-  branchName: string;
-  commitSha: string;
-  files: string[];
-  message: string;
-};
-
 export async function executeCreateTokenPullRequest(
   data: CreateTokenPullRequestInput,
   overrides?: {

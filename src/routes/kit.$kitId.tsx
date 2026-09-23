@@ -3239,7 +3239,8 @@ function ExportSection(props: {
                 <Globe className="h-5 w-5 text-emerald-600" /> Hosted Brand Guidelines Website
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Publish a standalone, white-labeled web guide with interactive swatches, SVG/PNG downloads, and custom domain support (SSL for SaaS).
+                Publish a standalone, white-labeled web guide with interactive swatches, SVG/PNG
+                downloads, and custom domain support (SSL for SaaS).
               </p>
             </div>
             <div className="flex items-center gap-2">

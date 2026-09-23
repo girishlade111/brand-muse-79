@@ -171,7 +171,7 @@ async function executeStep1_ScrapeHomepage(
 
   const url = input.url;
   const assets: Array<{ kind: string; url: string }> = [...(intermediate.assets ?? [])];
-  let pageScreenshots: string[] = [...(intermediate.pageScreenshots ?? [])];
+  const pageScreenshots: string[] = [...(intermediate.pageScreenshots ?? [])];
   let homepageMarkdown: string | undefined;
   let homepageHtml: string | undefined;
   let homepageBranding: any;
@@ -188,11 +188,7 @@ async function executeStep1_ScrapeHomepage(
 
   // 1b. Scrape homepage with 7s budget
   try {
-    const homeDoc = await withTimeout(
-      firecrawlScrape(url),
-      7000,
-      null,
-    );
+    const homeDoc = await withTimeout(firecrawlScrape(url), 7000, null);
 
     if (homeDoc) {
       homepageMarkdown = homeDoc.markdown;
@@ -579,14 +575,15 @@ async function executeStep5_PersistAndFinalize(
   const rehosted = await Promise.all(rehostPromises);
   const reachable = rehosted.filter((a) => !!a.storage_path);
 
-  const sourceText = [
-    intermediate.homepageMarkdown,
-    ...(intermediate.companionPages ?? []).map((c) => c.markdown),
-    ...(input.pdfTexts ?? []),
-  ]
-    .filter(Boolean)
-    .join("\n\n---\n\n")
-    .slice(0, 200000) || null;
+  const sourceText =
+    [
+      intermediate.homepageMarkdown,
+      ...(intermediate.companionPages ?? []).map((c) => c.markdown),
+      ...(input.pdfTexts ?? []),
+    ]
+      .filter(Boolean)
+      .join("\n\n---\n\n")
+      .slice(0, 200000) || null;
 
   // Clear existing kit data
   await Promise.all([
@@ -683,11 +680,7 @@ export async function runExtractionStep(params: {
 }): Promise<{ ok: boolean; nextStep?: ExtractionStepName | null; error?: string }> {
   const { kitId, step, attempt } = params;
 
-  const kitRows = await db
-    .select()
-    .from(brandKits)
-    .where(eq(brandKits.id, kitId))
-    .limit(1);
+  const kitRows = await db.select().from(brandKits).where(eq(brandKits.id, kitId)).limit(1);
 
   if (!kitRows.length) {
     console.error(`[runExtractionStep] Kit ${kitId} not found`);
@@ -861,12 +854,7 @@ export async function runExtractionStep(params: {
     }
 
     if (step === "persist_and_finalize") {
-      await executeStep5_PersistAndFinalize(
-        kitId,
-        stepDetails.input,
-        nextIntermediate,
-        appendLog,
-      );
+      await executeStep5_PersistAndFinalize(kitId, stepDetails.input, nextIntermediate, appendLog);
 
       const finalMilestone = getStepMilestone("persist_and_finalize");
       const extraction = nextIntermediate.extraction;

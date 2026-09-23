@@ -125,7 +125,8 @@ export async function createCustomHostname(
   const body = (await response.json()) as any;
 
   if (!response.ok || !body.success) {
-    const errorMsg = body?.errors?.[0]?.message || `Cloudflare API returned status ${response.status}`;
+    const errorMsg =
+      body?.errors?.[0]?.message || `Cloudflare API returned status ${response.status}`;
     // If hostname already exists in zone, attempt to fetch it
     if (body?.errors?.[0]?.code === 1406) {
       return getCustomHostnameByDomain(normalized);
@@ -176,7 +177,8 @@ export async function getCustomHostnameStatus(
 
   const body = (await response.json()) as any;
   if (!response.ok || !body.success) {
-    const errorMsg = body?.errors?.[0]?.message || `Cloudflare API returned status ${response.status}`;
+    const errorMsg =
+      body?.errors?.[0]?.message || `Cloudflare API returned status ${response.status}`;
     throw new Error(`Failed to check Cloudflare custom hostname status: ${errorMsg}`);
   }
 
@@ -240,10 +242,7 @@ export async function deleteCustomHostname(hostnameId: string): Promise<boolean>
   return response.ok && Boolean(body.success);
 }
 
-function formatCloudflareResult(
-  result: any,
-  cnameTarget: string,
-): CloudflareCustomHostnameResult {
+function formatCloudflareResult(result: any, cnameTarget: string): CloudflareCustomHostnameResult {
   const rawStatus = (result.status || "pending").toLowerCase();
   const rawSslStatus = (result.ssl?.status || "pending").toLowerCase();
 

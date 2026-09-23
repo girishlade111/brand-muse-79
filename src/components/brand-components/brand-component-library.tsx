@@ -17,7 +17,10 @@ import {
   type ComponentItem,
   type ComponentThemeMode,
 } from "@/lib/brand-components";
-import { generateCustomComponentFn, type CustomComponentResult } from "@/lib/brand-components.functions";
+import {
+  generateCustomComponentFn,
+  type CustomComponentResult,
+} from "@/lib/brand-components.functions";
 import {
   Sun,
   Moon,
