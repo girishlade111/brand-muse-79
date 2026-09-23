@@ -460,7 +460,7 @@ const PREFER_PATH =
 const SKIP_PATH =
   /\b(blog|news|docs?|legal|privacy|terms|careers|jobs|contact|login|signup|search|press|help|support|account|cart|checkout)\b/i;
 
-function pickExtraPages(homeUrl: string, links: string[], max = 2): string[] {
+export function pickExtraPages(homeUrl: string, links: string[], max = 2): string[] {
   let homeOrigin = "";
   let homePath = "/";
   try {
@@ -503,7 +503,7 @@ function pickExtraPages(homeUrl: string, links: string[], max = 2): string[] {
 // Screenshot handling: upload base64 to storage, return public URL.
 // ============================================================================
 
-function dataUrlToBuffer(input: string): { buf: Uint8Array; contentType: string } | null {
+export function dataUrlToBuffer(input: string): { buf: Uint8Array; contentType: string } | null {
   if (!input) return null;
   let b64 = input;
   let contentType = "image/png";
@@ -522,7 +522,7 @@ function dataUrlToBuffer(input: string): { buf: Uint8Array; contentType: string 
   }
 }
 
-async function uploadScreenshot(kitId: string, raw: string): Promise<string | null> {
+export async function uploadScreenshot(kitId: string, raw: string): Promise<string | null> {
   if (!raw) return null;
   // If it's already an https URL, return as-is.
   if (/^https?:\/\//i.test(raw)) return raw;
@@ -590,8 +590,8 @@ const InventorySchema = {
   required: ["page_role", "headlines", "voice_samples"],
 };
 
-type Inventory = z.infer<typeof InventoryZ>;
-const InventoryZ = z.object({
+export type Inventory = z.infer<typeof InventoryZ>;
+export const InventoryZ = z.object({
   page_role: z.string().optional(),
   headlines: z.array(z.string()).default([]),
   voice_samples: z.array(z.string()).default([]),
@@ -603,7 +603,7 @@ const InventoryZ = z.object({
   industry_signals: z.array(z.string()).default([]),
 });
 
-async function inventoryPage(args: { url: string; markdown?: string }): Promise<Inventory | null> {
+export async function inventoryPage(args: { url: string; markdown?: string }): Promise<Inventory | null> {
   if (!args.markdown || args.markdown.trim().length < 40) return null;
   try {
     const raw = await callAIStructured<any>({
@@ -622,7 +622,7 @@ async function inventoryPage(args: { url: string; markdown?: string }): Promise<
   }
 }
 
-async function runExtraction(input: {
+export async function runExtraction(input: {
   url?: string;
   markdown?: string;
   branding?: any;
@@ -726,7 +726,7 @@ export const ExtractKitInputSchema = z.object({
 });
 export type ExtractKitInput = z.infer<typeof ExtractKitInputSchema>;
 
-async function rehostAsset(kitId: string, kind: string, url: string): Promise<string | null> {
+export async function rehostAsset(kitId: string, kind: string, url: string): Promise<string | null> {
   try {
     const { isBlockedSourceUrl } = await import("./url-guard.server");
     if (isBlockedSourceUrl(url)) return null;
