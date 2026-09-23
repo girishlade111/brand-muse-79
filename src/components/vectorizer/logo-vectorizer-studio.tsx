@@ -3,7 +3,7 @@
 // interactive clean-up sliders, live split compare slider, 3 variant generators,
 // and 1-click persistence to Supabase/R2 `brand-assets` and `kit_assets`.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
@@ -102,6 +102,33 @@ export function LogoVectorizerStudio({
   const containerRef = useRef<HTMLDivElement>(null);
   const saveServerFn = useServerFn(saveVectorizedLogoFn);
 
+  // Demo fallback image creator
+  const createSamplePixelLogo = useCallback(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Fill off-white background
+    ctx.fillStyle = "#F4EFE6";
+    ctx.fillRect(0, 0, 128, 128);
+
+    // Draw pixelated geometric logo mark
+    ctx.fillStyle = "#0A0A0A";
+    ctx.fillRect(32, 32, 64, 64);
+    ctx.clearRect(48, 48, 32, 32);
+
+    ctx.fillStyle = "#8B1A1A";
+    ctx.beginPath();
+    ctx.arc(64, 64, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    const dataUrl = canvas.toDataURL("image/png");
+    setSourceDataUrl(dataUrl);
+    setSourceDimensions({ width: 128, height: 128 });
+  }, []);
+
   // Load selected asset image as DataURL
   useEffect(() => {
     if (!selectedAssetId) {
@@ -141,34 +168,7 @@ export function LogoVectorizerStudio({
       createSamplePixelLogo();
     };
     img.src = url;
-  }, [selectedAssetId, assets]);
-
-  // Demo fallback image creator
-  function createSamplePixelLogo() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 128;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Fill off-white background
-    ctx.fillStyle = "#F4EFE6";
-    ctx.fillRect(0, 0, 128, 128);
-
-    // Draw pixelated geometric logo mark
-    ctx.fillStyle = "#0A0A0A";
-    ctx.fillRect(32, 32, 64, 64);
-    ctx.clearRect(48, 48, 32, 32);
-
-    ctx.fillStyle = "#8B1A1A";
-    ctx.beginPath();
-    ctx.arc(64, 64, 10, 0, Math.PI * 2);
-    ctx.fill();
-
-    const dataUrl = canvas.toDataURL("image/png");
-    setSourceDataUrl(dataUrl);
-    setSourceDimensions({ width: 128, height: 128 });
-  }
+  }, [selectedAssetId, assets, rasterAssets, sourceDataUrl, createSamplePixelLogo]);
 
   // Handle user file upload (PNG, JPG, WebP)
   function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -196,7 +196,7 @@ export function LogoVectorizerStudio({
   }
 
   // Execute Vectorization
-  const runVectorization = () => {
+  const runVectorization = useCallback(() => {
     if (!sourceDataUrl) return;
 
     setIsVectorizing(true);
@@ -236,16 +236,10 @@ export function LogoVectorizerStudio({
       }
     };
     img.src = sourceDataUrl;
-  };
-
-  // Run vectorization whenever parameters or source change
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      runVectorization();
-    }, 150);
-    return () => clearTimeout(timer);
   }, [
     sourceDataUrl,
+    sourceDimensions.width,
+    sourceDimensions.height,
     colorCount,
     curveSmoothness,
     pathPrecision,
@@ -253,6 +247,14 @@ export function LogoVectorizerStudio({
     stripBg,
     primaryBrandHex,
   ]);
+
+  // Run vectorization whenever parameters or source change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      runVectorization();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [runVectorization]);
 
   // Apply Presets
   function applyPreset(preset: PresetType) {
