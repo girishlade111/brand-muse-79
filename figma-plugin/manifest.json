@@ -1,0 +1,14 @@
+{
+  "name": "Brand Muse Token Synchronizer",
+  "id": "brand-muse-figma-sync",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma", "figjam"],
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reasoning": "Synchronize design tokens, local variables, and vector logos with Brand Muse cloud."
+  }
+}
