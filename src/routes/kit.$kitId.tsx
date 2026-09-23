@@ -3224,54 +3224,283 @@ function ExportSection(props: {
         </div>
       </div>
 
+  const mobileBlocks = [
+    {
+      title: "Flutter BrandTheme.dart",
+      platform: "FLUTTER / DART",
+      content: flutterDart,
+      filename: `${base}-BrandTheme.dart`,
+    },
+    {
+      title: "SwiftUI BrandColors.swift",
+      platform: "IOS / SWIFTUI",
+      content: swiftColors,
+      filename: `${base}-BrandColors.swift`,
+    },
+    {
+      title: "Android Color.kt (Compose)",
+      platform: "ANDROID / KOTLIN COMPOSE",
+      content: composeColor,
+      filename: `${base}-Color.kt`,
+    },
+    {
+      title: "Android Type.kt (Compose)",
+      platform: "ANDROID / KOTLIN COMPOSE",
+      content: composeType,
+      filename: `${base}-Type.kt`,
+    },
+    {
+      title: "React Native & Tamagui brandTokens.ts",
+      platform: "REACT NATIVE / TS",
+      content: reactNativeTokens,
+      filename: `${base}-brandTokens.ts`,
+    },
+  ];
+
+  const webBlocks = [
+    {
+      title: "Design tokens (W3C JSON)",
+      platform: "W3C DTCG / JSON",
+      content: tokensJson,
+      filename: `${base}-tokens.json`,
+    },
+    {
+      title: "Tailwind v4 theme",
+      platform: "TAILWIND CSS V4",
+      content: tailwind,
+      filename: `${base}-tailwind.css`,
+    },
+    {
+      title: "CSS variables",
+      platform: "PURE CSS / ROOT",
+      content: css,
+      filename: `${base}.css`,
+    },
+    {
+      title: "Tokens Studio (Figma)",
+      platform: "FIGMA TOKENS STUDIO",
+      content: studio,
+      filename: `${base}-tokens-studio.json`,
+    },
+    {
+      title: "Brand voice (.md)",
+      platform: "EDITORIAL VOICE",
+      content: voiceMd,
+      filename: `${base}-voice.md`,
+    },
+    {
+      title: "Shadcn UI globals.css",
+      platform: "SHADCN UI / TAILWIND",
+      content: shadcn,
+      filename: `${base}-shadcn-globals.css`,
+    },
+    {
+      title: "tailwind.config.js",
+      platform: "TAILWIND CJS CONFIG",
+      content: tailwindConfig,
+      filename: `${base}-tailwind.config.js`,
+    },
+    {
+      title: "DTCG tokens.json (Figma)",
+      platform: "W3C DESIGN TOKENS",
+      content: dtcg,
+      filename: `${base}-tokens-dtcg.json`,
+    },
+  ];
+
+  const displayedBlocks =
+    activeCategory === "mobile"
+      ? mobileBlocks
+      : activeCategory === "web"
+        ? webBlocks
+        : [...mobileBlocks, ...webBlocks];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-3 rounded-xl border border-border bg-card p-6 sm:grid-cols-2">
+        <Button size="lg" onClick={downloadZip}>
+          <Package className="mr-2 h-4 w-4" /> Download full kit (.zip)
+        </Button>
+        <Button size="lg" variant="outline" onClick={downloadPDF}>
+          <Download className="mr-2 h-4 w-4" /> Brand guide (.pdf)
+        </Button>
+      </div>
+
+      {props.isOwner && (
+        <div className="rounded-xl border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="flex items-center gap-2 font-semibold">
+                <Share2 className="h-4 w-4" /> Public share link
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Anyone with the link can view this kit (read-only).
+              </p>
+            </div>
+            <Switch checked={props.isPublic} onCheckedChange={toggleShare} disabled={shareBusy} />
+          </div>
+          {shareUrl && (
+            <div className="mt-4 flex gap-2">
+              <Input readOnly value={shareUrl} className="font-mono text-xs" />
+              <Button variant="outline" onClick={() => copy(shareUrl)}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Official Figma Plugin Bridge Card */}
+      <div
+        className="border border-[#0A0A0A] bg-card p-6 text-foreground"
+        style={{ borderRadius: 0 }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0A0A0A] pb-4">
+          <div>
+            <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#8B1A1A]">
+              <span>// INTEGRATION BRIDGE</span>
+              <span>·</span>
+              <span>REST SYNC API</span>
+            </div>
+            <h3 className="mt-1 font-[family-name:var(--font-cormorant)] text-2xl font-bold tracking-tight">
+              Official Figma Plugin Bridge
+            </h3>
+            <p className="mt-1 font-[family-name:var(--font-libre)] text-xs text-muted-foreground">
+              Directly synchronize Figma Local Variables (Colors, Spacing, Radius), Text Styles, and
+              Vector Logos with 2-way diff tracking.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const apiEndpoint = `${window.location.origin}/api/v1/kits/${props.kitId}/tokens${props.shareToken ? `?token=${props.shareToken}` : ""}`;
+                window.open(apiEndpoint, "_blank");
+              }}
+              className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+              style={{ borderRadius: 0 }}
+            >
+              <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+              Test API Endpoint
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              // BRAND KIT ID
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={props.kitId}
+                className="font-mono text-xs bg-muted/20"
+                style={{ borderRadius: 0 }}
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => copy(props.kitId)}
+                style={{ borderRadius: 0 }}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
+              // SYNC ACCESS TOKEN (SHARE TOKEN)
+            </label>
+            <div className="flex gap-2">
+              <Input
+                readOnly
+                value={
+                  props.shareToken ||
+                  (props.isPublic
+                    ? "Public Access Enabled"
+                    : "Enable Public Share to generate token")
+                }
+                className="font-mono text-xs bg-muted/20"
+                style={{ borderRadius: 0 }}
+              />
+              {props.shareToken && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copy(props.shareToken!)}
+                  style={{ borderRadius: 0 }}
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 border-t border-border/40 pt-3 font-mono text-[10px] text-muted-foreground flex flex-wrap items-center justify-between gap-2">
+          <span>
+            Plugin Directory: <code className="text-foreground">/figma-plugin</code> (Import
+            manifest.json in Figma Developer Mode)
+          </span>
+          <span className="text-[#8B1A1A]">● W3C DTCG + Figma Variables Compliant</span>
+        </div>
+      </div>
+
+      {/* Platform & Category Tab Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0A0A0A] pb-3 pt-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant={activeCategory === "all" ? "default" : "outline"}
+            onClick={() => setActiveCategory("all")}
+            className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+            style={{ borderRadius: 0 }}
+          >
+            <Layers className="mr-1.5 h-3.5 w-3.5" />
+            All Formats ({mobileBlocks.length + webBlocks.length})
+          </Button>
+          <Button
+            size="sm"
+            variant={activeCategory === "mobile" ? "default" : "outline"}
+            onClick={() => setActiveCategory("mobile")}
+            className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+            style={{ borderRadius: 0 }}
+          >
+            <Smartphone className="mr-1.5 h-3.5 w-3.5" />
+            Mobile & Native ({mobileBlocks.length})
+          </Button>
+          <Button
+            size="sm"
+            variant={activeCategory === "web" ? "default" : "outline"}
+            onClick={() => setActiveCategory("web")}
+            className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+            style={{ borderRadius: 0 }}
+          >
+            <Globe className="mr-1.5 h-3.5 w-3.5" />
+            Web & Design Systems ({webBlocks.length})
+          </Button>
+        </div>
+
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          {activeCategory === "mobile" && "// FLUTTER · IOS SWIFT · ANDROID COMPOSE · REACT NATIVE"}
+          {activeCategory === "web" && "// W3C DTCG · TAILWIND V4 · CSS · FIGMA · SHADCN"}
+          {activeCategory === "all" && "// 13 PRODUCTION HANDOFF TARGETS"}
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
-        <ExportBlock
-          title="Design tokens (W3C JSON)"
-          content={tokensJson}
-          filename={`${base}-tokens.json`}
-        />
-        <ExportBlock
-          title="Tailwind v4 theme"
-          content={tailwind}
-          filename={`${base}-tailwind.css`}
-        />
-        <ExportBlock title="CSS variables" content={css} filename={`${base}.css`} />
-        <ExportBlock
-          title="Tokens Studio (Figma)"
-          content={studio}
-          filename={`${base}-tokens-studio.json`}
-        />
-        <ExportBlock title="Brand voice (.md)" content={voiceMd} filename={`${base}-voice.md`} />
-        <ExportBlock
-          title="Shadcn UI globals.css"
-          content={shadcn}
-          filename={`${base}-shadcn-globals.css`}
-        />
-        <ExportBlock
-          title="tailwind.config.js"
-          content={tailwindConfig}
-          filename={`${base}-tailwind.config.js`}
-        />
-        <ExportBlock
-          title="Flutter brand_theme.dart"
-          content={flutter}
-          filename={`${base}-brand-theme.dart`}
-        />
-        <ExportBlock
-          title="React Native theme.ts"
-          content={reactNative}
-          filename={`${base}-theme.ts`}
-        />
-        <ExportBlock
-          title="SwiftUI BrandColors.swift"
-          content={swift}
-          filename={`${base}-BrandColors.swift`}
-        />
-        <ExportBlock
-          title="DTCG tokens.json (Figma)"
-          content={dtcg}
-          filename={`${base}-tokens-dtcg.json`}
-        />
+        {displayedBlocks.map((block) => (
+          <ExportBlock
+            key={block.filename}
+            title={block.title}
+            platform={block.platform}
+            content={block.content}
+            filename={block.filename}
+          />
+        ))}
       </div>
     </div>
   );
@@ -3281,31 +3510,82 @@ function ExportBlock({
   title,
   content,
   filename,
+  platform,
 }: {
   title: string;
   content: string;
   filename: string;
+  platform?: string;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    copy(content);
+    setCopied(true);
+    toast.success(`Copied ${filename}`);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   function download() {
     const blob = new Blob([content], { type: "text/plain" });
     downloadBlob(blob, filename);
+    toast.success(`Downloaded ${filename}`);
   }
+
   return (
-    <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="min-w-0 break-words text-sm font-semibold sm:text-base">{title}</h3>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => copy(content)}>
-            Copy
-          </Button>
-          <Button size="sm" onClick={download}>
-            Download
-          </Button>
+    <div
+      className="min-w-0 overflow-hidden border border-[#0A0A0A] bg-card p-4 sm:p-5 flex flex-col justify-between"
+      style={{ borderRadius: 0 }}
+    >
+      <div>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#0A0A0A]/10 pb-3">
+          <div className="min-w-0">
+            {platform && (
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#8B1A1A] block mb-0.5">
+                // {platform}
+              </span>
+            )}
+            <h3 className="min-w-0 break-words font-mono text-sm font-semibold tracking-tight">
+              {title}
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCopy}
+              className="border border-[#0A0A0A] font-mono text-[11px] uppercase tracking-[0.14em]"
+              style={{ borderRadius: 0 }}
+            >
+              {copied ? (
+                <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={download}
+              className="border border-[#0A0A0A] bg-[#0A0A0A] text-[#F4EFE6] font-mono text-[11px] uppercase tracking-[0.14em] hover:bg-[#1a1a1a]"
+              style={{ borderRadius: 0 }}
+            >
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              Download File
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative">
+          <pre className="max-h-80 overflow-auto whitespace-pre bg-surface/80 p-3.5 font-mono text-[11px] leading-relaxed border border-border/40 select-all">
+            {content}
+          </pre>
+          <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
+            <span>{filename}</span>
+            <span>{content.split("\n").length} lines</span>
+          </div>
         </div>
       </div>
-      <pre className="max-h-80 overflow-auto whitespace-pre rounded-lg bg-surface p-3 font-mono text-[11px] leading-relaxed sm:text-xs">
-        {content}
-      </pre>
     </div>
   );
 }
