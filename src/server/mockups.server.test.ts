@@ -100,7 +100,8 @@ describe("Live AI Brand Mockups Studio — Server Engine", () => {
       kitId: "123e4567-e89b-12d3-a456-426614174000",
       category: "outdoor",
       presetId: "metro-billboard",
-      imageDataUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      imageDataUrl:
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
       width: 1920,
       height: 1080,
     };

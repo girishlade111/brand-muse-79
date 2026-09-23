@@ -270,12 +270,8 @@
           "name": "kit_assets_kit_id_brand_kits_id_fk",
           "tableFrom": "kit_assets",
           "tableTo": "brand_kits",
-          "columnsFrom": [
-            "kit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["kit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -349,12 +345,8 @@
           "name": "kit_colors_kit_id_brand_kits_id_fk",
           "tableFrom": "kit_colors",
           "tableTo": "brand_kits",
-          "columnsFrom": [
-            "kit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["kit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -477,12 +469,8 @@
           "name": "kit_fonts_kit_id_brand_kits_id_fk",
           "tableFrom": "kit_fonts",
           "tableTo": "brand_kits",
-          "columnsFrom": [
-            "kit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["kit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -549,12 +537,8 @@
           "name": "kit_tokens_kit_id_brand_kits_id_fk",
           "tableFrom": "kit_tokens",
           "tableTo": "brand_kits",
-          "columnsFrom": [
-            "kit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["kit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -639,12 +623,8 @@
           "name": "kit_voice_kit_id_brand_kits_id_fk",
           "tableFrom": "kit_voice",
           "tableTo": "brand_kits",
-          "columnsFrom": [
-            "kit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["kit_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -654,9 +634,7 @@
         "kit_voice_kit_id_unique": {
           "name": "kit_voice_kit_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "kit_id"
-          ]
+          "columns": ["kit_id"]
         }
       },
       "policies": {},
@@ -760,10 +738,7 @@
     "public.app_role": {
       "name": "app_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "user"
-      ]
+      "values": ["admin", "user"]
     }
   },
   "schemas": {},

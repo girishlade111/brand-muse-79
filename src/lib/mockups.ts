@@ -252,7 +252,9 @@ export function buildMockupSVG(opts: MockupRenderOptions): string {
 
   const kitNameEsc = escapeXml(opts.kitName || "BRAND MUSE");
   const headlineEsc = escapeXml(opts.headline || "The Invisible Instrument");
-  const taglineEsc = escapeXml(opts.tagline || "Precision architecture. Zero decorative distraction.");
+  const taglineEsc = escapeXml(
+    opts.tagline || "Precision architecture. Zero decorative distraction.",
+  );
   const ctaEsc = escapeXml(opts.cta || "DISCOVER IDENTITY");
 
   // Logo rendering block
@@ -1022,13 +1024,10 @@ export async function svgToPngBlob(
     img.onload = () => {
       ctx.drawImage(img, 0, 0, width, height);
       URL.revokeObjectURL(url);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) resolve(blob);
-          else reject(new Error("Canvas to PNG blob conversion failed"));
-        },
-        "image/png",
-      );
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("Canvas to PNG blob conversion failed"));
+      }, "image/png");
     };
 
     img.onerror = () => {

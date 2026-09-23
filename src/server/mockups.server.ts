@@ -64,13 +64,7 @@ export function buildMockupPrompt(opts: {
 
 export const GenerateMockupInputSchema = z.object({
   kitId: z.string().uuid(),
-  category: z.enum([
-    "social-media",
-    "stationery",
-    "merchandise",
-    "outdoor",
-    "saas-dashboard",
-  ]),
+  category: z.enum(["social-media", "stationery", "merchandise", "outdoor", "saas-dashboard"]),
   presetId: z.string().min(1).max(80),
   variant: z.enum(["light", "dark"]).default("light"),
   customHeadline: z.string().max(200).optional(),
@@ -128,8 +122,10 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
     );
 
     // 3. Resolve typography
-    const headingFont = fontRows.find((f) => /heading|display/i.test(f.role ?? ""))?.family || "Cormorant Garamond";
-    const monoFont = fontRows.find((f) => /mono|code/i.test(f.role ?? ""))?.family || "Courier Prime";
+    const headingFont =
+      fontRows.find((f) => /heading|display/i.test(f.role ?? ""))?.family || "Cormorant Garamond";
+    const monoFont =
+      fontRows.find((f) => /mono|code/i.test(f.role ?? ""))?.family || "Courier Prime";
 
     // 4. Resolve logo asset
     const logoAsset =
@@ -137,7 +133,7 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
       assetRows.find((a) => /favicon|mark/i.test(a.kind));
     const logoUrl = logoAsset?.storagePath
       ? publicUrlFor(logoAsset.storagePath)
-      : logoAsset?.url ?? null;
+      : (logoAsset?.url ?? null);
 
     const preset = MOCKUP_PRESETS[data.presetId] ?? MOCKUP_PRESETS["instagram-square"];
     const positioning = typeof kit.brandPositioning === "string" ? kit.brandPositioning : undefined;
@@ -173,7 +169,9 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
     // 6. Check for Lovable AI Gateway Key
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) {
-      console.warn("[mockups.server] LOVABLE_API_KEY is not configured; using deterministic fallback.");
+      console.warn(
+        "[mockups.server] LOVABLE_API_KEY is not configured; using deterministic fallback.",
+      );
       return {
         ok: false,
         fallback: true,
@@ -219,7 +217,8 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
             ok: false,
             fallback: true,
             rateLimited: true,
-            reason: "AI rate limit reached. Deterministic compositor is ready with zero credit consumption.",
+            reason:
+              "AI rate limit reached. Deterministic compositor is ready with zero credit consumption.",
             prompt,
           };
         }
@@ -256,7 +255,11 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
       if (!match) throw new Error("Invalid base64 image data payload from AI model");
       const contentType = match[1];
       const imageBuffer = new Uint8Array(Buffer.from(match[2], "base64"));
-      const ext = contentType.includes("webp") ? "webp" : contentType.includes("png") ? "png" : "jpg";
+      const ext = contentType.includes("webp")
+        ? "webp"
+        : contentType.includes("png")
+          ? "png"
+          : "jpg";
 
       const storagePath = `${data.kitId}/mockups/${data.category}-${preset.id}-${Date.now().toString(36)}.${ext}`;
 
@@ -302,8 +305,10 @@ export const generateBrandMockupFn = createServerFn({ method: "POST" })
       return {
         ok: false,
         fallback: true,
-        rateLimited: String(e?.message).includes("rate limit") || String(e?.message).includes("429"),
-        reason: e?.message ?? "AI generation encountered a transient issue. Compositor fallback active.",
+        rateLimited:
+          String(e?.message).includes("rate limit") || String(e?.message).includes("429"),
+        reason:
+          e?.message ?? "AI generation encountered a transient issue. Compositor fallback active.",
         prompt,
       };
     }
@@ -328,11 +333,7 @@ export const saveMockupAssetFn = createServerFn({ method: "POST" })
     if (!match) throw new Error("Invalid image data URL");
     const contentType = match[1];
     const buffer = new Uint8Array(Buffer.from(match[2], "base64"));
-    const ext = contentType.includes("svg")
-      ? "svg"
-      : contentType.includes("webp")
-        ? "webp"
-        : "png";
+    const ext = contentType.includes("svg") ? "svg" : contentType.includes("webp") ? "webp" : "png";
 
     const storagePath = `${data.kitId}/mockups/${data.category}-${data.presetId}-${Date.now().toString(36)}.${ext}`;
 

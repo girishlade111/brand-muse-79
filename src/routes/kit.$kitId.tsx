@@ -373,7 +373,9 @@ function KitPage() {
                       }`}
                       style={{ borderRadius: 0 }}
                     >
-                      {sec.id === "mockups" ? `[ ★ ${sec.label.toUpperCase()} ]` : `[ ${sec.label.toUpperCase()} ]`}
+                      {sec.id === "mockups"
+                        ? `[ ★ ${sec.label.toUpperCase()} ]`
+                        : `[ ${sec.label.toUpperCase()} ]`}
                     </a>
                   ))}
                 </div>
@@ -434,7 +436,9 @@ function KitPage() {
                   fonts={data.fonts}
                   assets={data.assets}
                   defaultHeadline={data.voice?.samples?.headline}
-                  defaultTagline={data.voice?.summary ?? ((kit as any).brandPositioning as string | undefined)}
+                  defaultTagline={
+                    data.voice?.summary ?? ((kit as any).brandPositioning as string | undefined)
+                  }
                   defaultCta={data.voice?.samples?.cta}
                   brandPositioning={(kit as any).brandPositioning as string | null}
                   onMockupSaved={() => setReloadKey((k) => k + 1)}

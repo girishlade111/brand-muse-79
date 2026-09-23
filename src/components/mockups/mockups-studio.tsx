@@ -55,7 +55,12 @@ export type MockupStudioProps = {
   kitName: string;
   colors?: MockupColorInput[];
   fonts?: MockupFontInput[];
-  assets?: Array<{ kind: string; url: string; storage_path?: string | null; storagePath?: string | null }>;
+  assets?: Array<{
+    kind: string;
+    url: string;
+    storage_path?: string | null;
+    storagePath?: string | null;
+  }>;
   defaultHeadline?: string;
   defaultTagline?: string;
   defaultCta?: string;
@@ -94,7 +99,9 @@ export function MockupsStudio({
   const [headline, setHeadline] = useState(defaultHeadline || "The Invisible Instrument");
   const [tagline, setTagline] = useState(
     defaultTagline ||
-      (typeof brandPositioning === "string" ? brandPositioning : "Precision architecture. Zero decorative distraction."),
+      (typeof brandPositioning === "string"
+        ? brandPositioning
+        : "Precision architecture. Zero decorative distraction."),
   );
   const [cta, setCta] = useState(defaultCta || "Explore Identity");
 
@@ -180,8 +187,7 @@ export function MockupsStudio({
 
   const logoUrl = useMemo(() => {
     const logo =
-      assets.find((a) => /logo/i.test(a.kind)) ??
-      assets.find((a) => /favicon|mark/i.test(a.kind));
+      assets.find((a) => /logo/i.test(a.kind)) ?? assets.find((a) => /favicon|mark/i.test(a.kind));
     return logo?.url ?? null;
   }, [assets]);
 
@@ -379,7 +385,8 @@ export function MockupsStudio({
               Photorealistic &amp; Deterministic Mockups
             </h2>
             <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-              Composed live with active kit colors, typography, and company positioning. 0px border-radius standard.
+              Composed live with active kit colors, typography, and company positioning. 0px
+              border-radius standard.
             </p>
           </div>
 
@@ -398,8 +405,7 @@ export function MockupsStudio({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <Sun className="h-3 w-3" />
-              [ LIGHT ]
+              <Sun className="h-3 w-3" />[ LIGHT ]
             </button>
             <button
               type="button"
@@ -411,8 +417,7 @@ export function MockupsStudio({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <Moon className="h-3 w-3" />
-              [ DARK ]
+              <Moon className="h-3 w-3" />[ DARK ]
             </button>
           </div>
         </div>
@@ -440,8 +445,14 @@ export function MockupsStudio({
                   style={{ borderRadius: 0 }}
                 >
                   <div className="flex w-full items-center justify-between">
-                    <IconComp className={`h-4 w-4 ${isActive ? "text-[#F4EFE6]" : "text-muted-foreground"}`} />
-                    {isActive && <span className="font-mono text-[9px] uppercase tracking-widest text-[#8B1A1A]">ACTIVE</span>}
+                    <IconComp
+                      className={`h-4 w-4 ${isActive ? "text-[#F4EFE6]" : "text-muted-foreground"}`}
+                    />
+                    {isActive && (
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-[#8B1A1A]">
+                        ACTIVE
+                      </span>
+                    )}
                   </div>
                   <span className="mt-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
                     {meta.label}
@@ -491,9 +502,7 @@ export function MockupsStudio({
                       <span>{p.name}</span>
                       <span className="opacity-60">{p.aspectRatio}</span>
                     </div>
-                    <p className="mt-1 text-[9px] normal-case opacity-70">
-                      {p.description}
-                    </p>
+                    <p className="mt-1 text-[9px] normal-case opacity-70">{p.description}</p>
                   </button>
                 );
               })}
@@ -756,8 +765,7 @@ export function MockupsStudio({
                 className="flex items-center gap-1.5 border border-[#0A0A0A] bg-transparent px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground hover:bg-[#0A0A0A] hover:text-[#F4EFE6] disabled:opacity-50"
                 style={{ borderRadius: 0 }}
               >
-                <Download className="h-3 w-3" />
-                [ PNG 2X ]
+                <Download className="h-3 w-3" />[ PNG 2X ]
               </button>
 
               <button
@@ -767,8 +775,7 @@ export function MockupsStudio({
                 className="flex items-center gap-1.5 border border-[#0A0A0A] bg-transparent px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground hover:bg-[#0A0A0A] hover:text-[#F4EFE6] disabled:opacity-50"
                 style={{ borderRadius: 0 }}
               >
-                <Download className="h-3 w-3" />
-                [ WEBP ]
+                <Download className="h-3 w-3" />[ WEBP ]
               </button>
 
               <button
@@ -778,8 +785,7 @@ export function MockupsStudio({
                 className="flex items-center gap-1.5 border border-[#0A0A0A] bg-transparent px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-foreground hover:bg-[#0A0A0A] hover:text-[#F4EFE6] disabled:opacity-50"
                 style={{ borderRadius: 0 }}
               >
-                <Download className="h-3 w-3" />
-                [ SVG ]
+                <Download className="h-3 w-3" />[ SVG ]
               </button>
 
               <button
@@ -789,8 +795,7 @@ export function MockupsStudio({
                 className="flex items-center gap-1.5 border border-[#0A0A0A] bg-[#0A0A0A] px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#F4EFE6] hover:bg-[#8B1A1A] disabled:opacity-50"
                 style={{ borderRadius: 0 }}
               >
-                <Save className="h-3 w-3" />
-                [ SAVE TO KIT ASSETS ]
+                <Save className="h-3 w-3" />[ SAVE TO KIT ASSETS ]
               </button>
             </div>
 
@@ -828,7 +833,8 @@ export function MockupsStudio({
 
         {savedMockups.length === 0 ? (
           <div className="mt-4 border border-dashed border-[rgba(10,10,10,0.25)] p-8 text-center font-mono text-xs text-muted-foreground">
-            No saved mockups yet. Click "[ GENERATE WITH AI ]" or "[ SAVE TO KIT ASSETS ]" to store mockups in your brand kit repository.
+            No saved mockups yet. Click "[ GENERATE WITH AI ]" or "[ SAVE TO KIT ASSETS ]" to store
+            mockups in your brand kit repository.
           </div>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
