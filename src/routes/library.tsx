@@ -57,6 +57,7 @@ function LibraryPage() {
   const [draftName, setDraftName] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const [viewMode, setViewMode] = useState<"kits" | "developer">("kits");
 
   useEffect(() => {
     if (!ownerToken) return;
