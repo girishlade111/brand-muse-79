@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { getAnonToken } from "@/lib/anon";
 import { createKit, getKit } from "@/lib/kits.functions";
-import { extractKit } from "@/lib/extraction.functions";
+import { extractKit, startAsyncExtractKit } from "@/lib/extraction.functions";
 import { uploadBrandSource } from "@/lib/uploads.functions";
 import { scrapeSourceText, saveManualKit } from "@/lib/manual.functions";
+import { CalligraphyStepIndicator } from "@/components/calligraphy-step-indicator";
 
 export const Route = createFileRoute("/build")({
   component: BuildPage,
@@ -75,6 +76,7 @@ function BuildPage() {
   const scrape = useServerFn(scrapeSourceText);
   const save = useServerFn(saveManualKit);
   const extract = useServerFn(extractKit);
+  const startAsyncExtract = useServerFn(startAsyncExtractKit);
   const fetchKit = useServerFn(getKit);
 
   const kitIdRef = useRef<string | null>(null);
@@ -89,6 +91,7 @@ function BuildPage() {
   const [sourceText, setSourceText] = useState("");
   const [reading, setReading] = useState(false);
   const [building, setBuilding] = useState(false);
+  const [activeKitId, setActiveKitId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const [colors, setColors] = useState<ColorRow[]>([
