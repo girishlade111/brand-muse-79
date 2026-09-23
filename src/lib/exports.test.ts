@@ -157,6 +157,11 @@ describe("framework file manifest", () => {
         "mobile/brand_theme.dart",
         "mobile/theme.ts",
         "mobile/BrandColors.swift",
+        "native/BrandTheme.dart",
+        "native/BrandColors.swift",
+        "native/Color.kt",
+        "native/Type.kt",
+        "native/brandTokens.ts",
       ].sort(),
     );
     expect(files["tokens/tokens.json"]).toContain("$value");

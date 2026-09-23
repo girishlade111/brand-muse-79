@@ -2,6 +2,23 @@
 import JSZip from "jszip";
 import { jsPDF } from "jspdf";
 import { contrastRatio, hexToHsl, relativeLuminance } from "@/lib/color";
+import {
+  buildFlutterBrandTheme,
+  buildSwiftBrandColors,
+  buildComposeColor,
+  buildComposeType,
+  buildReactNativeBrandTokens,
+  buildNativeTokenPackage,
+} from "@/lib/mobile-token-exports";
+
+export {
+  buildFlutterBrandTheme,
+  buildSwiftBrandColors,
+  buildComposeColor,
+  buildComposeType,
+  buildReactNativeBrandTokens,
+  buildNativeTokenPackage,
+};
 
 type Color = { id: string; hex: string; role?: string | null; name?: string | null };
 type Font = {
@@ -836,6 +853,11 @@ export function buildFrameworkFiles(args: {
     "mobile/brand_theme.dart": buildFlutterTheme(args),
     "mobile/theme.ts": buildReactNativeTheme(args),
     "mobile/BrandColors.swift": buildSwiftColors(args),
+    "native/BrandTheme.dart": buildFlutterBrandTheme(args),
+    "native/BrandColors.swift": buildSwiftBrandColors(args),
+    "native/Color.kt": buildComposeColor(args),
+    "native/Type.kt": buildComposeType(args),
+    "native/brandTokens.ts": buildReactNativeBrandTokens(args),
   };
 }
 
