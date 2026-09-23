@@ -490,7 +490,7 @@ const KIT_SECTIONS = [
   { id: "type", label: "Typography" },
   { id: "tokens", label: "Tokens" },
   { id: "voice", label: "Voice" },
-  { id: "studio", label: "Studio" },
+  { id: "mockups", label: "Mockups" },
   { id: "sandbox", label: "Sandbox" },
   { id: "text", label: "Source Text" },
   { id: "export", label: "Export" },
