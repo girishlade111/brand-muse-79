@@ -29,12 +29,20 @@ function releaseTicker() {
   }
 }
 
+import { CalligraphyStepIndicator } from "./calligraphy-step-indicator";
+
 export function ExtractionProgress({
   variant = "panel",
   hint,
+  kitId,
+  onCompleted,
+  onFailed,
 }: {
   variant?: "panel" | "inline";
   hint?: string;
+  kitId?: string | null;
+  onCompleted?: () => void;
+  onFailed?: (error: string) => void;
 }) {
   const [i, setI] = useState(sharedIndex);
   useEffect(() => {
@@ -47,6 +55,16 @@ export function ExtractionProgress({
     };
   }, []);
   const stage = STAGES[i];
+
+  if (kitId && variant === "panel") {
+    return (
+      <CalligraphyStepIndicator
+        kitId={kitId}
+        onCompleted={onCompleted}
+        onFailed={onFailed}
+      />
+    );
+  }
 
   if (variant === "inline") {
     return (
