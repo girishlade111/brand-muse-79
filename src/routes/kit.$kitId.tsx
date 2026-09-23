@@ -302,7 +302,13 @@ function KitPage() {
         </div>
 
         {(status === "pending" || status === "processing") && !isStalled && (
-          <ExtractionProgress hint={kit.source_url ? `Source: ${kit.source_url}` : undefined} />
+          <ExtractionProgress
+            kitId={kit.id}
+            hint={kit.source_url ? `Source: ${kit.source_url}` : undefined}
+            onCompleted={() => {
+              window.location.reload();
+            }}
+          />
         )}
 
         {(status === "error" || isStalled) && (
