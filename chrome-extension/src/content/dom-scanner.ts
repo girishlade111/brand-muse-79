@@ -16,8 +16,8 @@ const colorCheckCache = new Map<string, ClosestBrandColorResult>();
 const fontCheckCache = new Map<string, FontMatchResult>();
 
 export function clearScannerCaches(): void {
-  colorCheckCache.clear;
-  fontCheckCache.clear;
+  colorCheckCache.clear();
+  fontCheckCache.clear();
 }
 
 /**

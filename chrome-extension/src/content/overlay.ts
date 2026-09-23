@@ -1,7 +1,6 @@
 // Interactive Live DOM Highlighting Overlay & Tooltip System
 import type { AuditSummary, AuditViolation } from "../lib/types";
 
-let overlayRoot: HTMLElement | null = null;
 let currentSummary: AuditSummary | null = null;
 let isHighlightsVisible = false;
 const activeFixes = new Map<HTMLElement, { property: string; originalValue: string }>();
