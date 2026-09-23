@@ -4,6 +4,25 @@
 // snippets without hardcoded hex values.
 
 import { cleanHexColor } from "@/lib/mockups";
+import { z } from "zod";
+
+export const GenerateCustomComponentInputSchema = z.object({
+  kitId: z.string().uuid(),
+  prompt: z.string().min(2).max(400),
+  themeMode: z.enum(["light", "dark", "high-contrast"]).default("light"),
+});
+
+export type GenerateCustomComponentInput = z.infer<typeof GenerateCustomComponentInputSchema>;
+
+export type CustomComponentResult = {
+  ok: boolean;
+  name: string;
+  description: string;
+  jsx: string;
+  html: string;
+  source: "ai" | "fallback";
+  message?: string;
+};
 
 export type ComponentThemeMode = "light" | "dark" | "high-contrast";
 
