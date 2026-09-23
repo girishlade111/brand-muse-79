@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Brand Muse — Design QA & Live Brand Auditor",
+  "version": "1.0.0",
+  "description": "Real-time DOM inspection and design QA against Brand Muse kits. Flags off-brand colors (Delta E > 5.0), unapproved typography, and WCAG contrast failures.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Brand Muse QA Auditor",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
