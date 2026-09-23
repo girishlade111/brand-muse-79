@@ -14,6 +14,7 @@ import { Route as BuildRouteImport } from './routes/build'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DesignRouteImport } from './routes/design'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StartHereRouteImport } from './routes/start-here'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as DesignHistoryRouteImport } from './routes/design.history'
@@ -44,6 +45,11 @@ const DesignRoute = DesignRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartHereRoute = StartHereRouteImport.update({
@@ -83,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/design': typeof DesignRouteWithChildren
   '/library': typeof LibraryRoute
+  '/settings': typeof SettingsRoute
   '/start-here': typeof StartHereRoute
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/design': typeof DesignRouteWithChildren
   '/library': typeof LibraryRoute
+  '/settings': typeof SettingsRoute
   '/start-here': typeof StartHereRoute
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/design': typeof DesignRouteWithChildren
   '/library': typeof LibraryRoute
+  '/settings': typeof SettingsRoute
   '/start-here': typeof StartHereRoute
   '/studio': typeof StudioRoute
   '/design/history': typeof DesignHistoryRouteWithChildren
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/design'
     | '/library'
+    | '/settings'
     | '/start-here'
     | '/studio'
     | '/design/history'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/design'
     | '/library'
+    | '/settings'
     | '/start-here'
     | '/studio'
     | '/design/history'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/design'
     | '/library'
+    | '/settings'
     | '/start-here'
     | '/studio'
     | '/design/history'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   DesignRoute: typeof DesignRouteWithChildren
   LibraryRoute: typeof LibraryRoute
+  SettingsRoute: typeof SettingsRoute
   StartHereRoute: typeof StartHereRoute
   StudioRoute: typeof StudioRoute
   KitKitIdRoute: typeof KitKitIdRoute
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start-here': {
@@ -282,6 +302,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   DesignRoute: DesignRouteWithChildren,
   LibraryRoute: LibraryRoute,
+  SettingsRoute: SettingsRoute,
   StartHereRoute: StartHereRoute,
   StudioRoute: StudioRoute,
   KitKitIdRoute: KitKitIdRoute,
