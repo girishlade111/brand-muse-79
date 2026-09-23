@@ -11,7 +11,11 @@ import {
   rgbToLab,
 } from "../src/lib/color-math";
 import { checkFontApproval, extractPrimaryFontFamily } from "../src/lib/font-matcher";
-import { calculateComplianceScores, generateJsonReport, generatePrintableHtmlReport } from "../src/lib/report";
+import {
+  calculateComplianceScores,
+  generateJsonReport,
+  generatePrintableHtmlReport,
+} from "../src/lib/report";
 import type { AuditSummary, AuditViolation, BrandColor, BrandFont } from "../src/lib/types";
 
 describe("Brand Muse Chrome Extension QA Engine", () => {
@@ -112,9 +116,9 @@ describe("Brand Muse Chrome Extension QA Engine", () => {
     ];
 
     it("extracts primary font family from complex CSS font-family", () => {
-      expect(
-        extractPrimaryFontFamily('"Plus Jakarta Sans", -apple-system, sans-serif'),
-      ).toBe("Plus Jakarta Sans");
+      expect(extractPrimaryFontFamily('"Plus Jakarta Sans", -apple-system, sans-serif')).toBe(
+        "Plus Jakarta Sans",
+      );
       expect(extractPrimaryFontFamily("Syne, serif")).toBe("Syne");
       expect(extractPrimaryFontFamily("monospace")).toBe("monospace");
     });
@@ -126,11 +130,7 @@ describe("Brand Muse Chrome Extension QA Engine", () => {
     });
 
     it("flags unapproved fonts and recommends role-matched brand font", () => {
-      const headingCheck = checkFontApproval(
-        "Comic Sans MS, cursive",
-        approvedFonts,
-        "heading",
-      );
+      const headingCheck = checkFontApproval("Comic Sans MS, cursive", approvedFonts, "heading");
       expect(headingCheck.isApproved).toBe(false);
       expect(headingCheck.primaryFont).toBe("Comic Sans MS");
       expect(headingCheck.suggestedFont?.family).toBe("Syne");

@@ -27,12 +27,15 @@ Real-time DOM inspection and design QA Chrome Extension (Manifest V3) for Brand 
 ## Installation & Development
 
 ### 1. Build the Extension
+
 ```bash
 npm run build:extension
 ```
+
 This builds all extension artifacts into `chrome-extension/dist/`.
 
 ### 2. Load into Google Chrome
+
 1. Open Google Chrome and navigate to `chrome://extensions/`.
 2. Enable the **Developer mode** toggle in the top right corner.
 3. Click **Load unpacked**.
@@ -40,6 +43,7 @@ This builds all extension artifacts into `chrome-extension/dist/`.
 5. The **Brand Muse — Design QA & Live Brand Auditor** extension is now installed!
 
 ### 3. Usage
+
 1. Click the Brand Muse extension icon in the Chrome toolbar.
 2. Enter your Brand Muse **Share Token** or **Kit ID** (and optional Brand Muse host URL, default: `http://localhost:5173`).
 3. Click **🔗 Connect & Sync Kit**.

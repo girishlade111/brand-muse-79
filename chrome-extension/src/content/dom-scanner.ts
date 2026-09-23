@@ -23,9 +23,11 @@ export function clearScannerCaches(): void {
 /**
  * Traverses parent elements to compute the composite background color under an element.
  */
-export function resolveEffectiveBackground(
-  element: HTMLElement,
-): { r: number; g: number; b: number } {
+export function resolveEffectiveBackground(element: HTMLElement): {
+  r: number;
+  g: number;
+  b: number;
+} {
   let curr: HTMLElement | null = element;
   let accumulatedBg = { r: 255, g: 255, b: 255 }; // Default fallback white
 
@@ -113,7 +115,11 @@ function isRendered(el: HTMLElement): boolean {
   if (rects.length === 0) return false;
 
   const style = window.getComputedStyle(el);
-  if (style.display === "none" || style.visibility === "hidden" || parseFloat(style.opacity) === 0) {
+  if (
+    style.display === "none" ||
+    style.visibility === "hidden" ||
+    parseFloat(style.opacity) === 0
+  ) {
     return false;
   }
 
@@ -227,7 +233,8 @@ export function scanDocument(kit: BrandKitData): AuditSummary {
           property: "color",
           actualValue: actualHex,
           suggestedReplacement: textColorResult.closest.hex,
-          suggestedRole: textColorResult.closest.role || textColorResult.closest.name || "Brand Color",
+          suggestedRole:
+            textColorResult.closest.role || textColorResult.closest.name || "Brand Color",
           deltaE: textColorResult.deltaE,
           message: `Warning: ${actualHex} is not in Brand Palette (ΔE = ${textColorResult.deltaE}). Suggested replacement: ${textColorResult.closest.hex} (${textColorResult.closest.role || "Primary"})`,
           boundingBox,

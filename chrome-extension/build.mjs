@@ -69,10 +69,7 @@ async function buildExtension() {
 
   // 4. Copy manifest.json
   console.log("  → Copying manifest.json...");
-  fs.copyFileSync(
-    path.resolve(rootDir, "manifest.json"),
-    path.resolve(distDir, "manifest.json"),
-  );
+  fs.copyFileSync(path.resolve(rootDir, "manifest.json"), path.resolve(distDir, "manifest.json"));
 
   // 5. Copy icons directory
   console.log("  → Copying icons...");
@@ -86,7 +83,9 @@ async function buildExtension() {
   }
 
   console.log("✅ Brand Muse Chrome Extension built successfully in /chrome-extension/dist/");
-  console.log("   To load in Chrome: Navigate to chrome://extensions, enable Developer mode, and click 'Load unpacked' pointing to 'chrome-extension/dist/'.");
+  console.log(
+    "   To load in Chrome: Navigate to chrome://extensions, enable Developer mode, and click 'Load unpacked' pointing to 'chrome-extension/dist/'.",
+  );
 }
 
 buildExtension().catch((err) => {

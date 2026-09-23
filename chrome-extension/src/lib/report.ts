@@ -26,9 +26,18 @@ export function calculateComplianceScores(
   const contrastFailures = violations.filter((v) => v.type === "wcag_contrast_failure").length;
 
   // Scale deductions based on violation proportion
-  const colorDeduction = Math.min(100, Math.round((offBrandColors / Math.max(10, totalElementsScanned)) * 180));
-  const fontDeduction = Math.min(100, Math.round((unapprovedFonts / Math.max(10, totalElementsScanned)) * 200));
-  const contrastDeduction = Math.min(100, Math.round((contrastFailures / Math.max(10, totalElementsScanned)) * 220));
+  const colorDeduction = Math.min(
+    100,
+    Math.round((offBrandColors / Math.max(10, totalElementsScanned)) * 180),
+  );
+  const fontDeduction = Math.min(
+    100,
+    Math.round((unapprovedFonts / Math.max(10, totalElementsScanned)) * 200),
+  );
+  const contrastDeduction = Math.min(
+    100,
+    Math.round((contrastFailures / Math.max(10, totalElementsScanned)) * 220),
+  );
 
   const colorScore = Math.max(0, 100 - colorDeduction);
   const typographyScore = Math.max(0, 100 - fontDeduction);

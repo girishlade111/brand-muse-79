@@ -63,7 +63,9 @@ export function parseCssColor(raw: string): ParsedRgba | null {
   }
 
   // rgb(...) or rgba(...)
-  const rgbMatch = str.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/i);
+  const rgbMatch = str.match(
+    /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/i,
+  );
   if (rgbMatch) {
     const r = Math.max(0, Math.min(255, Math.round(parseFloat(rgbMatch[1]))));
     const g = Math.max(0, Math.min(255, Math.round(parseFloat(rgbMatch[2]))));

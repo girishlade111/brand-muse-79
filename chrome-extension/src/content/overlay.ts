@@ -217,7 +217,11 @@ function applyLiveFix(el: HTMLElement, violation: AuditViolation): void {
   if (violation.type === "off_brand_color") {
     el.style.setProperty(prop, violation.suggestedReplacement, "important");
   } else if (violation.type === "unapproved_font") {
-    el.style.setProperty("font-family", `"${violation.suggestedReplacement}", sans-serif`, "important");
+    el.style.setProperty(
+      "font-family",
+      `"${violation.suggestedReplacement}", sans-serif`,
+      "important",
+    );
   }
 }
 

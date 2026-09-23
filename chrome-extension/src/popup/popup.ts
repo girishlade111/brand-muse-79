@@ -322,7 +322,10 @@ function handleExportJson(): void {
   const blob = new Blob([jsonStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
-  const hostname = new URL(currentSummary.url || "https://example.com").hostname.replace(/\./g, "_");
+  const hostname = new URL(currentSummary.url || "https://example.com").hostname.replace(
+    /\./g,
+    "_",
+  );
   const a = document.createElement("a");
   a.href = url;
   a.download = `brand-muse-audit-${hostname}-${Date.now()}.json`;
