@@ -3,8 +3,17 @@ import { BookOpen } from "lucide-react";
 import { IngestionPanel } from "@/components/ingestion-panel";
 import { RecentKits } from "@/components/recent-kits";
 import { StartHereButton } from "@/components/start-here-button";
-import { PublishedPortalPage } from "./p.$slug";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+
+// Lazy-load the published portal page so it doesn't increase the landing
+// bundle. It only renders on custom domains, which is a rare code path.
+const PublishedPortalPage = lazy(async () => {
+  const mod = await import("./p.$slug");
+  // The route module doesn't export PublishedPortalPage directly, but the
+  // default export is the route config whose `component` is that function.
+  // We re-use the default export wrapped as a named default for React.lazy.
+  return { default: (mod.Route as any).options.component as React.ComponentType<{ overrideSlug?: string }> };
+});
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,7 +59,11 @@ function Landing() {
   }, []);
 
   if (customHost) {
-    return <PublishedPortalPage overrideSlug={customHost} />;
+    return (
+      <Suspense fallback={null}>
+        <PublishedPortalPage overrideSlug={customHost} />
+      </Suspense>
+    );
   }
   return (
     <>

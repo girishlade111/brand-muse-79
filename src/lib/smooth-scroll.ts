@@ -1,3 +1,10 @@
+import type Lenis from "lenis";
+
+declare global {
+  // `declare global` blocks still require `var` for ambient globals.
+  var __lenis: Lenis | undefined;
+}
+
 /** Smooth-scroll helper that delegates to the Lenis instance when available. */
 export function smoothScrollTo(target: string | HTMLElement, offset = -80) {
   const lenis = typeof window !== "undefined" ? window.__lenis : undefined;
