@@ -243,8 +243,7 @@ function BuildPage() {
         );
       }
 
-      // Run the same extraction that builds a kit on the homepage, with the
-      // current manual rows passed as hints so the AI honours them.
+      // Trigger asynchronous background job pipeline (decoupled into <15s steps)
       const manual = {
         brandName: name.trim() && name.trim() !== "Untitled brand kit" ? name.trim() : undefined,
         hexColors: colors
@@ -252,7 +251,8 @@ function BuildPage() {
           .filter((h) => /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(h)),
         fontFamilies: fonts.map((f) => f.family.trim()).filter(Boolean),
       };
-      const res = await extract({
+
+      await startAsyncExtract({
         data: {
           kitId,
           ownerToken,
@@ -265,17 +265,19 @@ function BuildPage() {
               : undefined,
         },
       });
-      if (!res.ok) throw new Error(res.error ?? "Extraction failed");
-      if ("degraded" in res && res.degraded) {
-        toast.warning(
-          res.degradedReason ?? "Source could not be read — kit uses generic defaults.",
-          {
-            duration: 12000,
-          },
-        );
-      }
 
-      // The kit is now saved in the library — pull it back and fill the form.
+      toast.info("Asynchronous ingestion initiated. Streaming milestones live.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Auto-build failed to start");
+      setBuilding(false);
+      buildingRef.current = false;
+    }
+  }
+
+  async function handleAsyncCompleted() {
+    const kitId = kitIdRef.current;
+    if (!kitId) return;
+    try {
       const full = await fetchKit({ data: { kitId, ownerToken } });
       if (full.kit?.name) setName(full.kit.name);
       if (full.colors?.length) {
@@ -307,14 +309,22 @@ function BuildPage() {
       }
       if (full.kit?.source_text) setSourceText(full.kit.source_text);
 
-      toast.success("Kit built and saved to your library");
-      navigate({ to: "/kit/$kitId", params: { kitId } });
+      toast.success("Brand kit synthesized & saved to your library");
+      setTimeout(() => {
+        navigate({ to: "/kit/$kitId", params: { kitId } });
+      }, 1200);
     } catch (e: any) {
-      toast.error(e?.message ?? "Auto-build failed");
+      toast.error(e?.message ?? "Failed to load finalized kit");
     } finally {
       setBuilding(false);
       buildingRef.current = false;
     }
+  }
+
+  function handleAsyncFailed(errMsg: string) {
+    toast.error(`Extraction failed: ${errMsg}`);
+    setBuilding(false);
+    buildingRef.current = false;
   }
 
   useEffect(() => {
@@ -497,18 +507,30 @@ function BuildPage() {
               disabled={reading || building}
             >
               {building ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span className="flex items-center gap-1.5 font-serif font-bold text-[#8B1A1A] dark:text-[#E84E4E]">
+                  <span className="text-sm">壱</span> Inking Pipeline...
+                </span>
               ) : (
                 <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} />
               )}
-              {building ? "Building kit" : "Auto-build with AI"}
+              {building ? "" : "Auto-build with AI"}
             </button>
             <span className="text-xs text-muted-foreground">
               {building
-                ? "Scraping your sources, extracting the brand and saving it to your library — the fields below will fill in when it's done."
+                ? "Scraping your sources and streaming real-time milestones — the fields below will populate as steps complete."
                 : "Uploading a PDF starts the full scrape and save automatically. Auto-build runs the full extraction, saves it to your library, and fills the fields below for you to tweak."}
             </span>
           </div>
+
+          {building && activeKitId && (
+            <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-500">
+              <CalligraphyStepIndicator
+                kitId={activeKitId}
+                onCompleted={handleAsyncCompleted}
+                onFailed={handleAsyncFailed}
+              />
+            </div>
+          )}
 
           <div className="mt-6">
             <label className={labelClass} htmlFor="source-text">
