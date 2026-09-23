@@ -32,7 +32,7 @@ import { buildCSS, buildTailwindTheme, buildTokensJSON } from "@/lib/exports";
 import { isHttpUrl } from "@/lib/utils";
 import JSZip from "jszip";
 
-export const Route = createFileRoute("/p/$slug")({
+export const Route = createFileRoute("/p/$slug" as any)({
   component: PublishedPortalPage,
 });
 
@@ -74,7 +74,7 @@ function copyToClipboard(text: string, label: string = "Copied") {
 export function PublishedPortalPage(props?: { overrideSlug?: string }) {
   let routeSlug = "";
   try {
-    const params = Route.useParams();
+    const params = (Route as any).useParams();
     routeSlug = params?.slug || "";
   } catch {
     routeSlug = "";
