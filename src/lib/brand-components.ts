@@ -49,7 +49,8 @@ export const SHOWCASE_COMPONENTS: ComponentItem[] = [
     id: "feature-card",
     category: "cards",
     title: "Editorial Feature Card",
-    description: "Structured card with monospace eyebrow, display serif title, and hairline border.",
+    description:
+      "Structured card with monospace eyebrow, display serif title, and hairline border.",
   },
   {
     id: "product-card",
@@ -61,7 +62,8 @@ export const SHOWCASE_COMPONENTS: ComponentItem[] = [
     id: "pricing-card",
     category: "cards",
     title: "Pricing Tier Card",
-    description: "Tier badge, monetary scale, feature checklist with custom glyphs, and action button.",
+    description:
+      "Tier badge, monetary scale, feature checklist with custom glyphs, and action button.",
   },
   {
     id: "form-controls",
@@ -73,7 +75,8 @@ export const SHOWCASE_COMPONENTS: ComponentItem[] = [
     id: "navigation-bar",
     category: "navigation",
     title: "Navigation Bar & Breadcrumb",
-    description: "Header navigation with brand wordmark, tab links, and editorial breadcrumb trail.",
+    description:
+      "Header navigation with brand wordmark, tab links, and editorial breadcrumb trail.",
   },
   {
     id: "hero-header",
@@ -137,8 +140,10 @@ export function resolveBrandComponentTheme(
   const rawBg = cleanHexColor(byRole("background"), "#F4EFE6");
   const rawAccent = cleanHexColor(byRole("accent"), "#8B1A1A");
 
-  const displayFont = fonts.find((f) => /display|heading/i.test(f.role ?? ""))?.family || "Cormorant Garamond";
-  const bodyFont = fonts.find((f) => /body|text|sans/i.test(f.role ?? ""))?.family || "Libre Baskerville";
+  const displayFont =
+    fonts.find((f) => /display|heading/i.test(f.role ?? ""))?.family || "Cormorant Garamond";
+  const bodyFont =
+    fonts.find((f) => /body|text|sans/i.test(f.role ?? ""))?.family || "Libre Baskerville";
   const monoFont = fonts.find((f) => /mono|code/i.test(f.role ?? ""))?.family || "Courier Prime";
 
   if (mode === "high-contrast") {
@@ -632,10 +637,7 @@ export function BrandButtonsSuite() {
   }
 }
 
-export function generateComponentHtmlCode(
-  componentId: string,
-  theme: BrandComponentTheme,
-): string {
+export function generateComponentHtmlCode(componentId: string, theme: BrandComponentTheme): string {
   switch (componentId) {
     case "buttons-suite":
       return `<!-- Brand Buttons Suite: HTML5 + CSS Variables -->
@@ -808,7 +810,8 @@ export const DETERMINISTIC_AI_COMPONENTS: Record<
 
   checkout: {
     name: "Minimalist Checkout Order Summary",
-    description: "Receipt-styled transactional summary with tax calculation and primary purchase trigger.",
+    description:
+      "Receipt-styled transactional summary with tax calculation and primary purchase trigger.",
     jsx: `export function CheckoutSummary() {
   return (
     <div className="border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 font-[family-name:var(--brand-font-mono)] text-xs" style={{ borderRadius: 0 }}>
@@ -846,10 +849,7 @@ export const DETERMINISTIC_AI_COMPONENTS: Record<
   },
 };
 
-export function getDeterministicFallbackComponent(
-  prompt: string,
-  theme: BrandComponentTheme,
-) {
+export function getDeterministicFallbackComponent(prompt: string, theme: BrandComponentTheme) {
   const p = prompt.toLowerCase();
   const isCheckout =
     p.includes("checkout") ||

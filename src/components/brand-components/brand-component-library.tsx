@@ -168,8 +168,7 @@ export function BrandComponentLibrary({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <Sun className="h-3 w-3" />
-              [ LIGHT ]
+              <Sun className="h-3 w-3" />[ LIGHT ]
             </button>
             <button
               type="button"
@@ -181,8 +180,7 @@ export function BrandComponentLibrary({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <Moon className="h-3 w-3" />
-              [ DARK ]
+              <Moon className="h-3 w-3" />[ DARK ]
             </button>
             <button
               type="button"
@@ -194,8 +192,7 @@ export function BrandComponentLibrary({
               }`}
               style={{ borderRadius: 0 }}
             >
-              <Contrast className="h-3 w-3" />
-              [ HIGH CONTRAST ]
+              <Contrast className="h-3 w-3" />[ HIGH CONTRAST ]
             </button>
           </div>
         </div>
@@ -238,9 +235,14 @@ export function BrandComponentLibrary({
             </p>
             <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
               {Object.entries(styleScope).map(([prop, val]) => (
-                <div key={prop} className="flex items-center justify-between border-b border-border/40 py-0.5">
+                <div
+                  key={prop}
+                  className="flex items-center justify-between border-b border-border/40 py-0.5"
+                >
                   <span className="text-muted-foreground">{prop}:</span>
-                  <span className="font-bold text-foreground truncate max-w-[160px]">{String(val)}</span>
+                  <span className="font-bold text-foreground truncate max-w-[160px]">
+                    {String(val)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -273,7 +275,11 @@ export function BrandComponentLibrary({
             className="flex items-center justify-center gap-2 border border-[#0A0A0A] bg-[#0A0A0A] px-5 py-2.5 font-mono text-xs uppercase tracking-[0.16em] text-[#F4EFE6] transition-all hover:bg-[#8B1A1A] disabled:opacity-50 cursor-pointer"
             style={{ borderRadius: 0 }}
           >
-            {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {aiLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
             {aiLoading ? "[ SYNTHESIZING… ]" : "[ GENERATE WITH AI ]"}
           </button>
         </div>
@@ -281,23 +287,28 @@ export function BrandComponentLibrary({
         {/* Suggestion Pills */}
         <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
           <span className="text-muted-foreground">PROMPT PRESETS:</span>
-          {["Testimonial Slider", "Checkout Summary", "Metrics KPI Grid", "Newsletter Box"].map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => setAiPrompt(preset)}
-              className="border border-[rgba(10,10,10,0.2)] bg-background px-2.5 py-1 text-muted-foreground hover:border-[#0A0A0A] hover:text-foreground"
-              style={{ borderRadius: 0 }}
-            >
-              + {preset}
-            </button>
-          ))}
+          {["Testimonial Slider", "Checkout Summary", "Metrics KPI Grid", "Newsletter Box"].map(
+            (preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setAiPrompt(preset)}
+                className="border border-[rgba(10,10,10,0.2)] bg-background px-2.5 py-1 text-muted-foreground hover:border-[#0A0A0A] hover:text-foreground"
+                style={{ borderRadius: 0 }}
+              >
+                + {preset}
+              </button>
+            ),
+          )}
         </div>
       </div>
 
       {/* Synthesized AI Components Container (if any) */}
       {customComponents.length > 0 && (
-        <div className="border-b border-[#0A0A0A] p-5 lg:p-6 bg-accent/5" style={{ borderRadius: 0 }}>
+        <div
+          className="border-b border-[#0A0A0A] p-5 lg:p-6 bg-accent/5"
+          style={{ borderRadius: 0 }}
+        >
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[#8B1A1A]">
             // AI SYNTHESIZED CUSTOM COMPONENTS ({customComponents.length})
           </p>
@@ -313,8 +324,12 @@ export function BrandComponentLibrary({
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0A0A0A] px-4 py-2.5">
                     <div>
-                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider">{comp.name}</h4>
-                      <p className="font-mono text-[10px] text-muted-foreground">{comp.description}</p>
+                      <h4 className="font-mono text-xs font-bold uppercase tracking-wider">
+                        {comp.name}
+                      </h4>
+                      <p className="font-mono text-[10px] text-muted-foreground">
+                        {comp.description}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -366,7 +381,11 @@ export function BrandComponentLibrary({
                         className="flex items-center gap-1 border border-[#0A0A0A] px-2 py-1 font-mono text-[10px] uppercase hover:bg-[#0A0A0A] hover:text-[#F4EFE6]"
                         style={{ borderRadius: 0 }}
                       >
-                        {copiedId === `custom-${idx}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+                        {copiedId === `custom-${idx}` ? (
+                          <Check className="h-3 w-3 text-green-600" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
                         Copy Code
                       </button>
                     </div>
@@ -463,9 +482,7 @@ export function BrandComponentLibrary({
                       {comp.title}
                     </span>
                   </div>
-                  <p className="font-mono text-[10px] text-muted-foreground">
-                    {comp.description}
-                  </p>
+                  <p className="font-mono text-[10px] text-muted-foreground">{comp.description}</p>
                 </div>
 
                 {/* Tab Switcher & 1-Click Copy */}
@@ -597,12 +614,15 @@ export function BrandComponentLibrary({
                           </h3>
 
                           <p className="mt-2 font-[family-name:var(--brand-font-body)] text-sm leading-relaxed text-[var(--brand-muted-fg)]">
-                            Quiet efficiency with zero decorative distractions. Scalpel-sharp borders, pure high-contrast ink, and functional elegance.
+                            Quiet efficiency with zero decorative distractions. Scalpel-sharp
+                            borders, pure high-contrast ink, and functional elegance.
                           </p>
 
                           <div className="mt-6 flex items-center justify-between font-[family-name:var(--brand-font-mono)] text-[11px] uppercase tracking-[0.14em]">
                             <span className="text-[var(--brand-text)]">[ Explore System ]</span>
-                            <span className="text-[var(--brand-accent)] font-bold">→ 0PX RADIUS</span>
+                            <span className="text-[var(--brand-accent)] font-bold">
+                              → 0PX RADIUS
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -676,7 +696,8 @@ export function BrandComponentLibrary({
                           </div>
 
                           <p className="mt-2 font-[family-name:var(--brand-font-body)] text-xs text-[var(--brand-muted-fg)]">
-                            Full architectural access with unlimited deterministic brand token exports.
+                            Full architectural access with unlimited deterministic brand token
+                            exports.
                           </p>
 
                           <ul className="mt-6 space-y-2.5 border-t border-[var(--brand-border-subtle)] pt-4 font-[family-name:var(--brand-font-mono)] text-xs text-[var(--brand-text)]">
@@ -799,7 +820,9 @@ export function BrandComponentLibrary({
                           <span>/</span>
                           <span>SYSTEM DIRECTIVES</span>
                           <span>/</span>
-                          <span className="font-bold text-[var(--brand-text)]">COMPONENT LIBRARY</span>
+                          <span className="font-bold text-[var(--brand-text)]">
+                            COMPONENT LIBRARY
+                          </span>
                         </nav>
                       </div>
                     )}
@@ -820,7 +843,8 @@ export function BrandComponentLibrary({
                         </h1>
 
                         <p className="mt-4 max-w-2xl font-[family-name:var(--brand-font-body)] text-base leading-relaxed text-[var(--brand-muted-fg)]">
-                          Every pixel anchored to structural intent. 0px border-radius standard, high-contrast ink on washi, and pure typographic discipline.
+                          Every pixel anchored to structural intent. 0px border-radius standard,
+                          high-contrast ink on washi, and pure typographic discipline.
                         </p>
 
                         <div className="mt-8 flex flex-wrap items-center gap-3 font-[family-name:var(--brand-font-mono)] text-xs uppercase tracking-[0.16em]">
@@ -849,7 +873,9 @@ export function BrandComponentLibrary({
                           style={{ borderRadius: 0 }}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[var(--brand-accent)]">[ SUCCESS ]</span>
+                            <span className="font-bold text-[var(--brand-accent)]">
+                              [ SUCCESS ]
+                            </span>
                             <span>Brand tokens ratified with 0 errors.</span>
                           </div>
                           <span className="text-[10px] text-[var(--brand-muted-fg)]">200 OK</span>
@@ -860,8 +886,12 @@ export function BrandComponentLibrary({
                           style={{ borderRadius: 0 }}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[var(--brand-accent)]">[ WARNING ]</span>
-                            <span>Color contrast falls below 7:1 threshold in high contrast test.</span>
+                            <span className="font-bold text-[var(--brand-accent)]">
+                              [ WARNING ]
+                            </span>
+                            <span>
+                              Color contrast falls below 7:1 threshold in high contrast test.
+                            </span>
                           </div>
                           <span className="text-[10px] text-[var(--brand-muted-fg)]">AUDIT</span>
                         </div>
@@ -871,8 +901,12 @@ export function BrandComponentLibrary({
                           style={{ borderRadius: 0 }}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[var(--brand-accent)]">[ SYSTEM ERROR ]</span>
-                            <span>External asset CDN timed out. Deterministic fallback engaged.</span>
+                            <span className="font-bold text-[var(--brand-accent)]">
+                              [ SYSTEM ERROR ]
+                            </span>
+                            <span>
+                              External asset CDN timed out. Deterministic fallback engaged.
+                            </span>
                           </div>
                           <span className="text-[10px] text-[var(--brand-accent)]">ERR 504</span>
                         </div>

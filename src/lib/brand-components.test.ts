@@ -77,7 +77,12 @@ describe("Interactive Brand UI Component Library — Engine & Codegen", () => {
     });
 
     it("resolves High-Contrast Mode with guaranteed 21:1 contrast and crisp borders", () => {
-      const theme = resolveBrandComponentTheme(sampleColors, sampleFonts, "high-contrast", "Test Brand");
+      const theme = resolveBrandComponentTheme(
+        sampleColors,
+        sampleFonts,
+        "high-contrast",
+        "Test Brand",
+      );
       expect(theme.mode).toBe("high-contrast");
       expect(theme.contrastRatio).toBe(21);
       expect(theme.background).toBe("#FFFFFF");
