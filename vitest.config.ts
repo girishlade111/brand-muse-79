@@ -17,7 +17,12 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["scripts/**/*.test.mjs", "src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: [
+      "scripts/**/*.test.mjs",
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "chrome-extension/**/*.test.ts",
+    ],
     exclude: ["node_modules/**", "dist/**", ".output/**", ".vinxi/**", "e2e/**"],
   },
 });
