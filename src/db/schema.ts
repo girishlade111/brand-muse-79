@@ -155,6 +155,27 @@ export const kitGitSyncs = pgTable("kit_git_syncs", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const apiKeys = pgTable("api_keys", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  keyHash: text("key_hash").notNull().unique(),
+  prefix: text("prefix").notNull(),
+  name: text("name").notNull(),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  rateLimitPerMin: integer("rate_limit_per_min").notNull().default(60),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const webhookSubscriptions = pgTable("webhook_subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  url: text("url").notNull(),
+  secret: text("secret").notNull(),
+  events: text("events").array().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 export type BrandKit = typeof brandKits.$inferSelect;
 export type NewBrandKit = typeof brandKits.$inferInsert;
 export type KitColor = typeof kitColors.$inferSelect;
@@ -164,6 +185,11 @@ export type KitToken = typeof kitTokens.$inferSelect;
 export type KitVoice = typeof kitVoice.$inferSelect;
 export type KitGitSync = typeof kitGitSyncs.$inferSelect;
 export type NewKitGitSync = typeof kitGitSyncs.$inferInsert;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type NewApiKey = typeof apiKeys.$inferInsert;
+export type WebhookSubscription = typeof webhookSubscriptions.$inferSelect;
+export type NewWebhookSubscription = typeof webhookSubscriptions.$inferInsert;
 export type DesignDocVersion = typeof designDocVersions.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type UserRole = typeof userRoles.$inferSelect;
+
