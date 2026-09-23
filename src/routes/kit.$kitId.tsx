@@ -80,6 +80,7 @@ import { CvdSimulator } from "@/components/cvd-simulator";
 import { ComponentSandbox } from "@/components/component-sandbox";
 import { MockupsStudio } from "@/components/mockups/mockups-studio";
 import { BrandComponentLibrary } from "@/components/brand-components/brand-component-library";
+import { LogoVectorizerStudio } from "@/components/vectorizer/logo-vectorizer-studio";
 
 const PENDING_EXTRACTION_PREFIX = "branddna.pendingExtraction:";
 
@@ -368,13 +369,13 @@ function KitPage() {
                         }
                       }}
                       className={`whitespace-nowrap px-3 py-1.5 transition-colors ${
-                        sec.id === "mockups" || sec.id === "components"
+                        sec.id === "mockups" || sec.id === "components" || sec.id === "vectorizer"
                           ? "border border-[#8B1A1A] bg-[#8B1A1A] font-bold text-[#F4EFE6]"
                           : "border border-[rgba(10,10,10,0.18)] bg-transparent text-muted-foreground hover:border-[#0A0A0A] hover:text-foreground"
                       }`}
                       style={{ borderRadius: 0 }}
                     >
-                      {sec.id === "mockups" || sec.id === "components"
+                      {sec.id === "mockups" || sec.id === "components" || sec.id === "vectorizer"
                         ? `[ ★ ${sec.label.toUpperCase()} ]`
                         : `[ ${sec.label.toUpperCase()} ]`}
                     </a>
@@ -391,6 +392,15 @@ function KitPage() {
                   kitId={kit.id}
                   ownerToken={ownerToken}
                   onChanged={() => setReloadKey((k) => k + 1)}
+                />
+              </SectionAnchor>
+              <SectionAnchor id="vectorizer" label="// 02.B LOGO VECTORIZER & CLEANER STUDIO">
+                <LogoVectorizerStudio
+                  kitId={kit.id}
+                  kitName={kit.name}
+                  assets={data.assets}
+                  colors={data.colors}
+                  onAssetAdded={() => setReloadKey((k) => k + 1)}
                 />
               </SectionAnchor>
               <SectionAnchor id="colors" label="Colors">
@@ -499,6 +509,7 @@ function copy(s: string) {
 const KIT_SECTIONS = [
   { id: "overview", label: "Overview" },
   { id: "assets", label: "Logos & Assets" },
+  { id: "vectorizer", label: "Vectorizer" },
   { id: "colors", label: "Colors" },
   { id: "type", label: "Typography" },
   { id: "tokens", label: "Tokens" },
