@@ -29,7 +29,7 @@ describe("Webhook Event Delivery Engine", () => {
 
     it("generates webhook secrets with 'whsec_' prefix", () => {
       const secret = generateWebhookSecret();
-      expect(secret).toMatch(/^whsec_[a-f0-9]{40}$/);
+      expect(secret).toMatch(/^whsec_[a-f0-9]{48}$/);
     });
   });
 
