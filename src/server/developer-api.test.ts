@@ -72,7 +72,7 @@ describe("Developer REST API Endpoints Integration", () => {
         readBody: async () => ({ url: "https://stripe.com" }),
       };
 
-      const res = await extractHandler(event);
+      const res: any = await extractHandler(event);
       expect(res.status).toBe(401);
       expect(res.error).toContain("Missing API Key");
     });
@@ -86,7 +86,7 @@ describe("Developer REST API Endpoints Integration", () => {
         readBody: async () => ({}), // Missing url
       };
 
-      const res = await extractHandler(event);
+      const res: any = await extractHandler(event);
       expect(res.status).toBe(400);
       expect(res.error).toContain("Missing required parameter");
     });
@@ -100,7 +100,7 @@ describe("Developer REST API Endpoints Integration", () => {
         readBody: async () => ({ url: "https://stripe.com" }),
       };
 
-      const res = await extractHandler(event);
+      const res: any = await extractHandler(event);
       expect(res.status).toBe("processing");
       expect(res.kit_id).toBe("mock-kit-uuid-123");
       expect(res.source_url).toBe("https://stripe.com");
@@ -113,7 +113,7 @@ describe("Developer REST API Endpoints Integration", () => {
         req: new Request("https://api.brandmuse.io/api/v1/kits/"),
       };
 
-      const res = await kitDetailHandler(event);
+      const res: any = await kitDetailHandler(event);
       expect(res.status).toBe(400);
       expect(res.error).toContain("Missing kitId");
     });

@@ -3,11 +3,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  generateApiKeyFn,
-  listApiKeysFn,
-  revokeApiKeyFn,
-} from "@/server/api-auth.server";
+import { generateApiKeyFn, listApiKeysFn, revokeApiKeyFn } from "@/server/api-auth.server";
 import {
   createWebhookSubscriptionFn,
   listWebhookSubscriptionsFn,
@@ -270,8 +266,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
           }`}
           style={{ borderRadius: 0 }}
         >
-          <Key className="h-3.5 w-3.5" />
-          [ API Keys ({keysList.length}) ]
+          <Key className="h-3.5 w-3.5" />[ API Keys ({keysList.length}) ]
         </button>
         <button
           type="button"
@@ -283,8 +278,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
           }`}
           style={{ borderRadius: 0 }}
         >
-          <Webhook className="h-3.5 w-3.5" />
-          [ Webhooks ({webhooksList.length}) ]
+          <Webhook className="h-3.5 w-3.5" />[ Webhooks ({webhooksList.length}) ]
         </button>
         <button
           type="button"
@@ -296,8 +290,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
           }`}
           style={{ borderRadius: 0 }}
         >
-          <Code className="h-3.5 w-3.5" />
-          [ REST cURL Snippets ]
+          <Code className="h-3.5 w-3.5" />[ REST cURL Snippets ]
         </button>
       </div>
 
@@ -319,8 +312,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               className="flex items-center gap-1.5 border border-[#8B1A1A] bg-[#8B1A1A] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#F4EFE6] font-bold hover:opacity-90 transition-opacity"
               style={{ borderRadius: 0 }}
             >
-              <Plus className="h-3.5 w-3.5" />
-              [ Create New API Key ]
+              <Plus className="h-3.5 w-3.5" />[ Create New API Key ]
             </button>
           </div>
 
@@ -333,7 +325,8 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               <Key className="mx-auto h-8 w-8 text-muted-foreground opacity-40" />
               <p className="mt-3 text-sm font-semibold">No API Keys Generated</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Create an API key to programmatically trigger brand kit extractions or query design tokens.
+                Create an API key to programmatically trigger brand kit extractions or query design
+                tokens.
               </p>
             </div>
           ) : (
@@ -357,14 +350,10 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                       <span>•</span>
                       <span>
                         Last Used:{" "}
-                        {k.lastUsedAt
-                          ? new Date(k.lastUsedAt).toLocaleDateString()
-                          : "Never"}
+                        {k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : "Never"}
                       </span>
                       <span>•</span>
-                      <span>
-                        Created: {new Date(k.createdAt).toLocaleDateString()}
-                      </span>
+                      <span>Created: {new Date(k.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
 
@@ -375,8 +364,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                       className="flex items-center gap-1 border border-red-500/30 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                       style={{ borderRadius: 0 }}
                     >
-                      <Trash2 className="h-3 w-3" />
-                      [ Revoke ]
+                      <Trash2 className="h-3 w-3" />[ Revoke ]
                     </button>
                   </div>
                 </div>
@@ -401,8 +389,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               className="flex items-center gap-1.5 border border-[#8B1A1A] bg-[#8B1A1A] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#F4EFE6] font-bold hover:opacity-90 transition-opacity"
               style={{ borderRadius: 0 }}
             >
-              <Plus className="h-3.5 w-3.5" />
-              [ Add Webhook Endpoint ]
+              <Plus className="h-3.5 w-3.5" />[ Add Webhook Endpoint ]
             </button>
           </div>
 
@@ -415,7 +402,8 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               <Webhook className="mx-auto h-8 w-8 text-muted-foreground opacity-40" />
               <p className="mt-3 text-sm font-semibold">No Webhook Endpoints Configured</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Add an HTTPS endpoint to automatically receive webhook dispatches for extraction events.
+                Add an HTTPS endpoint to automatically receive webhook dispatches for extraction
+                events.
               </p>
             </div>
           ) : (
@@ -442,7 +430,9 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                       ))}
                     </div>
                     <div className="mt-2 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-                      <span>Secret: <code>{wh.secret.slice(0, 10)}...</code></span>
+                      <span>
+                        Secret: <code>{wh.secret.slice(0, 10)}...</code>
+                      </span>
                       <button
                         type="button"
                         onClick={() => handleCopy(wh.secret)}
@@ -496,7 +486,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
             </p>
             <div className="relative mt-3">
               <pre className="border border-[color:var(--border-subtle)] bg-[#0A0A0A] p-4 font-mono text-[11px] text-[#F4EFE6] overflow-x-auto">
-{`curl -X POST https://app.brandmuse.io/api/v1/extract \\
+                {`curl -X POST https://app.brandmuse.io/api/v1/extract \\
   -H "Authorization: Bearer bm_live_your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{"url": "https://stripe.com"}'`}
@@ -513,7 +503,7 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
             </p>
             <div className="relative mt-3">
               <pre className="border border-[color:var(--border-subtle)] bg-[#0A0A0A] p-4 font-mono text-[11px] text-[#F4EFE6] overflow-x-auto">
-{`curl https://app.brandmuse.io/api/v1/kits/8f3b20df-4f05-4f40-84c1-cbfb49e3bf32 \\
+                {`curl https://app.brandmuse.io/api/v1/kits/8f3b20df-4f05-4f40-84c1-cbfb49e3bf32 \\
   -H "Authorization: Bearer bm_live_your_api_key_here"`}
               </pre>
             </div>
@@ -524,11 +514,12 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               // 03 · RAW CDN TOKENS.CSS EMBED
             </span>
             <p className="mt-1 text-xs text-muted-foreground">
-              Embed directly into any website HTML with automatic caching and Content-Type: text/css.
+              Embed directly into any website HTML with automatic caching and Content-Type:
+              text/css.
             </p>
             <div className="relative mt-3">
               <pre className="border border-[color:var(--border-subtle)] bg-[#0A0A0A] p-4 font-mono text-[11px] text-[#F4EFE6] overflow-x-auto">
-{`<link rel="stylesheet" href="https://app.brandmuse.io/api/v1/kits/8f3b20df-4f05-4f40-84c1-cbfb49e3bf32/css">`}
+                {`<link rel="stylesheet" href="https://app.brandmuse.io/api/v1/kits/8f3b20df-4f05-4f40-84c1-cbfb49e3bf32/css">`}
               </pre>
             </div>
           </div>
@@ -563,7 +554,8 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                   </p>
                 </div>
                 <p className="mt-1.5 text-xs text-foreground leading-relaxed">
-                  For your security, we only store a cryptographic hash of this key. You will not be able to see this secret again!
+                  For your security, we only store a cryptographic hash of this key. You will not be
+                  able to see this secret again!
                 </p>
               </div>
 
@@ -585,7 +577,11 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                     className="flex items-center gap-1 border border-[#0A0A0A] bg-foreground text-background px-3 py-2 font-mono text-xs uppercase"
                     style={{ borderRadius: 0 }}
                   >
-                    {copiedKey ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedKey ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -668,7 +664,8 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
               Register Webhook Endpoint
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Receive signed HMAC-SHA256 HTTP POST notifications when brand extraction jobs complete.
+              Receive signed HMAC-SHA256 HTTP POST notifications when brand extraction jobs
+              complete.
             </DialogDescription>
           </DialogHeader>
 
@@ -696,7 +693,10 @@ export function DeveloperSettings({ userId = "user-default", className }: Develo
                 {WEBHOOK_EVENTS.map((ev) => {
                   const checked = selectedEvents.includes(ev);
                   return (
-                    <label key={ev} className="flex items-center gap-2 cursor-pointer font-mono text-xs">
+                    <label
+                      key={ev}
+                      className="flex items-center gap-2 cursor-pointer font-mono text-xs"
+                    >
                       <input
                         type="checkbox"
                         checked={checked}

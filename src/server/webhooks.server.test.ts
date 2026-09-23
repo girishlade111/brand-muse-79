@@ -13,7 +13,10 @@ describe("Webhook Event Delivery Engine", () => {
   describe("HMAC-SHA256 Signature Verification", () => {
     it("signs payload deterministically with HMAC-SHA256", () => {
       const secret = "whsec_test_secret_123456789";
-      const payload = JSON.stringify({ event: "kit.extraction_completed", data: { kit_id: "123" } });
+      const payload = JSON.stringify({
+        event: "kit.extraction_completed",
+        data: { kit_id: "123" },
+      });
 
       const sig1 = signWebhookPayload(payload, secret);
       const sig2 = signWebhookPayload(payload, secret);
@@ -22,7 +25,10 @@ describe("Webhook Event Delivery Engine", () => {
       expect(sig1).toBe(sig2);
 
       // Altering payload changes signature
-      const modifiedPayload = JSON.stringify({ event: "kit.extraction_completed", data: { kit_id: "456" } });
+      const modifiedPayload = JSON.stringify({
+        event: "kit.extraction_completed",
+        data: { kit_id: "456" },
+      });
       const sigModified = signWebhookPayload(modifiedPayload, secret);
       expect(sig1).not.toBe(sigModified);
     });

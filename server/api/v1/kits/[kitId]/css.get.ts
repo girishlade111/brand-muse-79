@@ -38,7 +38,13 @@ export default async function (event: any) {
   const url = new URL(rawUrl, "http://localhost");
   const pathParts = url.pathname.split("/").filter(Boolean);
   const kitIdx = pathParts.indexOf("kits");
-  const kitId = kitIdx !== -1 && pathParts.length > kitIdx + 1 ? pathParts[kitIdx + 1] : "";
+  let kitId = "";
+  if (kitIdx !== -1 && pathParts.length > kitIdx + 1) {
+    const candidate = pathParts[kitIdx + 1];
+    if (candidate !== "css" && candidate !== "tokens") {
+      kitId = candidate;
+    }
+  }
 
   if (!kitId) {
     if (res) res.statusCode = 400;
@@ -61,9 +67,9 @@ export default async function (event: any) {
   ]);
 
   const css = buildCSS({
-    colors: colors || [],
-    fonts: fonts || [],
-    tokens: tokens || [],
+    colors: (Array.isArray(colors) ? colors : []) as any,
+    fonts: (Array.isArray(fonts) ? fonts : []) as any,
+    tokens: (Array.isArray(tokens) ? tokens : []) as any,
   });
 
   const headerComment = `/**

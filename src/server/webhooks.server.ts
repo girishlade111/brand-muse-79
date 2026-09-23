@@ -146,7 +146,8 @@ export async function dispatchWebhookEvent(
         : activeDb.select().from(webhookSubscriptions);
 
       const all = await query;
-      subscriptions = all.filter(
+      const list = Array.isArray(all) ? all : [];
+      subscriptions = list.filter(
         (sub: WebhookSubscription) => event === "ping" || sub.events?.includes(event),
       );
     } catch (err) {
@@ -191,7 +192,9 @@ export async function dispatchWebhookEvent(
           dispatched += 1;
         } else {
           failed += 1;
-          console.warn(`[webhooks.server] Webhook delivery returned HTTP ${res.status}: ${sub.url}`);
+          console.warn(
+            `[webhooks.server] Webhook delivery returned HTTP ${res.status}: ${sub.url}`,
+          );
         }
       } catch (err: any) {
         failed += 1;

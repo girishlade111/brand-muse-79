@@ -96,7 +96,8 @@ export default async function (event: any) {
   if (!targetUrl && !documentUrl) {
     setHeadersAndStatus(event, 400, auth.headers);
     return {
-      error: "Missing required parameter: provide 'url' (e.g. 'https://stripe.com') or 'document_url'.",
+      error:
+        "Missing required parameter: provide 'url' (e.g. 'https://stripe.com') or 'document_url'.",
       status: 400,
     };
   }
@@ -177,7 +178,8 @@ export default async function (event: any) {
       kit_id: kit.id,
       status: "processing",
       source_url: primaryUrl,
-      message: "Extraction initiated. Subscribe to webhooks or query GET /api/v1/kits/:id for status.",
+      message:
+        "Extraction initiated. Subscribe to webhooks or query GET /api/v1/kits/:id for status.",
       created_at: kit.createdAt ? kit.createdAt.toISOString() : new Date().toISOString(),
     };
   } catch (err: any) {

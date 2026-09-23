@@ -42,7 +42,9 @@ describe("Developer API Authentication & Rate Limiting Engine", () => {
       expect(extractBearerOrApiKey(req2)).toBe("bm_live_custom_key");
 
       // 3. Query parameter ?api_key=<key>
-      const req3 = new Request("https://api.brandmuse.io/api/v1/kits/123/css?api_key=bm_live_query_key");
+      const req3 = new Request(
+        "https://api.brandmuse.io/api/v1/kits/123/css?api_key=bm_live_query_key",
+      );
       expect(extractBearerOrApiKey(req3)).toBe("bm_live_query_key");
     });
   });

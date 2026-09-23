@@ -38,8 +38,15 @@ export default async function (event: any) {
   const url = new URL(rawUrl, "http://localhost");
   const pathParts = url.pathname.split("/").filter(Boolean);
   const kitIdx = pathParts.indexOf("kits");
-  const kitId = kitIdx !== -1 && pathParts.length > kitIdx + 1 ? pathParts[kitIdx + 1] : "";
-  const tokenParam = url.searchParams.get("token") || url.searchParams.get("share_token") || undefined;
+  let kitId = "";
+  if (kitIdx !== -1 && pathParts.length > kitIdx + 1) {
+    const candidate = pathParts[kitIdx + 1];
+    if (candidate !== "css" && candidate !== "tokens") {
+      kitId = candidate;
+    }
+  }
+  const tokenParam =
+    url.searchParams.get("token") || url.searchParams.get("share_token") || undefined;
 
   if (!kitId) {
     if (res) res.statusCode = 400;
@@ -50,8 +57,20 @@ export default async function (event: any) {
   const auth = await authenticateApiRequest(req || event);
   let isAuthorized = auth.authenticated;
 
-  // Fetch kit container
-  const kitRows = await db.select().from(brandKits).where(eq(brandKits.id, kitId)).limit(1);
+  // Fetch kit container by id (UUID) or fallback to shareToken
+  let kitRows = await db.select().from(brandKits).where(eq(brandKits.id, kitId)).limit(1);
+  let matchedViaPathShareToken = false;
+  if (!kitRows.length) {
+    const shareRows = await db
+      .select()
+      .from(brandKits)
+      .where(eq(brandKits.shareToken, kitId))
+      .limit(1);
+    if (shareRows.length) {
+      kitRows = shareRows;
+      matchedViaPathShareToken = true;
+    }
+  }
   const kit = kitRows[0];
 
   if (!kit) {
@@ -59,10 +78,12 @@ export default async function (event: any) {
     return { error: "Brand kit not found", status: 404 };
   }
 
-  // If not authed via API key, check if kit is public OR tokenParam matches shareToken
+  // If not authed via API key, check if kit is public OR tokenParam matches shareToken OR matched via path
   if (!isAuthorized) {
     const isPublic = Boolean(kit.isPublic);
-    const matchesShareToken = Boolean(kit.shareToken && tokenParam && kit.shareToken === tokenParam);
+    const matchesShareToken = Boolean(
+      (kit.shareToken && tokenParam && kit.shareToken === tokenParam) || matchedViaPathShareToken,
+    );
     if (isPublic || matchesShareToken) {
       isAuthorized = true;
     }
