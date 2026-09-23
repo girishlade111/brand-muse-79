@@ -188,14 +188,13 @@ async function executeStep1_ScrapeHomepage(
 
   // 1b. Scrape homepage with 7s budget
   try {
-    const scraped = await withTimeout(
-      firecrawlScrape(url, 1),
+    const homeDoc = await withTimeout(
+      firecrawlScrape(url),
       7000,
       null,
     );
 
-    if (scraped && scraped.length > 0) {
-      const homeDoc = scraped[0];
+    if (homeDoc) {
       homepageMarkdown = homeDoc.markdown;
       homepageHtml = homeDoc.rawHtml ?? homeDoc.html;
       homepageBranding = homeDoc.branding;
@@ -278,9 +277,8 @@ async function executeStep2_CrawlCompanionPages(
   const scrapePromises = candidates.map(async (pageUrl) => {
     try {
       appendLog(`Crawling companion page: ${pageUrl}`);
-      const scraped = await withTimeout(firecrawlScrape(pageUrl, 1), 5000, null);
-      if (scraped && scraped.length > 0) {
-        const doc = scraped[0];
+      const doc = await withTimeout(firecrawlScrape(pageUrl), 5000, null);
+      if (doc) {
         const html = doc.rawHtml ?? doc.html;
         return { url: pageUrl, markdown: doc.markdown, html };
       }
